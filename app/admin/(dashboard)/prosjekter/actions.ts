@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/slug'
+import { cleanEmDashes } from '@/lib/text'
 import { PROJECT_STATUSES } from '@/lib/types/app'
 
 const statusEnum = z.enum(PROJECT_STATUSES)
@@ -67,7 +68,7 @@ function toDbValues(data: z.infer<typeof projectSchema>) {
     .map((s) => s.trim())
     .filter(Boolean)
 
-  return {
+  return cleanEmDashes({
     slug: data.slug,
     title: data.title,
     description: data.description,
@@ -84,7 +85,7 @@ function toDbValues(data: z.infer<typeof projectSchema>) {
     ended_at: data.ended_at || null,
     draft: data.draft,
     updated_at: new Date().toISOString(),
-  }
+  })
 }
 
 export async function createProject(

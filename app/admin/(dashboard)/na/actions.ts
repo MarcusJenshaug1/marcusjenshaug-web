@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cleanEmDashes } from '@/lib/text'
 
 const nowSchema = z.object({
   content: z.string().min(1, 'Innhold er påkrevd'),
@@ -37,10 +38,10 @@ function toDbValues(data: z.infer<typeof nowSchema>) {
     const d = new Date(data.published_at)
     if (!isNaN(d.getTime())) published_at = d.toISOString()
   }
-  return {
+  return cleanEmDashes({
     content: data.content,
     published_at,
-  }
+  })
 }
 
 export async function createNowEntry(

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cleanEmDashes } from '@/lib/text'
 
 const usesSchema = z.object({
   category: z.string().min(1, 'Kategori er påkrevd').max(100),
@@ -38,14 +39,14 @@ function parseForm(formData: FormData) {
 }
 
 function toDbValues(data: z.infer<typeof usesSchema>) {
-  return {
+  return cleanEmDashes({
     category: data.category,
     name: data.name,
     description: data.description || null,
     url: data.url || null,
     order_index: data.order_index,
     updated_at: new Date().toISOString(),
-  }
+  })
 }
 
 export async function createUsesItem(

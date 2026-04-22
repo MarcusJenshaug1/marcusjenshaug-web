@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cleanEmDashes } from '@/lib/text'
 
 const socialLinkSchema = z.object({
   platform: z.string().min(1),
@@ -71,13 +72,13 @@ export async function updateSettings(
   const admin = createAdminClient()
   const { error } = await admin
     .from('site_settings')
-    .update({
+    .update(cleanEmDashes({
       ...parsed.data,
       cv_url: parsed.data.cv_url || null,
       availability_note: parsed.data.availability_note || null,
       location: parsed.data.location || null,
       updated_at: new Date().toISOString(),
-    })
+    }))
     .eq('id', 1)
 
   if (error) {

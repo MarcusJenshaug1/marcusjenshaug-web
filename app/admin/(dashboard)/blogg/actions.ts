@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cleanEmDashes } from '@/lib/text'
 
 const postSchema = z.object({
   slug: z.string().min(1, 'Slug er påkrevd').regex(/^[a-z0-9-]+$/, 'Kun små bokstaver, tall og bindestrek'),
@@ -53,7 +54,7 @@ function toDbValues(data: z.infer<typeof postSchema>) {
     published_at = new Date().toISOString()
   }
 
-  return {
+  return cleanEmDashes({
     slug: data.slug,
     title: data.title,
     description: data.description,
@@ -63,7 +64,7 @@ function toDbValues(data: z.infer<typeof postSchema>) {
     published_at,
     draft: data.draft,
     updated_at: new Date().toISOString(),
-  }
+  })
 }
 
 export async function createPost(
