@@ -16,3 +16,5 @@ next-env.d.ts
 *.tsbuildinfo
 
 /marcusjenshaug.no/
+supabase/.temp/
+supabase/.branches/
