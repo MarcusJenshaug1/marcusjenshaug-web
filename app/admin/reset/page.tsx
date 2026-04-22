@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { ResetForm } from './ResetForm'
 
 export const metadata: Metadata = {
@@ -10,18 +11,58 @@ export const dynamic = 'force-dynamic'
 
 export default function ResetPasswordPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 bg-bg">
-      <div className="w-full max-w-sm bg-bg-elev border border-rule rounded-[10px] p-8">
-        <div className="flex items-center gap-2.5 font-semibold tracking-tight mb-6">
-          <span className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
-          Admin
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'grid',
+        placeItems: 'center',
+        background: 'var(--bg-sunken)',
+        padding: '2rem',
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: '22rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '8px',
+              background: 'var(--accent)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 700,
+              letterSpacing: '-.02em',
+            }}
+          >
+            M
+          </div>
+          <h1 style={{ fontSize: '1.125rem', marginTop: '.875rem', fontFamily: 'var(--ff-sans)' }}>
+            marcusjenshaug.no
+          </h1>
+          <p className="muted" style={{ fontSize: '.875rem', marginTop: '.25rem' }}>
+            Sett nytt passord
+          </p>
         </div>
-        <h1 className="text-2xl mb-2">Sett nytt passord</h1>
-        <p className="text-ink-3 text-sm mb-6">
-          Minst 8 tegn. Etter lagring blir du sendt til admin-panelet.
-        </p>
-        <ResetForm />
+        <div
+          style={{
+            background: 'var(--bg-elev)',
+            border: '1px solid var(--rule)',
+            borderRadius: '10px',
+            padding: '1.5rem',
+          }}
+        >
+          <ResetForm />
+        </div>
+        <Link
+          href="/"
+          className="dim"
+          style={{ display: 'block', textAlign: 'center', marginTop: '1.25rem', fontSize: '.8125rem' }}
+        >
+          ← Tilbake til siden
+        </Link>
       </div>
-    </main>
+    </div>
   )
 }
