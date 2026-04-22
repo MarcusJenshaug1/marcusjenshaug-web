@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { Project, ProjectStatus } from '@/lib/types/app'
+import { PROJECT_STATUSES, type Project, type ProjectStatus } from '@/lib/types/app'
 
 export const getPublishedProjects = cache(async (): Promise<Project[]> => {
   const supabase = await createClient()
@@ -62,14 +62,10 @@ export async function getProjectByIdAdmin(id: string): Promise<Project | null> {
 }
 
 export function countByStatus(projects: Project[]): Record<ProjectStatus | 'alle', number> {
-  const counts: Record<ProjectStatus | 'alle', number> = {
-    alle: projects.length,
-    'aktiv': 0,
-    'i-drift': 0,
-    'side': 0,
-    'arkivert': 0,
-    'levert': 0,
+  const counts = { alle: projects.length } as Record<ProjectStatus | 'alle', number>
+  for (const s of PROJECT_STATUSES) counts[s] = 0
+  for (const p of projects) {
+    if (p.status in counts) counts[p.status]++
   }
-  for (const p of projects) counts[p.status]++
   return counts
 }
