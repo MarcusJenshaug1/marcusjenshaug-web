@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>marcusjenshaug.no — designmockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  #root { height: 100vh; }
+  /* Inside artboards, fonts & colors cascade from body via CSS vars */
+  .artboard-body { height: 100%; overflow: auto; background: var(--bg); color: var(--ink); font-family: var(--ff-sans); }
+  .artboard-body::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="common.jsx"></script>
+<script type="text/babel" src="public-pages.jsx"></script>
+<script type="text/babel" src="admin-pages.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "rust",
+  "font": "geist-fraunces",
+  "heroLayout": "split-portrait"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  rust:    { main: 'oklch(0.62 0.18 38)',  bg: 'oklch(0.96 0.03 50)',  ink: 'oklch(0.40 0.14 38)',  label: 'Rust' },
+  green:   { main: 'oklch(0.55 0.15 145)', bg: 'oklch(0.95 0.04 145)', ink: 'oklch(0.38 0.12 145)', label: 'Grønn' },
+  blue:    { main: 'oklch(0.55 0.18 255)', bg: 'oklch(0.95 0.04 255)', ink: 'oklch(0.38 0.14 255)', label: 'Blå' },
+  mustard: { main: 'oklch(0.68 0.15 85)',  bg: 'oklch(0.96 0.04 85)',  ink: 'oklch(0.45 0.12 85)',  label: 'Sennep' },
+  ink:     { main: 'oklch(0.22 0.02 50)',  bg: 'oklch(0.94 0.005 50)', ink: 'oklch(0.15 0.02 50)',  label: 'Ren' },
+};
+
+const FONTS = {
+  'geist-fraunces':  { sans: "'Geist', system-ui, sans-serif",  serif: "'Fraunces', Georgia, serif",           mono: "'JetBrains Mono', monospace", label: 'Geist + Fraunces' },
+  'geist-geist':     { sans: "'Geist', system-ui, sans-serif",  serif: "'Geist', system-ui, sans-serif",       mono: "'JetBrains Mono', monospace", label: 'Geist (alt)' },
+  'fraunces-fraunces':{sans: "'Fraunces', Georgia, serif",      serif: "'Fraunces', Georgia, serif",           mono: "'JetBrains Mono', monospace", label: 'Fraunces (alt)' },
+};
+
+function applyTweaks(t) {
+  const a = ACCENTS[t.accent] || ACCENTS.rust;
+  const f = FONTS[t.font] || FONTS['geist-fraunces'];
+  const r = document.documentElement.style;
+  r.setProperty('--accent', a.main);
+  r.setProperty('--accent-bg', a.bg);
+  r.setProperty('--accent-ink', a.ink);
+  r.setProperty('--ff-sans', f.sans);
+  r.setProperty('--ff-serif', f.serif);
+  r.setProperty('--ff-mono', f.mono);
+}
+
+function TweakPanel({ tweaks, setTweaks, editMode }) {
+  if (!editMode) return null;
+  return (
+    <div className="tweaks open">
+      <div style={{display:'flex', alignItems:'center', marginBottom:'.625rem'}}>
+        <h5 style={{margin:0}}>Tweaks</h5>
+        <span className="dim mono" style={{marginLeft:'auto', fontSize:'.625rem'}}>live</span>
+      </div>
+      <div className="row">
+        <span className="muted">Aksent</span>
+        <div className="swatches">
+          {Object.entries(ACCENTS).map(([k, v]) => (
+            <button key={k} title={v.label}
+              className={`swatch ${tweaks.accent === k ? 'active' : ''}`}
+              style={{background: v.main}}
+              onClick={() => setTweaks({...tweaks, accent: k})}/>
+          ))}
+        </div>
+      </div>
+      <div className="row">
+        <span className="muted">Typografi</span>
+        <select value={tweaks.font}
+          onChange={e => setTweaks({...tweaks, font: e.target.value})}
+          style={{border:'1px solid var(--rule)', borderRadius:5, padding:'2px 4px', background:'var(--bg-elev)', fontSize:'.75rem'}}>
+          {Object.entries(FONTS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+      </div>
+      <div className="row">
+        <span className="muted">Hero-layout</span>
+        <div className="segmented">
+          {[['split-portrait','Split'],['centered','Sentrert'],['statement','Statement']].map(([k, l]) => (
+            <button key={k}
+              className={tweaks.heroLayout === k ? 'active' : ''}
+              onClick={() => setTweaks({...tweaks, heroLayout: k})}>{l}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Wrap each page render in a div that provides artboard scroll
+function AB({ children }) {
+  return <div className="artboard-body">{children}</div>;
+}
+
+function App() {
+  const [tweaks, setTweaksState] = useState(TWEAK_DEFAULTS);
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => applyTweaks(tweaks), [tweaks]);
+  const setTweaks = (t) => {
+    setTweaksState(t);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: t }, '*');
+  };
+
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode') setEditMode(true);
+      if (e.data.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  // Artboard sizes — desktop for public, desktop for admin, compact for editor
+  const W = 1280, H = 820;
+
+  return (
+    <>
+      <DesignCanvas minScale={0.08} maxScale={2}>
+        <DCSection id="public" title="Offentlige sider" subtitle="Det brukere og crawlere møter. Dra på grepet for å endre rekkefølge, klikk på en etikett for fullskjerm.">
+          <DCArtboard id="home" label="/ · Hjem" width={W} height={H}><AB><HomePage/></AB></DCArtboard>
+          <DCArtboard id="om" label="/om · Entity home" width={W} height={H}><AB><OmPage/></AB></DCArtboard>
+          <DCArtboard id="prosjekter" label="/prosjekter" width={W} height={H}><AB><ProsjekterPage/></AB></DCArtboard>
+          <DCArtboard id="blogg" label="/blogg" width={W} height={H}><AB><BloggPage/></AB></DCArtboard>
+          <DCArtboard id="article" label="/blogg/[slug]" width={W} height={H}><AB><ArticlePage/></AB></DCArtboard>
+          <DCArtboard id="na" label="/na" width={W} height={H}><AB><NaPage/></AB></DCArtboard>
+          <DCArtboard id="uses" label="/uses" width={W} height={H}><AB><UsesPage/></AB></DCArtboard>
+          <DCArtboard id="kontakt" label="/kontakt" width={W} height={H}><AB><KontaktPage/></AB></DCArtboard>
+        </DCSection>
+
+        <DCSection id="admin" title="Admin-panel" subtitle="Samme designsystem som resten av siden — ikke en separat dashboard-drakt.">
+          <DCArtboard id="login" label="/admin · Login" width={W} height={H}><AB><AdminLoginPage/></AB></DCArtboard>
+          <DCArtboard id="dash" label="/admin · Dashboard" width={W} height={H}><AB><AdminDashboard/></AB></DCArtboard>
+          <DCArtboard id="innstillinger" label="/admin/innstillinger" width={W} height={H}><AB><AdminInnstillinger/></AB></DCArtboard>
+          <DCArtboard id="blogg-liste" label="/admin/blogg" width={W} height={H}><AB><AdminBloggList/></AB></DCArtboard>
+          <DCArtboard id="blogg-editor" label="/admin/blogg/[id]" width={W} height={H}><AB><AdminBloggEditor/></AB></DCArtboard>
+          <DCArtboard id="prosjekter-admin" label="/admin/prosjekter" width={W} height={H}><AB><AdminProsjekter/></AB></DCArtboard>
+          <DCArtboard id="na-admin" label="/admin/na" width={W} height={H}><AB><AdminNa/></AB></DCArtboard>
+          <DCArtboard id="uses-admin" label="/admin/uses" width={W} height={H}><AB><AdminUses/></AB></DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweakPanel tweaks={tweaks} setTweaks={setTweaks} editMode={editMode}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
