@@ -32,6 +32,17 @@ export const metadata: Metadata = {
     locale: 'nb_NO',
     url: siteUrl,
     siteName: 'Marcus Jenshaug',
+    images: [
+      {
+        url: `/api/og?title=${encodeURIComponent('Marcus Jenshaug')}`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [`/api/og?title=${encodeURIComponent('Marcus Jenshaug')}`],
   },
   robots: { index: true, follow: true },
 }

@@ -21,11 +21,28 @@ export async function generateMetadata({
   const { preview } = await searchParams
   const project = await getProjectBySlug(slug, preview === '1')
   if (!project) return { title: 'Ikke funnet' }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+  const ogImage = `/api/og?title=${encodeURIComponent(project.title)}&type=${encodeURIComponent('Prosjekt')}`
+
   return {
     title: project.title,
     description: project.description,
     alternates: { canonical: `/prosjekter/${project.slug}` },
     robots: project.draft ? { index: false, follow: false } : undefined,
+    openGraph: {
+      type: 'article',
+      url: `${siteUrl}/prosjekter/${project.slug}`,
+      title: project.title,
+      description: project.description,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: project.title,
+      description: project.description,
+      images: [ogImage],
+    },
   }
 }
 

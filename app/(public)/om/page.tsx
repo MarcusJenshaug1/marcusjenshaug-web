@@ -6,10 +6,24 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
 import { mdxOptions } from '@/lib/mdx'
 
+const siteUrlForMeta = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+const ogImage = `/api/og?title=${encodeURIComponent('Om Marcus Jenshaug')}&type=${encodeURIComponent('Om')}`
+
 export const metadata: Metadata = {
   title: 'Om',
   description: 'Om Marcus Jenshaug — fullstack-utvikler i Redi AS.',
   alternates: { canonical: '/om' },
+  openGraph: {
+    type: 'profile',
+    url: `${siteUrlForMeta}/om`,
+    title: 'Om Marcus Jenshaug',
+    description: 'Fullstack-utvikler i Redi AS.',
+    images: [{ url: ogImage, width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [ogImage],
+  },
 }
 
 export default async function OmPage() {

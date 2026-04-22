@@ -73,15 +73,28 @@ export default async function PostDetailPage({
 
   const settings = await getSiteSettings()
 
+  const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(post.title)}&type=${encodeURIComponent('Notat')}`
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
     description: post.description,
-    author: { '@id': `${siteUrl}/#person` },
+    author: {
+      '@type': 'Person',
+      '@id': `${siteUrl}/#person`,
+      name: settings.full_name,
+      url: siteUrl,
+    },
+    publisher: {
+      '@type': 'Person',
+      '@id': `${siteUrl}/#person`,
+      name: settings.full_name,
+      url: siteUrl,
+    },
     datePublished: post.published_at ?? undefined,
     dateModified: post.updated_at,
-    image: post.cover_image ? `${siteUrl}${post.cover_image}` : undefined,
+    image: post.cover_image ? `${siteUrl}${post.cover_image}` : ogImage,
     inLanguage: 'nb-NO',
     mainEntityOfPage: `${siteUrl}/blogg/${post.slug}`,
     keywords: post.tags.join(', ') || undefined,
