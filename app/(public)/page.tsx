@@ -1,12 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
-import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects } from '@/lib/projects'
 import { getLatestPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
-import { mdxOptions, readingTime } from '@/lib/mdx'
+import { readingTime } from '@/lib/mdx'
+import { SafeMdx } from '@/components/SafeMdx'
 import { OsloClock } from '@/components/OsloClock'
 import { OsloTerminal } from '@/components/OsloTerminal'
 import { ProjectCard } from '@/components/ProjectCard'
@@ -159,7 +159,7 @@ export default async function HomePage() {
                   </span>
                 </div>
                 <div className="prose" style={{ fontSize: '.9375rem', lineHeight: 1.6, maxWidth: 'none' }}>
-                  <MDXRemote source={latestNow.content} options={mdxOptions} />
+                  <SafeMdx source={latestNow.content} />
                 </div>
               </div>
             ) : (

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getNowEntries } from '@/lib/now'
-import { mdxOptions } from '@/lib/mdx'
+import { SafeMdx } from '@/components/SafeMdx'
 
 export const metadata: Metadata = {
   title: 'Nå',
@@ -60,7 +59,7 @@ export default async function NaPage() {
                   {i === 0 && <span className="chip chip-accent"><span className="chip-dot" />Siste</span>}
                 </div>
                 <div className="prose" style={{ fontSize: '.9375rem', lineHeight: 1.6, maxWidth: 'none' }}>
-                  <MDXRemote source={e.content} options={mdxOptions} />
+                  <SafeMdx source={e.content} />
                 </div>
               </article>
             ))}

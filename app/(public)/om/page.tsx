@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiArrowUpRight } from 'react-icons/fi'
-import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
-import { mdxOptions } from '@/lib/mdx'
+import { SafeMdx } from '@/components/SafeMdx'
 
 const siteUrlForMeta = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 const ogImage = `/api/og?title=${encodeURIComponent('Om Marcus Jenshaug')}&type=${encodeURIComponent('Om')}`
@@ -103,7 +102,7 @@ export default async function OmPage() {
           </h1>
           <div className="prose" style={{ maxWidth: 'none' }}>
             {s.bio_long ? (
-              <MDXRemote source={s.bio_long} options={mdxOptions} />
+              <SafeMdx source={s.bio_long} />
             ) : (
               <p className="muted">Innhold kommer snart.</p>
             )}

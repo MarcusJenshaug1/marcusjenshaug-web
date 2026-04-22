@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { MDXRemote } from 'next-mdx-remote/rsc'
 import { FiExternalLink, FiGithub } from 'react-icons/fi'
 import { getProjectBySlug } from '@/lib/projects'
 import { PROJECT_STATUS_LABELS } from '@/lib/types/app'
-import { mdxOptions } from '@/lib/mdx'
+import { SafeMdx } from '@/components/SafeMdx'
 
 type Params = { slug: string }
 type Search = { preview?: string }
@@ -143,7 +142,7 @@ export default async function ProjectDetailPage({
         )}
 
         <div className="prose" style={{ maxWidth: 'none' }}>
-          <MDXRemote source={project.content} options={mdxOptions} />
+          <SafeMdx source={project.content} />
         </div>
       </div>
 

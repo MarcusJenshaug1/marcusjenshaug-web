@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getPostBySlug } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
-import { mdxOptions, readingTime } from '@/lib/mdx'
+import { readingTime } from '@/lib/mdx'
+import { SafeMdx } from '@/components/SafeMdx'
 
 type Params = { slug: string }
 type Search = { preview?: string }
@@ -143,7 +143,7 @@ export default async function PostDetailPage({
         </p>
 
         <div className="prose" style={{ maxWidth: 'none' }}>
-          <MDXRemote source={post.content} options={mdxOptions} />
+          <SafeMdx source={post.content} />
         </div>
 
         <div style={{ marginTop: '3rem', padding: '1.5rem', background: 'var(--bg-sunken)', borderRadius: '8px' }}>
