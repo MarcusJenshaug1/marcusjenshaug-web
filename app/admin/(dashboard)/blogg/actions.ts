@@ -120,6 +120,17 @@ export async function updatePost(
   return { success: true }
 }
 
+export async function autosavePost(id: string, formData: FormData): Promise<{ error?: string } | void> {
+  await requireAdmin()
+  const parsed = parseForm(formData)
+  if (!parsed.success) return { error: parsed.error.issues[0].message }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('posts').update(toDbValues(parsed.data)).eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath(`/admin/blogg/${id}`)
+}
+
 export async function togglePublish(id: string, currentDraft: boolean) {
   await requireAdmin()
   const admin = createAdminClient()

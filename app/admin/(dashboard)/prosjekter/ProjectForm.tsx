@@ -1,13 +1,16 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { FiSave, FiExternalLink, FiTrash2 } from 'react-icons/fi'
 import { slugify } from '@/lib/slug'
-import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, type Project, type ProjectStatus } from '@/lib/types/app'
+import { useAutosave } from '@/lib/hooks/useAutosave'
+import { ImageUploader } from '@/components/ui/ImageUploader'
+import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, type Project } from '@/lib/types/app'
 import {
   createProject,
   updateProject,
+  autosaveProject,
   deleteProject,
   type ProjectFormState,
 } from './actions'
@@ -51,13 +54,21 @@ export function ProjectForm({ project }: Props) {
   const [title, setTitle] = useState(project?.title ?? '')
   const [slug, setSlug] = useState(project?.slug ?? '')
   const [slugTouched, setSlugTouched] = useState(Boolean(project))
+  const [coverImage, setCoverImage] = useState(project?.cover_image ?? '')
 
   useEffect(() => {
     if (!slugTouched) setSlug(slugify(title))
   }, [title, slugTouched])
 
+  const formRef = useRef<HTMLFormElement>(null)
+  const autoSaveFn = useCallback(
+    (fd: FormData) => (project ? autosaveProject(project.id, fd) : Promise.resolve()),
+    [project]
+  )
+  const { dirty, savedAt, markDirty } = useAutosave(formRef, autoSaveFn)
+
   return (
-    <form action={action}>
+    <form ref={formRef} action={action} onChange={isEdit ? markDirty : undefined}>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
         <div>
           <Field label="Tittel" htmlFor="title">
@@ -155,8 +166,16 @@ export function ProjectForm({ project }: Props) {
             <Field label="Repo-URL" htmlFor="repo_url">
               <input id="repo_url" name="repo_url" type="url" defaultValue={project?.repo_url ?? ''} style={inputStyle} placeholder="https://github.com/…" />
             </Field>
-            <Field label="Cover-bilde (URL)" htmlFor="cover_image">
-              <input id="cover_image" name="cover_image" defaultValue={project?.cover_image ?? ''} style={inputStyle} placeholder="/bilder/…" />
+            <Field label="Cover-bilde" htmlFor="cover_image">
+              <ImageUploader
+                name="cover_image"
+                value={coverImage}
+                onChange={(v) => {
+                  setCoverImage(v)
+                  markDirty()
+                }}
+                folder="prosjekter"
+              />
             </Field>
           </section>
 
@@ -183,9 +202,17 @@ export function ProjectForm({ project }: Props) {
             <DeleteButton id={project.id} title={project.title} />
           </>
         )}
-        <div style={{ marginLeft: 'auto' }}>
-          {state.success && <span className="muted" style={{ fontSize: '.875rem' }}>✓ Lagret</span>}
-          {state.error && <span style={{ color: 'var(--accent)', fontSize: '.875rem' }}>{state.error}</span>}
+        <div style={{ marginLeft: 'auto', fontSize: '.875rem' }}>
+          {state.success && <span className="muted">✓ Lagret</span>}
+          {state.error && <span style={{ color: 'var(--accent)' }}>{state.error}</span>}
+          {!state.error && !state.success && isEdit && dirty && (
+            <span className="dim mono" style={{ fontSize: '.75rem' }}>• ulagrede endringer</span>
+          )}
+          {!state.error && !state.success && isEdit && !dirty && savedAt && (
+            <span className="dim mono" style={{ fontSize: '.75rem' }}>
+              autolagret {savedAt.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
         </div>
       </div>
     </form>
