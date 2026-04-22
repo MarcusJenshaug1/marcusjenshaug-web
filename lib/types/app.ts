@@ -34,7 +34,7 @@ export type Post = {
   draft: boolean
 }
 
-export const PROJECT_STATUSES = ['aktiv', 'i-drift', 'side', 'arkivert', 'levert'] as const
+export const PROJECT_STATUSES = ['aktiv', 'i-drift', 'side', 'avsluttet', 'levert', 'arkivert'] as const
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number]
 
@@ -42,8 +42,9 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   'aktiv': 'Aktiv',
   'i-drift': 'I drift',
   'side': 'Side',
-  'arkivert': 'Arkivert',
+  'avsluttet': 'Avsluttet',
   'levert': 'Levert',
+  'arkivert': 'Arkivert',
 }
 
 export type Project = {
