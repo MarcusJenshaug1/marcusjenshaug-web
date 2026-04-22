@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { FiExternalLink } from 'react-icons/fi'
+import { getUsesItems, groupByCategory } from '@/lib/uses'
 
 export const metadata: Metadata = {
   title: 'Uses',
@@ -6,7 +8,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/uses' },
 }
 
-export default function UsesPage() {
+export default async function UsesPage() {
+  const items = await getUsesItems()
+  const groups = groupByCategory(items)
+  const categories = Object.keys(groups)
+
   return (
     <section style={{ padding: '3rem 2rem' }}>
       <div className="container" style={{ maxWidth: '48rem' }}>
@@ -17,9 +23,48 @@ export default function UsesPage() {
         <p className="muted" style={{ marginTop: '.75rem', maxWidth: '34rem' }}>
           Inspirert av <a href="https://usesthis.com" className="link">usesthis.com</a>. Jeg prøver å holde dette ærlig: kun ting jeg bruker daglig eller ukentlig.
         </p>
-        <div className="card" style={{ marginTop: '2rem' }}>
-          <p className="muted">Liste kommer snart.</p>
-        </div>
+
+        {categories.length === 0 ? (
+          <div className="card" style={{ marginTop: '2rem' }}>
+            <p className="muted">Liste kommer snart.</p>
+          </div>
+        ) : (
+          <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            {categories.map((cat) => (
+              <section key={cat}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '.75rem', marginBottom: '1rem' }}>
+                  <h2 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, fontSize: '1.5rem' }}>{cat}</h2>
+                  <span className="mono dim" style={{ fontSize: '.75rem' }}>· {groups[cat].length}</span>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
+                  {groups[cat].map((it) => (
+                    <li
+                      key={it.id}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '14rem 1fr auto',
+                        gap: '1rem',
+                        padding: '.75rem 0',
+                        borderTop: '1px solid var(--rule)',
+                        alignItems: 'baseline',
+                      }}
+                    >
+                      <div style={{ fontWeight: 500 }}>{it.name}</div>
+                      <div className="muted" style={{ fontSize: '.9375rem' }}>{it.description ?? ''}</div>
+                      {it.url ? (
+                        <a href={it.url} target="_blank" rel="noopener noreferrer" className="dim" style={{ fontSize: '.8125rem' }}>
+                          <FiExternalLink />
+                        </a>
+                      ) : (
+                        <span />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
+import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects } from '@/lib/projects'
 import { getLatestPosts } from '@/lib/posts'
-import { readingTime } from '@/lib/mdx'
+import { getLatestNowEntry } from '@/lib/now'
+import { mdxOptions, readingTime } from '@/lib/mdx'
 import { OsloClock } from '@/components/OsloClock'
 import { ProjectCard } from '@/components/ProjectCard'
 import { FiClock } from 'react-icons/fi'
@@ -14,10 +16,11 @@ function socialByPlatform(links: { platform: string; url: string }[], name: stri
 }
 
 export default async function HomePage() {
-  const [s, featured, posts] = await Promise.all([
+  const [s, featured, posts, latestNow] = await Promise.all([
     getSiteSettings(),
     getFeaturedProjects(),
     getLatestPosts(4),
+    getLatestNowEntry(),
   ])
   const github = socialByPlatform(s.social_links, 'github')
   const linkedin = socialByPlatform(s.social_links, 'linkedin')
@@ -146,9 +149,23 @@ export default async function HomePage() {
               <h2>Akkurat nå</h2>
               <Link href="/na" className="muted" style={{ fontSize: '.8125rem' }}>Arkiv →</Link>
             </div>
-            <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
-              <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
-            </div>
+            {latestNow ? (
+              <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.75rem' }}>
+                  <span className="eyebrow">Sist oppdatert</span>
+                  <span className="mono dim" style={{ fontSize: '.75rem' }}>
+                    {new Date(latestNow.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+                <div className="prose" style={{ fontSize: '.9375rem', lineHeight: 1.6, maxWidth: 'none' }}>
+                  <MDXRemote source={latestNow.content} options={mdxOptions} />
+                </div>
+              </div>
+            ) : (
+              <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
+                <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
