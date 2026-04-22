@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getPostBySlug } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -138,9 +139,32 @@ export default async function PostDetailPage({
           {post.title}
         </h1>
 
-        <p style={{ fontSize: '1.125rem', color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: '2.5rem' }}>
+        <p style={{ fontSize: '1.125rem', color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: post.cover_image ? '2rem' : '2.5rem' }}>
           {post.description}
         </p>
+
+        {post.cover_image && (
+          <div
+            style={{
+              position: 'relative',
+              aspectRatio: '16 / 9',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              border: '1px solid var(--rule)',
+              marginBottom: '2.5rem',
+              background: 'var(--bg-sunken)',
+            }}
+          >
+            <Image
+              src={post.cover_image}
+              alt={post.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 704px"
+              priority
+              style={{ objectFit: 'cover' }}
+            />
+          </div>
+        )}
 
         <div className="prose" style={{ maxWidth: 'none' }}>
           <SafeMdx source={post.content} />
