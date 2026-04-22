@@ -1,7 +1,7 @@
 import rehypePrettyCode, { type Options } from 'rehype-pretty-code'
 
 const prettyCodeOptions: Partial<Options> = {
-  theme: 'github-light-default',
+  theme: 'github-dark-default',
   keepBackground: false,
 }
 
