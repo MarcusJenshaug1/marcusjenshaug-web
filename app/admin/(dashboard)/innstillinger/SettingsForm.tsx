@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { FormField } from '@/components/ui/FormField'
-import type { SiteSettings, SocialLink } from '@/lib/types/database'
+import type { SiteSettings, SocialLink } from '@/lib/types/app'
 import { updateSettings, type SettingsState } from './actions'
 
 const initial: SettingsState = {}

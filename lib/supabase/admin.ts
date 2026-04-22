@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/lib/types/database'
+import type { AppDatabase } from '@/lib/types/app'
 
 export function createAdminClient() {
-  return createClient<Database>(
+  return createClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {

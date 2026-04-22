@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import type { SiteSettings } from '@/lib/types/database'
+import type { SiteSettings } from '@/lib/types/app'
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const supabase = await createClient()

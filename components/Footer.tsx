@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { SiteSettings } from '@/lib/types/database'
+import type { SiteSettings } from '@/lib/types/app'
 
 type Props = {
   settings: SiteSettings
