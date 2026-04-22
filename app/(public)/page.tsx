@@ -2,14 +2,16 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
+import { getFeaturedProjects } from '@/lib/projects'
 import { OsloClock } from '@/components/OsloClock'
+import { ProjectCard } from '@/components/ProjectCard'
 
 function socialByPlatform(links: { platform: string; url: string }[], name: string) {
   return links.find((l) => l.platform.toLowerCase() === name)
 }
 
 export default async function HomePage() {
-  const s = await getSiteSettings()
+  const [s, featured] = await Promise.all([getSiteSettings(), getFeaturedProjects()])
   const github = socialByPlatform(s.social_links, 'github')
   const linkedin = socialByPlatform(s.social_links, 'linkedin')
   const available = s.available_for_work
@@ -87,7 +89,15 @@ export default async function HomePage() {
             <h2>Utvalgte prosjekter</h2>
             <Link href="/prosjekter" className="muted" style={{ fontSize: '.8125rem' }}>Alle prosjekter →</Link>
           </div>
-          <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+          {featured.length === 0 ? (
+            <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+              {featured.slice(0, 3).map((p) => (
+                <ProjectCard key={p.id} project={p} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

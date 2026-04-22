@@ -34,6 +34,18 @@ export type Post = {
   draft: boolean
 }
 
+export const PROJECT_STATUSES = ['aktiv', 'i-drift', 'side', 'arkivert', 'levert'] as const
+
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number]
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  'aktiv': 'Aktiv',
+  'i-drift': 'I drift',
+  'side': 'Side',
+  'arkivert': 'Arkivert',
+  'levert': 'Levert',
+}
+
 export type Project = {
   id: string
   slug: string
@@ -45,6 +57,7 @@ export type Project = {
   live_url: string | null
   repo_url: string | null
   role: string | null
+  status: ProjectStatus
   featured: boolean
   order_index: number
   started_at: string | null
