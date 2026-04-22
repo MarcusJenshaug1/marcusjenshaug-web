@@ -2,20 +2,17 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-      <p className="text-xs uppercase tracking-[0.18em] text-accent-ink font-mono font-medium mb-4">
-        404
-      </p>
-      <h1 className="mb-4">Fant ikke siden</h1>
-      <p className="text-ink-3 mb-8 max-w-md">
-        Lenken er brutt, eller innholdet er flyttet. Prøv forsiden.
-      </p>
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md bg-ink text-bg-elev hover:bg-ink-2 transition-colors"
-      >
-        Til forsiden
-      </Link>
-    </div>
+    <section style={{ padding: '6rem 2rem' }}>
+      <div className="container" style={{ maxWidth: '32rem', textAlign: 'center' }}>
+        <div className="eyebrow" style={{ marginBottom: '1rem' }}>404 · SIDE IKKE FUNNET</div>
+        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1rem' }}>
+          Fant ikke siden.
+        </h1>
+        <p className="muted" style={{ marginBottom: '2rem' }}>
+          Lenken er brutt, eller innholdet er flyttet.
+        </p>
+        <Link href="/" className="btn btn-primary">Til forsiden</Link>
+      </div>
+    </section>
   )
 }

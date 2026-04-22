@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
+import { FiArrowUpRight } from 'react-icons/fi'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
 
@@ -35,71 +37,87 @@ export default async function OmPage() {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Forside', item: siteUrl },
+      { '@type': 'ListItem', position: 1, name: 'Hjem', item: siteUrl },
       { '@type': 'ListItem', position: 2, name: 'Om', item: `${siteUrl}/om` },
     ],
   }
 
   return (
-    <article className="max-w-[var(--reading-w)]">
-      <header className="mb-10 flex flex-col md:flex-row gap-8 md:items-start">
-        {s.image_url && (
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-bg-sunken shrink-0">
-            <Image
-              src={s.image_url}
-              alt={s.full_name}
-              width={128}
-              height={128}
-              className="w-full h-full object-cover"
-            />
+    <section style={{ padding: '3rem 2rem' }}>
+      <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '3rem', alignItems: 'start' }}>
+        <aside style={{ position: 'sticky', top: '5rem' }}>
+          {s.image_url && (
+            <div style={{ aspectRatio: '4/5', overflow: 'hidden', borderRadius: '6px', border: '1px solid var(--rule)', position: 'relative' }}>
+              <Image
+                src={s.image_url}
+                alt={s.full_name}
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+          )}
+          <div style={{ marginTop: '1rem' }}>
+            <div style={{ fontWeight: 600, letterSpacing: '-.01em' }}>{s.full_name}</div>
+            <div className="muted" style={{ fontSize: '.875rem' }}>{s.headline}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.25rem', marginTop: '.875rem', fontSize: '.8125rem', color: 'var(--ink-3)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Bosted</span><span>{s.location ?? 'Norge'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Jobb</span><span>Redi AS</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Status</span>
+                <span style={{ color: s.available_for_work ? 'oklch(0.55 0.16 145)' : 'var(--ink-3)' }}>
+                  ● {s.available_for_work ? (s.availability_note || 'Åpen for samtaler') : 'Opptatt'}
+                </span>
+              </div>
+            </div>
+            {s.cv_url && (
+              <a href={s.cv_url} className="btn btn-sm" style={{ marginTop: '.875rem', width: '100%', justifyContent: 'center' }} target="_blank" rel="noopener noreferrer">
+                Last ned CV <FiArrowUpRight />
+              </a>
+            )}
           </div>
-        )}
+        </aside>
         <div>
-          <p className="text-xs uppercase tracking-[0.14em] text-ink-3 font-medium mb-3">Om</p>
-          <h1 className="mb-3">{s.full_name}</h1>
-          <p className="text-ink-3">{s.headline}</p>
-        </div>
-      </header>
+          <div className="eyebrow" style={{ marginBottom: '.75rem' }}>OM · PERSON · @id=#person</div>
+          <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1.5rem' }}>
+            {s.bio_short || 'Jeg bygger digitale verktøy.'}
+          </h1>
+          <div className="prose" style={{ maxWidth: 'none' }}>
+            {s.bio_long ? (
+              <MDXRemote source={s.bio_long} />
+            ) : (
+              <p className="muted">Innhold kommer snart.</p>
+            )}
+          </div>
 
-      <div className="prose text-[1.0625rem] leading-[1.7] text-ink-2">
-        {s.bio_long ? (
-          <MDXRemote source={s.bio_long} />
-        ) : (
-          <p className="text-ink-4">Innhold kommer snart.</p>
-        )}
+          <div style={{ marginTop: '2rem' }}>
+            <h2 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, fontSize: '1.375rem', marginBottom: '.5rem' }}>Kontakt</h2>
+            <p className="muted">
+              Kortest vei er <a href={`mailto:${s.email}`} className="link">{s.email}</a>. Jeg svarer ofte innen ett døgn. Eller du kan bruke <Link href="/kontakt" className="link">skjemaet</Link>.
+            </p>
+          </div>
+
+          {s.social_links.length > 0 && (
+            <div style={{ marginTop: '3rem', padding: '1.25rem 1.375rem', background: 'var(--bg-sunken)', borderRadius: '8px', border: '1px solid var(--rule)' }}>
+              <div className="eyebrow" style={{ marginBottom: '.5rem' }}>Elsewhere · sameAs</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
+                {s.social_links.map((link) => (
+                  <a key={link.url} href={link.url} target="_blank" rel="me noopener noreferrer" className="chip" style={{ padding: '.375rem .625rem', textTransform: 'capitalize' }}>
+                    <FiArrowUpRight style={{ fontSize: '.75em', opacity: 0.6 }} /> {link.platform}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {s.social_links.length > 0 && (
-        <section className="mt-12 pt-8 border-t border-rule">
-          <h2 className="text-xs uppercase tracking-[0.14em] text-ink-3 font-medium mb-4">
-            Finn meg andre steder
-          </h2>
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            {s.social_links.map((link) => (
-              <li key={link.url}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="me noopener noreferrer"
-                  className="text-ink-2 hover:text-accent-ink underline decoration-rule-strong underline-offset-[3px] decoration-1"
-                >
-                  <span className="capitalize">{link.platform}</span>
-                  {link.username && <span className="text-ink-4 ml-1">@{link.username}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-    </article>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+    </section>
   )
 }

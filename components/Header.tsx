@@ -1,7 +1,10 @@
-import Link from 'next/link'
+'use client'
 
-const navItems = [
-  { href: '/', label: 'Forside' },
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const nav = [
+  { href: '/', label: 'Hjem' },
   { href: '/prosjekter', label: 'Prosjekter' },
   { href: '/blogg', label: 'Blogg' },
   { href: '/na', label: 'Nå' },
@@ -11,24 +14,25 @@ const navItems = [
 ]
 
 export function Header() {
+  const pathname = usePathname()
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href)
+
   return (
-    <header className="sticky top-0 z-20 bg-bg border-b border-rule">
-      <div className="flex items-center justify-between px-8 py-5 max-w-[var(--max-w)] mx-auto">
-        <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <span className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
-          Marcus Jenshaug
-        </Link>
-        <nav className="flex gap-6 text-sm">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-ink-3 hover:text-ink transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+    <header className="site-header">
+      <Link href="/" className="brand">
+        <span className="dot" aria-hidden="true" />
+        <span>marcus<span style={{ color: 'var(--ink-4)' }}>.</span>no</span>
+      </Link>
+      <nav>
+        {nav.map((n) => (
+          <Link key={n.href} href={n.href} className={isActive(n.href) ? 'active' : ''}>
+            {n.label}
+          </Link>
+        ))}
+      </nav>
+      <div className="right">
+        <span className="mono" style={{ fontSize: '.75rem', color: 'var(--ink-4)' }}>nb-NO</span>
       </div>
     </header>
   )

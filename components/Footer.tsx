@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { FiArrowUpRight } from 'react-icons/fi'
 import type { SiteSettings } from '@/lib/types/app'
 
 type Props = {
@@ -9,58 +10,55 @@ export function Footer({ settings }: Props) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="mt-24 px-8 pt-12 pb-8 border-t border-rule text-ink-3 text-sm">
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-8 max-w-[var(--max-w)] mx-auto">
+    <footer className="site-footer">
+      <div className="grid">
         <div>
-          <h4 className="text-xs uppercase tracking-[0.1em] text-ink-4 font-medium mb-3.5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '.5rem' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />
             {settings.full_name}
-          </h4>
-          <p className="text-ink-2 max-w-sm">{settings.bio_short}</p>
+          </div>
+          <p style={{ color: 'var(--ink-3)', maxWidth: '22rem', fontSize: '.8125rem' }}>
+            {settings.bio_short || 'Fullstack-utvikler i Redi AS.'}
+          </p>
         </div>
         <div>
-          <h4 className="text-xs uppercase tracking-[0.1em] text-ink-4 font-medium mb-3.5">
-            Sider
-          </h4>
-          <ul className="flex flex-col gap-2">
-            <li><Link href="/om" className="text-ink-2 hover:text-ink">Om</Link></li>
-            <li><Link href="/prosjekter" className="text-ink-2 hover:text-ink">Prosjekter</Link></li>
-            <li><Link href="/blogg" className="text-ink-2 hover:text-ink">Blogg</Link></li>
-            <li><Link href="/kontakt" className="text-ink-2 hover:text-ink">Kontakt</Link></li>
+          <h4>Innhold</h4>
+          <ul>
+            <li><Link href="/blogg">Blogg</Link></li>
+            <li><Link href="/prosjekter">Prosjekter</Link></li>
+            <li><Link href="/na">Nå</Link></li>
+            <li><Link href="/uses">Uses</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-xs uppercase tracking-[0.1em] text-ink-4 font-medium mb-3.5">
-            Koblinger
-          </h4>
-          <ul className="flex flex-col gap-2">
+          <h4>Koble til</h4>
+          <ul>
             {settings.social_links.map((link) => (
               <li key={link.url}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-ink-2 hover:text-ink capitalize"
-                >
-                  {link.platform}
+                <a href={link.url} target="_blank" rel="me noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.25rem' }}>
+                  <span style={{ textTransform: 'capitalize' }}>{link.platform}</span>
+                  <FiArrowUpRight style={{ fontSize: '.7em', opacity: 0.6 }} />
                 </a>
               </li>
             ))}
+            {settings.email && (
+              <li><a href={`mailto:${settings.email}`}>{settings.email}</a></li>
+            )}
           </ul>
         </div>
         <div>
-          <h4 className="text-xs uppercase tracking-[0.1em] text-ink-4 font-medium mb-3.5">
-            Feeds
-          </h4>
-          <ul className="flex flex-col gap-2">
-            <li><Link href="/rss.xml" className="text-ink-2 hover:text-ink">RSS</Link></li>
-            <li><Link href="/feed.json" className="text-ink-2 hover:text-ink">JSON Feed</Link></li>
-            <li><Link href="/sitemap.xml" className="text-ink-2 hover:text-ink">Sitemap</Link></li>
+          <h4>Feeds</h4>
+          <ul>
+            <li><Link href="/rss.xml">RSS</Link></li>
+            <li><Link href="/feed.json">JSON Feed</Link></li>
+            <li><Link href="/llms.txt">llms.txt</Link></li>
+            <li><Link href="/sitemap.xml">Sitemap</Link></li>
           </ul>
         </div>
       </div>
-      <div className="max-w-[var(--max-w)] mx-auto mt-10 pt-6 border-t border-rule flex justify-between text-[0.8125rem] text-ink-4">
+      <div className="meta">
         <span>© {year} {settings.full_name}</span>
-        <span className="font-mono">marcusjenshaug.no</span>
+        <span className="mono">Bygget med Next.js · Hostet på Vercel</span>
       </div>
     </footer>
   )

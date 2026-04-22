@@ -10,9 +10,7 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <>
       <Header />
-      <main id="main" className="max-w-[var(--max-w)] mx-auto px-8 py-12">
-        {children}
-      </main>
+      <main id="main">{children}</main>
       <Footer settings={settings} />
     </>
   )

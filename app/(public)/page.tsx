@@ -1,75 +1,118 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiArrowRight } from 'react-icons/fi'
+import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
+import { OsloClock } from '@/components/OsloClock'
+
+function socialByPlatform(links: { platform: string; url: string }[], name: string) {
+  return links.find((l) => l.platform.toLowerCase() === name)
+}
 
 export default async function HomePage() {
   const s = await getSiteSettings()
+  const github = socialByPlatform(s.social_links, 'github')
+  const linkedin = socialByPlatform(s.social_links, 'linkedin')
+  const available = s.available_for_work
 
   return (
-    <div className="space-y-16">
-      <section className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 items-start">
-        <div className="max-w-[var(--reading-w)]">
-          <p className="eyebrow mb-4 text-[0.6875rem] uppercase tracking-[0.18em] text-ink-4 font-mono font-medium">
-            {s.location ?? 'Norge'}
-            {s.available_for_work && s.availability_note && (
-              <> · <span className="text-accent-ink">{s.availability_note}</span></>
+    <>
+      <section style={{ padding: '3.5rem 2rem 3rem' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '3rem', alignItems: 'start' }}>
+          <div>
+            <div className="eyebrow" style={{ marginBottom: '1rem' }}>
+              {available && (
+                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'oklch(0.70 0.16 145)', marginRight: 8, verticalAlign: 'middle' }} />
+              )}
+              {available ? (s.availability_note || 'Tilgjengelig for samtaler') : 'Ikke tilgjengelig akkurat nå'}
+              {' · Oslo '}<OsloClock />
+            </div>
+            <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1.25rem' }}>
+              {s.full_name}.<br />
+              <span style={{ color: 'var(--ink-3)' }}>{s.headline || 'Fullstack-utvikler'}</span>
+            </h1>
+            <p style={{ fontSize: '1.0625rem', color: 'var(--ink-2)', maxWidth: '36rem', lineHeight: 1.65, marginTop: '1.5rem' }}>
+              {s.bio_short || 'Notater, prosjekter og verktøy fra arbeidet mitt som fullstack-utvikler.'}
+            </p>
+            <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
+              <Link href="/prosjekter" className="btn btn-primary"><FiGrid /> Se prosjekter</Link>
+              <Link href="/blogg" className="btn"><FiFile /> Les blogg</Link>
+              <Link href="/kontakt" className="btn btn-ghost">Ta kontakt <FiArrowRight style={{ fontSize: '.85em' }} /></Link>
+            </div>
+            {(github || linkedin) && (
+              <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2rem', alignItems: 'center' }}>
+                {github && (
+                  <a href={github.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
+                    <FiGithub /> {github.url.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+                {linkedin && (
+                  <a href={linkedin.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
+                    <FiLinkedin /> {linkedin.url.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+              </div>
             )}
-          </p>
-          <h1 className="mb-6">{s.headline || 'Fullstack-utvikler'}</h1>
-          <p className="text-lg text-ink-2 leading-relaxed">{s.bio_short}</p>
-          <div className="flex gap-3 mt-8">
-            <Link
-              href="/prosjekter"
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md bg-ink text-bg-elev hover:bg-ink-2 transition-colors"
-            >
-              Se prosjekter <FiArrowRight size={14} />
-            </Link>
-            <Link
-              href="/kontakt"
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md border border-rule-strong hover:bg-bg-sunken transition-colors"
-            >
-              Ta kontakt
-            </Link>
+          </div>
+          <aside>
+            {s.image_url && (
+              <>
+                <div style={{ position: 'relative', aspectRatio: '4/5', background: 'var(--bg-sunken)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--rule)' }}>
+                  <Image
+                    src={s.image_url}
+                    alt={`Portrett av ${s.full_name}`}
+                    fill
+                    sizes="280px"
+                    priority
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '.75rem .875rem', background: 'linear-gradient(to top, rgba(0,0,0,.7), transparent)', color: '#fff', fontFamily: 'var(--ff-mono)', fontSize: '.6875rem', letterSpacing: '.05em' }}>
+                    MARCUS · NO
+                  </div>
+                </div>
+                <div className="mono" style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--ink-4)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>↓ SCROLL</span>
+                  <span>001 / 007</span>
+                </div>
+              </>
+            )}
+          </aside>
+        </div>
+      </section>
+
+      <hr className="rule" style={{ margin: '0 2rem', maxWidth: 'var(--max-w)' }} />
+
+      <section style={{ padding: '2.5rem 2rem' }}>
+        <div className="container">
+          <div className="section-head">
+            <h2>Utvalgte prosjekter</h2>
+            <Link href="/prosjekter" className="muted" style={{ fontSize: '.8125rem' }}>Alle prosjekter →</Link>
+          </div>
+          <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+        </div>
+      </section>
+
+      <hr className="rule" style={{ margin: '0 2rem', maxWidth: 'var(--max-w)' }} />
+
+      <section style={{ padding: '2.5rem 2rem' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+          <div>
+            <div className="section-head">
+              <h2>Siste notater</h2>
+              <Link href="/blogg" className="muted" style={{ fontSize: '.8125rem' }}>Alle →</Link>
+            </div>
+            <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+          </div>
+          <div>
+            <div className="section-head">
+              <h2>Akkurat nå</h2>
+              <Link href="/na" className="muted" style={{ fontSize: '.8125rem' }}>Arkiv →</Link>
+            </div>
+            <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
+              <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
+            </div>
           </div>
         </div>
-        {s.image_url && (
-          <div className="w-40 h-40 rounded-full overflow-hidden bg-bg-sunken shrink-0">
-            <Image
-              src={s.image_url}
-              alt={s.full_name}
-              width={160}
-              height={160}
-              priority
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
       </section>
-
-      <section>
-        <header className="flex items-baseline justify-between mb-6">
-          <h2 className="text-xs uppercase tracking-[0.14em] text-ink-3 font-medium">
-            Utvalgte prosjekter
-          </h2>
-          <Link href="/prosjekter" className="text-[0.8125rem] text-ink-3 hover:text-ink">
-            Alle →
-          </Link>
-        </header>
-        <p className="text-sm text-ink-4">Kommer snart.</p>
-      </section>
-
-      <section>
-        <header className="flex items-baseline justify-between mb-6">
-          <h2 className="text-xs uppercase tracking-[0.14em] text-ink-3 font-medium">
-            Siste innlegg
-          </h2>
-          <Link href="/blogg" className="text-[0.8125rem] text-ink-3 hover:text-ink">
-            Alle →
-          </Link>
-        </header>
-        <p className="text-sm text-ink-4">Kommer snart.</p>
-      </section>
-    </div>
+    </>
   )
 }
