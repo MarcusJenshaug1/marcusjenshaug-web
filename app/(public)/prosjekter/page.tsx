@@ -39,7 +39,7 @@ export default async function ProsjekterPage({
   ]
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
       <div className="container">
         <div className="eyebrow" style={{ marginBottom: '.75rem' }}>CREATIVEWORK · ARKIV</div>
         <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, maxWidth: '32rem' }}>
@@ -50,8 +50,8 @@ export default async function ProsjekterPage({
         </p>
 
         {all.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginTop: '2rem', marginBottom: '1.25rem' }}>
-            <div style={{ display: 'inline-flex', border: '1px solid var(--rule)', borderRadius: '6px', overflow: 'hidden' }}>
+          <div className="flex flex-wrap items-center gap-3 mt-8 mb-5">
+            <div className="flex flex-wrap gap-1 border border-rule rounded-md p-0.5 overflow-hidden">
               {filters.map((f) => {
                 const isActive = activeStatus === f.key
                 return (
@@ -63,6 +63,7 @@ export default async function ProsjekterPage({
                       color: isActive ? 'var(--bg)' : 'var(--ink-3)',
                       padding: '.375rem .75rem',
                       fontSize: '.8125rem',
+                      borderRadius: '4px',
                     }}
                   >
                     {f.label}
@@ -71,7 +72,7 @@ export default async function ProsjekterPage({
                 )
               })}
             </div>
-            <span className="dim mono" style={{ fontSize: '.75rem', marginLeft: 'auto' }}>sortert: utvalgte først</span>
+            <span className="dim mono ml-auto hidden sm:inline" style={{ fontSize: '.75rem' }}>sortert: utvalgte først</span>
           </div>
         )}
 
@@ -80,27 +81,20 @@ export default async function ProsjekterPage({
             <p className="muted">Ingen prosjekter {activeStatus === 'alle' ? 'enda' : `i kategorien «${PROJECT_STATUS_LABELS[activeStatus]}»`}.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gap: 0 }}>
+          <div>
             {list.map((p, i) => (
               <Link
                 key={p.id}
                 href={`/prosjekter/${p.slug}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '3rem 1fr auto auto',
-                  gap: '1.5rem',
-                  alignItems: 'baseline',
-                  padding: '1.25rem 0',
-                  borderTop: '1px solid var(--rule)',
-                  borderBottom: i === list.length - 1 ? '1px solid var(--rule)' : 'none',
-                  transition: 'padding-left .15s',
-                }}
                 className="project-row"
+                style={{
+                  borderBottom: i === list.length - 1 ? '1px solid var(--rule)' : undefined,
+                }}
               >
                 <span className="mono dim" style={{ fontSize: '.75rem' }}>#{String(i + 1).padStart(2, '0')}</span>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '.75rem', flexWrap: 'wrap' }}>
-                    <h3 style={{ fontSize: '1.125rem' }}>{p.title}</h3>
+                    <h3 className="project-title" style={{ fontSize: '1.125rem' }}>{p.title}</h3>
                     <span className="chip">{PROJECT_STATUS_LABELS[p.status]}</span>
                     {p.featured && <span className="chip chip-accent">★ Utvalgt</span>}
                   </div>
@@ -113,8 +107,8 @@ export default async function ProsjekterPage({
                     </div>
                   )}
                 </div>
-                <span className="mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>{p.role ?? ''}</span>
-                <span className="mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>
+                <span className="project-meta mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>{p.role ?? ''}</span>
+                <span className="project-meta mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>
                   {p.started_at ? new Date(p.started_at).getFullYear() : ''}
                 </span>
               </Link>

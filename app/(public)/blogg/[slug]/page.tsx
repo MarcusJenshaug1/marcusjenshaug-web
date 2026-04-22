@@ -112,7 +112,7 @@ export default async function PostDetailPage({
   }
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
       <div className="container" style={{ maxWidth: '44rem' }}>
         <nav className="mono dim" style={{ fontSize: '.75rem', marginBottom: '1.5rem' }}>
           <Link href="/" style={{ color: 'inherit' }}>hjem</Link> /{' '}

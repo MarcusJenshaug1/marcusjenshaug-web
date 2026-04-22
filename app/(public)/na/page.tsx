@@ -21,7 +21,7 @@ export default async function NaPage() {
   const entries = await getNowEntries()
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
       <div className="container" style={{ maxWidth: '44rem' }}>
         <div className="eyebrow" style={{ marginBottom: '.75rem' }}>
           /NA · NOW-PAGE ·{' '}

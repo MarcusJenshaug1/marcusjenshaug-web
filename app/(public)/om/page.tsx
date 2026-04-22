@@ -57,9 +57,9 @@ export default async function OmPage() {
   }
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '3rem', alignItems: 'start' }}>
-        <aside style={{ position: 'sticky', top: '5rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
+      <div className="container grid gap-8 md:gap-12 items-start grid-cols-1 md:grid-cols-[1fr_2fr]">
+        <aside className="md:sticky md:top-20 max-w-sm w-full mx-auto md:mx-0">
           {s.image_url && (
             <div style={{ aspectRatio: '4/5', overflow: 'hidden', borderRadius: '6px', border: '1px solid var(--rule)', position: 'relative' }}>
               <Image
@@ -80,6 +80,9 @@ export default async function OmPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Jobb</span><span>Redi AS</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Fokus</span><span>Next.js · Supabase</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Status</span>

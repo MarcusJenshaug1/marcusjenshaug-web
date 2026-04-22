@@ -20,8 +20,8 @@ export default async function KontaktPage() {
   const s = await getSiteSettings()
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', maxWidth: '56rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
+      <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2" style={{ maxWidth: '56rem' }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: '.75rem' }}>/KONTAKT</div>
           <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1rem' }}>

@@ -14,7 +14,7 @@ export default async function UsesPage() {
   const categories = Object.keys(groups)
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
       <div className="container" style={{ maxWidth: '48rem' }}>
         <div className="eyebrow" style={{ marginBottom: '.75rem' }}>/USES · SETUP</div>
         <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500 }}>
@@ -40,17 +40,15 @@ export default async function UsesPage() {
                   {groups[cat].map((it) => (
                     <li
                       key={it.id}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '14rem 1fr auto',
-                        gap: '1rem',
-                        padding: '.75rem 0',
-                        borderTop: '1px solid var(--rule)',
-                        alignItems: 'baseline',
-                      }}
+                      className="grid gap-x-4 gap-y-1 py-3 items-baseline border-t border-rule grid-cols-[1fr_auto] md:grid-cols-[14rem_1fr_auto]"
                     >
                       <div style={{ fontWeight: 500 }}>{it.name}</div>
-                      <div className="muted" style={{ fontSize: '.9375rem' }}>{it.description ?? ''}</div>
+                      <div
+                        className="muted col-span-2 md:col-span-1 md:order-none order-last"
+                        style={{ fontSize: '.9375rem' }}
+                      >
+                        {it.description ?? ''}
+                      </div>
                       {it.url ? (
                         <a href={it.url} target="_blank" rel="noopener noreferrer" className="dim" style={{ fontSize: '.8125rem' }}>
                           <FiExternalLink />

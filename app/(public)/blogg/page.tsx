@@ -30,7 +30,7 @@ export default async function BloggPage() {
   const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a))
 
   return (
-    <section style={{ padding: '3rem 2rem' }}>
+    <section className="px-5 py-10 md:px-8 md:py-12">
       <div className="container" style={{ maxWidth: '52rem' }}>
         <div className="eyebrow" style={{ marginBottom: '.75rem' }}>ARTICLE · ARKIV</div>
         <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, maxWidth: '28rem' }}>
@@ -54,7 +54,7 @@ export default async function BloggPage() {
             {years.map((year) => (
               <div key={year} style={{ marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '.5rem' }}>
-                  <h2 style={{ fontFamily: 'var(--ff-serif)', fontSize: '2rem', color: 'var(--ink-4)', fontWeight: 400 }}>{year}</h2>
+                  <h2 style={{ fontFamily: 'var(--ff-serif)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: 'var(--ink-4)', fontWeight: 400 }}>{year}</h2>
                   <span className="mono dim" style={{ fontSize: '.75rem' }}>
                     {groups[year].length} {groups[year].length === 1 ? 'notat' : 'notater'}
                   </span>

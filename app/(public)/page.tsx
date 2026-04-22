@@ -29,12 +29,12 @@ export default async function HomePage() {
 
   return (
     <>
-      <section style={{ padding: '3.5rem 2rem 3rem' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '3rem', alignItems: 'start' }}>
+      <section className="px-5 py-10 md:px-8 md:py-14">
+        <div className="container grid gap-8 md:gap-12 items-start grid-cols-1 md:grid-cols-[1fr_280px]">
           <div>
             <div className="eyebrow" style={{ marginBottom: '1rem' }}>
               {available && (
-                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'oklch(0.70 0.16 145)', marginRight: 8, verticalAlign: 'middle' }} />
+                <span className="status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'oklch(0.70 0.16 145)', marginRight: 8, verticalAlign: 'middle' }} />
               )}
               {available ? (s.availability_note || 'Tilgjengelig for samtaler') : 'Ikke tilgjengelig akkurat nå'}
               {' · Oslo '}<OsloClock />
@@ -66,7 +66,7 @@ export default async function HomePage() {
               </div>
             )}
           </div>
-          <aside>
+          <aside className="max-w-[280px] w-full mx-auto md:mx-0">
             {s.image_url && (
               <>
                 <div style={{ position: 'relative', aspectRatio: '4/5', background: 'var(--bg-sunken)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--rule)' }}>
@@ -74,7 +74,7 @@ export default async function HomePage() {
                     src={s.image_url}
                     alt={`Portrett av ${s.full_name}`}
                     fill
-                    sizes="280px"
+                    sizes="(max-width: 768px) 280px, 280px"
                     priority
                     style={{ objectFit: 'cover' }}
                   />
@@ -83,7 +83,7 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <div className="mono" style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--ink-4)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>↓ SCROLL</span>
+                  <span><span className="scroll-arrow">↓</span> SCROLL</span>
                   <span>001 / 007</span>
                 </div>
               </>
@@ -92,9 +92,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <hr className="rule" style={{ margin: '0 2rem', maxWidth: 'var(--max-w)' }} />
+      <hr className="rule container" />
 
-      <section style={{ padding: '2.5rem 2rem' }}>
+      <section className="px-5 py-10 md:px-8 md:py-10">
         <div className="container">
           <div className="section-head">
             <h2>Utvalgte prosjekter</h2>
@@ -103,7 +103,7 @@ export default async function HomePage() {
           {featured.length === 0 ? (
             <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
               {featured.slice(0, 3).map((p) => (
                 <ProjectCard key={p.id} project={p} />
               ))}
@@ -112,10 +112,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <hr className="rule" style={{ margin: '0 2rem', maxWidth: 'var(--max-w)' }} />
+      <hr className="rule container" />
 
-      <section style={{ padding: '2.5rem 2rem' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+      <section className="px-5 py-10 md:px-8 md:py-10">
+        <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2">
           <div>
             <div className="section-head">
               <h2>Siste notater</h2>
