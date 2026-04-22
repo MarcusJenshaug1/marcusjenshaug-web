@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { getSiteSettings } from '@/lib/site-settings'
+import { mdxOptions } from '@/lib/mdx'
 
 export const metadata: Metadata = {
   title: 'Om',
@@ -88,7 +89,7 @@ export default async function OmPage() {
           </h1>
           <div className="prose" style={{ maxWidth: 'none' }}>
             {s.bio_long ? (
-              <MDXRemote source={s.bio_long} />
+              <MDXRemote source={s.bio_long} options={mdxOptions} />
             ) : (
               <p className="muted">Innhold kommer snart.</p>
             )}

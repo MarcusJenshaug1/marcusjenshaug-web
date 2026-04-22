@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getPublishedProjects } from '@/lib/projects'
+import { getPublishedPosts } from '@/lib/posts'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
@@ -15,7 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/kontakt`, lastModified: now, changeFrequency: 'yearly', priority: 0.6 },
   ]
 
-  const projects = await getPublishedProjects()
+  const [projects, posts] = await Promise.all([getPublishedProjects(), getPublishedPosts()])
+
   const projectRoutes: MetadataRoute.Sitemap = projects.map((p) => ({
     url: `${siteUrl}/prosjekter/${p.slug}`,
     lastModified: new Date(p.updated_at),
@@ -23,5 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticRoutes, ...projectRoutes]
+  const postRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
+    url: `${siteUrl}/blogg/${p.slug}`,
+    lastModified: new Date(p.updated_at),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }))
+
+  return [...staticRoutes, ...projectRoutes, ...postRoutes]
 }

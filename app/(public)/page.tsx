@@ -3,15 +3,22 @@ import Image from 'next/image'
 import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects } from '@/lib/projects'
+import { getLatestPosts } from '@/lib/posts'
+import { readingTime } from '@/lib/mdx'
 import { OsloClock } from '@/components/OsloClock'
 import { ProjectCard } from '@/components/ProjectCard'
+import { FiClock } from 'react-icons/fi'
 
 function socialByPlatform(links: { platform: string; url: string }[], name: string) {
   return links.find((l) => l.platform.toLowerCase() === name)
 }
 
 export default async function HomePage() {
-  const [s, featured] = await Promise.all([getSiteSettings(), getFeaturedProjects()])
+  const [s, featured, posts] = await Promise.all([
+    getSiteSettings(),
+    getFeaturedProjects(),
+    getLatestPosts(4),
+  ])
   const github = socialByPlatform(s.social_links, 'github')
   const linkedin = socialByPlatform(s.social_links, 'linkedin')
   const available = s.available_for_work
@@ -110,7 +117,29 @@ export default async function HomePage() {
               <h2>Siste notater</h2>
               <Link href="/blogg" className="muted" style={{ fontSize: '.8125rem' }}>Alle →</Link>
             </div>
-            <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+            {posts.length === 0 ? (
+              <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+            ) : (
+              <div>
+                {posts.map((p) => (
+                  <Link key={p.id} href={`/blogg/${p.slug}`} className="post-row">
+                    <div>
+                      <div className="post-title">{p.title}</div>
+                      <div className="post-desc">{p.description}</div>
+                      <div style={{ display: 'flex', gap: '.375rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
+                        {p.tags.slice(0, 2).map((t) => <span key={t} className="chip">{t}</span>)}
+                        <span className="chip"><FiClock /> {readingTime(p.content)} min</span>
+                      </div>
+                    </div>
+                    <span className="post-date">
+                      {p.published_at
+                        ? new Date(p.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })
+                        : ''}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <div className="section-head">
