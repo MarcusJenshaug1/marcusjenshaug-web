@@ -1,4 +1,15 @@
--- Krever pg_cron-extension (se 000_extensions.sql)
+-- Scheduled jobs (idempotent — unschedule hvis finnes, deretter schedule)
+
+do $$
+begin
+  if exists (select 1 from cron.job where jobname = 'publish-scheduled-content') then
+    perform cron.unschedule('publish-scheduled-content');
+  end if;
+  if exists (select 1 from cron.job where jobname = 'cleanup-rate-limits') then
+    perform cron.unschedule('cleanup-rate-limits');
+  end if;
+end
+$$;
 
 select cron.schedule(
   'publish-scheduled-content',
