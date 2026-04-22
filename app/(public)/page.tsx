@@ -8,6 +8,7 @@ import { getLatestPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
 import { mdxOptions, readingTime } from '@/lib/mdx'
 import { OsloClock } from '@/components/OsloClock'
+import { OsloTerminal } from '@/components/OsloTerminal'
 import { ProjectCard } from '@/components/ProjectCard'
 import { FiClock } from 'react-icons/fi'
 
@@ -166,6 +167,7 @@ export default async function HomePage() {
                 <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
               </div>
             )}
+            <OsloTerminal />
           </div>
         </div>
       </section>
