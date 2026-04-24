@@ -34,6 +34,7 @@ export default async function OmPage() {
     '@type': 'Person',
     '@id': `${siteUrl}/#person`,
     name: s.full_name,
+    alternateName: 'Makkos',
     url: siteUrl,
     image: s.image_url ? `${siteUrl}${s.image_url}` : undefined,
     jobTitle: s.headline,
