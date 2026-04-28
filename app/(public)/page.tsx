@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin } from 'react-icons/fi'
+import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin, FiDownload } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects } from '@/lib/projects'
 import { getLatestPosts } from '@/lib/posts'
@@ -49,6 +49,9 @@ export default async function HomePage() {
             <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
               <Link href="/prosjekter" className="btn btn-primary"><FiGrid /> Se prosjekter</Link>
               <Link href="/blogg" className="btn"><FiFile /> Les blogg</Link>
+              {s.cv_url && (
+                <a href={s.cv_url} className="btn" target="_blank" rel="noopener noreferrer"><FiDownload /> Last ned CV</a>
+              )}
               <Link href="/kontakt" className="btn btn-ghost">Ta kontakt <FiArrowRight style={{ fontSize: '.85em' }} /></Link>
             </div>
             {(github || linkedin) && (
