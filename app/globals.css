@@ -439,6 +439,36 @@ kbd {
 }
 .skip-link:focus { left: 1rem; top: 1rem; z-index: 50; }
 
+/* Egendefinert cursor */
+body.has-cursor, body.has-cursor * { cursor: none !important; }
+.cursor-dot {
+  position: fixed;
+  top: -4px; left: -4px;
+  width: 8px; height: 8px;
+  background: var(--ink);
+  z-index: 9995;
+  pointer-events: none;
+  visibility: hidden;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  top: -18px; left: -18px;
+  width: 36px; height: 36px;
+  border: 1px solid var(--ink-3);
+  border-radius: 50%;
+  z-index: 9994;
+  pointer-events: none;
+  visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.cursor-label {
+  font-size: 0.4375rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-contrast);
+}
+
 /* Sidetransisjoner */
 .transition-overlay {
   position: fixed; inset: 0;
