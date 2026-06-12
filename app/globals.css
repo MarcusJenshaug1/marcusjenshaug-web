@@ -1,44 +1,84 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
-  --color-bg: #fbfaf7;
-  --color-bg-elev: #ffffff;
-  --color-bg-sunken: #f3f1ec;
-  --color-ink: #17140f;
-  --color-ink-2: #3d362c;
-  --color-ink-3: #6b6356;
-  --color-ink-4: #9a9284;
-  --color-rule: #e7e3d9;
-  --color-rule-strong: #d4cfc1;
-  --color-accent: oklch(0.62 0.18 38);
-  --color-accent-bg: oklch(0.96 0.03 50);
-  --color-accent-ink: oklch(0.40 0.14 38);
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-serif: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, 'SF Mono', Menlo, monospace;
-}
-
+/* Mørkt tema er default. Lys variant aktiveres med .light på <html>. */
 :root {
-  --bg: var(--color-bg);
-  --bg-elev: var(--color-bg-elev);
-  --bg-sunken: var(--color-bg-sunken);
-  --ink: var(--color-ink);
-  --ink-2: var(--color-ink-2);
-  --ink-3: var(--color-ink-3);
-  --ink-4: var(--color-ink-4);
-  --rule: var(--color-rule);
-  --rule-strong: var(--color-rule-strong);
-  --accent: var(--color-accent);
-  --accent-bg: var(--color-accent-bg);
-  --accent-ink: var(--color-accent-ink);
-  --ff-sans: var(--font-sans);
-  --ff-serif: var(--font-serif);
-  --ff-mono: var(--font-mono);
+  --bg: oklch(0.15 0.012 75);
+  --bg-elev: oklch(0.19 0.014 75);
+  --bg-sunken: oklch(0.12 0.01 75);
+  --ink: oklch(0.95 0.012 85);
+  --ink-2: oklch(0.82 0.015 85);
+  --ink-3: oklch(0.65 0.02 80);
+  --ink-4: oklch(0.48 0.02 80);
+  --rule: oklch(0.26 0.015 75);
+  --rule-strong: oklch(0.34 0.018 75);
+  --accent: oklch(0.72 0.19 38);
+  --accent-bg: oklch(0.25 0.07 38);
+  --accent-ink: oklch(0.80 0.14 45);
+  --accent-contrast: oklch(0.13 0.01 75);
+  --ok: oklch(0.76 0.17 145);
+  --ok-bg: oklch(0.27 0.06 145);
+  --glow-1: oklch(0.62 0.22 38);
+  --glow-2: oklch(0.50 0.20 305);
+
+  --term-bg: oklch(0.13 0.01 75);
+  --term-ink: oklch(0.90 0.012 85);
+  --term-rule: oklch(0.27 0.015 75);
+  --term-prompt: oklch(0.70 0.16 145);
+  --term-com: oklch(0.58 0.02 80);
+  --term-str: oklch(0.80 0.16 85);
+
+  --ff-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ff-serif: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
+  --ff-mono: var(--font-jetbrains-mono), ui-monospace, 'SF Mono', Menlo, monospace;
   --max-w: 68rem;
   --reading-w: 40rem;
+  color-scheme: dark;
+}
+
+.light {
+  --bg: #fbfaf7;
+  --bg-elev: #ffffff;
+  --bg-sunken: #f3f1ec;
+  --ink: #17140f;
+  --ink-2: #3d362c;
+  --ink-3: #6b6356;
+  --ink-4: #9a9284;
+  --rule: #e7e3d9;
+  --rule-strong: #d4cfc1;
+  --accent: oklch(0.62 0.18 38);
+  --accent-bg: oklch(0.96 0.03 50);
+  --accent-ink: oklch(0.40 0.14 38);
+  --accent-contrast: #ffffff;
+  --ok: oklch(0.55 0.16 145);
+  --ok-bg: oklch(0.94 0.06 145);
+  --glow-1: oklch(0.72 0.18 38);
+  --glow-2: oklch(0.65 0.16 305);
   color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-bg: var(--accent-bg);
+  --color-accent-ink: var(--accent-ink);
+  --color-ok: var(--ok);
+
+  --font-sans: var(--ff-sans);
+  --font-serif: var(--ff-serif);
+  --font-mono: var(--ff-mono);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-snap: cubic-bezier(0.7, 0, 0.2, 1.4);
 }
 
 * { box-sizing: border-box; }
@@ -137,7 +177,7 @@ kbd {
 .btn:hover { background: var(--bg-sunken); }
 .btn-primary { background: var(--ink); color: var(--bg-elev); border-color: var(--ink); }
 .btn-primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
-.btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-accent { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--ink-3); }
 .btn-ghost:hover { background: var(--bg-sunken); color: var(--ink); }
 .btn-sm { padding: 0.3125rem 0.625rem; font-size: 0.8125rem; border-radius: 5px; }
@@ -230,7 +270,7 @@ kbd {
 .prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 .prose a:hover { text-decoration-color: var(--accent); }
 .prose pre {
-  background: #1a1814; color: #e7e3d9;
+  background: var(--term-bg); color: var(--term-ink);
   padding: 1rem 1.25rem; border-radius: 8px;
   overflow-x: auto; font-family: var(--ff-mono); font-size: 0.8125rem; line-height: 1.6;
 }
@@ -258,14 +298,14 @@ kbd {
 
 /* Terminal box */
 .term {
-  background: #17140f; color: #e7e3d9;
+  background: var(--term-bg); color: var(--term-ink);
   border-radius: 10px; padding: 1.125rem 1.25rem;
   font-family: var(--ff-mono); font-size: 0.8125rem; line-height: 1.65;
-  border: 1px solid #2a251e;
+  border: 1px solid var(--term-rule);
 }
-.term .prompt { color: oklch(0.70 0.16 145); }
-.term .com { color: #8a8275; }
-.term .str { color: oklch(0.80 0.16 85); }
+.term .prompt { color: var(--term-prompt); }
+.term .com { color: var(--term-com); }
+.term .str { color: var(--term-str); }
 
 /* Focus ring */
 :focus-visible {

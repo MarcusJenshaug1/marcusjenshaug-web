@@ -62,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="nb"
       className={`${GeistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
       <body>
         <a

@@ -27,7 +27,7 @@ export function OsloTerminal() {
         <span className="str">~/jenshaug</span>{' '}
         $ date +&quot;%A %H:%M&quot;
       </div>
-      <div style={{ color: '#d4cfc1' }}>{value}</div>
+      <div style={{ color: 'var(--term-ink)' }}>{value}</div>
     </div>
   )
 }

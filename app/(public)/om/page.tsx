@@ -87,7 +87,7 @@ export default async function OmPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Status</span>
-                <span style={{ color: s.available_for_work ? 'oklch(0.55 0.16 145)' : 'var(--ink-3)' }}>
+                <span style={{ color: s.available_for_work ? 'var(--ok)' : 'var(--ink-3)' }}>
                   ● {s.available_for_work ? (s.availability_note || 'Åpen for samtaler') : 'Opptatt'}
                 </span>
               </div>

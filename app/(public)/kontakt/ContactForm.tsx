@@ -27,7 +27,7 @@ export function ContactForm() {
   if (state.success) {
     return (
       <div style={{ padding: '2rem', border: '1px solid var(--rule)', borderRadius: '8px', textAlign: 'center', background: 'var(--bg-elev)' }}>
-        <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: 'oklch(0.94 0.06 145)', color: 'oklch(0.45 0.16 145)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '.75rem' }}>
+        <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', background: 'var(--ok-bg)', color: 'var(--ok)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '.75rem' }}>
           <FiCheck />
         </div>
         <h3>Takk — meldingen er sendt.</h3>

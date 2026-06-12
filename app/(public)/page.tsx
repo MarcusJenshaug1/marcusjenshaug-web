@@ -34,7 +34,7 @@ export default async function HomePage() {
           <div>
             <div className="eyebrow" style={{ marginBottom: '1rem' }}>
               {available && (
-                <span className="status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'oklch(0.70 0.16 145)', marginRight: 8, verticalAlign: 'middle' }} />
+                <span className="status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)', marginRight: 8, verticalAlign: 'middle' }} />
               )}
               {available ? (s.availability_note || 'Tilgjengelig for samtaler') : 'Ikke tilgjengelig akkurat nå'}
               {' · Oslo '}<OsloClock />
