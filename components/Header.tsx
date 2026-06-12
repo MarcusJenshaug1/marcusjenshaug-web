@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { OsloClock } from '@/components/OsloClock'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { SoundToggle } from '@/components/SoundToggle'
 import { useLenis } from '@/components/motion/LenisProvider'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 
@@ -78,6 +79,7 @@ export function Header({ socialLinks = [], email }: HeaderProps) {
           <span className="nav-clock mono" suppressHydrationWarning>
             OSLO <OsloClock />
           </span>
+          <SoundToggle />
           <ThemeToggle />
           <button
             ref={triggerRef}
