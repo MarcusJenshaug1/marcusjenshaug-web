@@ -1,6 +1,7 @@
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { ThemeProvider } from '@/components/motion/ThemeProvider'
+import { MotionRoot } from '@/components/motion/MotionRoot'
 import { getSiteSettings } from '@/lib/site-settings'
 
 export const revalidate = 3600
@@ -10,9 +11,11 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <ThemeProvider>
-      <Header />
-      <main id="main">{children}</main>
-      <Footer settings={settings} />
+      <MotionRoot>
+        <Header />
+        <main id="main">{children}</main>
+        <Footer settings={settings} />
+      </MotionRoot>
     </ThemeProvider>
   )
 }
