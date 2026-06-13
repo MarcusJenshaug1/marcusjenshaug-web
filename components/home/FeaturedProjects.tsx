@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
@@ -33,12 +33,16 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
   const coarse = useIsCoarsePointer()
   const usePreview = !reduced && !coarse
 
-  const previewItems: PreviewItem[] = projects.map((p, i) => ({
-    key: p.id,
-    src: p.cover_image,
-    title: p.title,
-    index: i,
-  }))
+  const previewItems: PreviewItem[] = useMemo(
+    () =>
+      projects.map((p, i) => ({
+        key: p.id,
+        src: p.cover_image,
+        title: p.title,
+        index: i,
+      })),
+    [projects]
+  )
 
   return (
     <div className="project-list" onPointerLeave={() => setActive(null)}>
