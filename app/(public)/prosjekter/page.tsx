@@ -6,6 +6,8 @@ import {
   PROJECT_STATUS_LABELS,
   type ProjectStatus,
 } from '@/lib/types/app'
+import { FeaturedProjects } from '@/components/home/FeaturedProjects'
+import { Reveal } from '@/components/motion/Reveal'
 
 export const metadata: Metadata = {
   title: 'Prosjekter',
@@ -39,81 +41,56 @@ export default async function ProsjekterPage({
   ]
 
   return (
-    <section className="px-5 py-10 md:px-8 md:py-12">
+    <section className="px-5 py-12 md:px-8 md:py-16">
       <div className="container">
-        <div className="eyebrow" style={{ marginBottom: '.75rem' }}>CREATIVEWORK · ARKIV</div>
-        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, maxWidth: '32rem' }}>
-          Prosjekter, fra klientarbeid til sidesysler.
-        </h1>
-        <p className="muted" style={{ marginTop: '.75rem', maxWidth: '32rem' }}>
-          Et utvalg ting jeg har designet, bygget eller hjulpet med å flytte framover.
-        </p>
+        <div className="page-head">
+          <div className="eyebrow">CREATIVEWORK · ARKIV · {String(all.length).padStart(2, '0')}</div>
+          <Reveal variant="lines">
+            <h1 className="display display-2 page-title">
+              Prosjekter, fra klientarbeid til sidesysler
+            </h1>
+          </Reveal>
+          <p className="page-lede">
+            Et utvalg ting jeg har designet, bygget eller hjulpet med å flytte framover.
+          </p>
+        </div>
 
         {all.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 mt-8 mb-5">
-            <div className="flex flex-wrap gap-1 border border-rule rounded-md p-0.5 overflow-hidden">
-              {filters.map((f) => {
-                const isActive = activeStatus === f.key
-                return (
-                  <Link
-                    key={f.key}
-                    href={f.href}
-                    style={{
-                      background: isActive ? 'var(--ink)' : 'transparent',
-                      color: isActive ? 'var(--bg)' : 'var(--ink-3)',
-                      padding: '.375rem .75rem',
-                      fontSize: '.8125rem',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    {f.label}
-                    <span style={{ opacity: 0.55, marginLeft: 4 }}>{counts[f.key]}</span>
-                  </Link>
-                )
-              })}
-            </div>
-            <span className="dim mono ml-auto hidden sm:inline" style={{ fontSize: '.75rem' }}>sortert: utvalgte først</span>
+          <div className="filter-row mono">
+            {filters.map((f) => {
+              const isActive = activeStatus === f.key
+              return (
+                <Link
+                  key={f.key}
+                  href={f.href}
+                  className={`filter-chip${isActive ? ' active' : ''}`}
+                >
+                  {f.label}
+                  <span className="filter-chip-count">{counts[f.key]}</span>
+                </Link>
+              )
+            })}
           </div>
         )}
 
         {list.length === 0 ? (
-          <div className="card" style={{ marginTop: '2rem' }}>
-            <p className="muted">Ingen prosjekter {activeStatus === 'alle' ? 'enda' : `i kategorien «${PROJECT_STATUS_LABELS[activeStatus]}»`}.</p>
-          </div>
+          <p className="muted" style={{ marginTop: '2rem' }}>
+            Ingen prosjekter{' '}
+            {activeStatus === 'alle' ? 'enda' : `i kategorien «${PROJECT_STATUS_LABELS[activeStatus]}»`}.
+          </p>
         ) : (
-          <div>
-            {list.map((p, i) => (
-              <Link
-                key={p.id}
-                href={`/prosjekter/${p.slug}`}
-                className="project-row"
-                style={{
-                  borderBottom: i === list.length - 1 ? '1px solid var(--rule)' : undefined,
-                }}
-              >
-                <span className="mono dim" style={{ fontSize: '.75rem' }}>#{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '.75rem', flexWrap: 'wrap' }}>
-                    <h3 className="project-title" style={{ fontSize: '1.125rem' }}>{p.title}</h3>
-                    <span className="chip">{PROJECT_STATUS_LABELS[p.status]}</span>
-                    {p.featured && <span className="chip chip-accent">★ Utvalgt</span>}
-                  </div>
-                  <p className="muted" style={{ fontSize: '.9375rem', marginTop: '.25rem' }}>{p.description}</p>
-                  {p.tech_stack.length > 0 && (
-                    <div style={{ display: 'flex', gap: '.375rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
-                      {p.tech_stack.map((s) => (
-                        <span key={s} className="chip">{s}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <span className="project-meta mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>{p.role ?? ''}</span>
-                <span className="project-meta mono dim" style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>
-                  {p.started_at ? new Date(p.started_at).getFullYear() : ''}
-                </span>
-              </Link>
-            ))}
-          </div>
+          <FeaturedProjects
+            projects={list.map((p) => ({
+              id: p.id,
+              slug: p.slug,
+              title: p.title,
+              description: p.description,
+              tech_stack: p.tech_stack,
+              status: p.status,
+              cover_image: p.cover_image,
+              started_at: p.started_at,
+            }))}
+          />
         )}
       </div>
     </section>
