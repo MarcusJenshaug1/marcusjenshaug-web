@@ -14,6 +14,8 @@ import { TechStack } from '@/components/home/TechStack'
 import { SocialProof } from '@/components/home/SocialProof'
 import { LatestPosts } from '@/components/home/LatestPosts'
 import { IntroOverlay } from '@/components/home/IntroOverlay'
+import { Makkos } from '@/components/home/Makkos'
+import { getSpotifyUrl } from '@/lib/makkos'
 
 export default async function HomePage() {
   const [s, featured, posts, latestNow, allProjects, allPosts, usesItems] = await Promise.all([
@@ -114,6 +116,16 @@ export default async function HomePage() {
           ) : (
             <LatestPosts posts={posts} />
           )}
+        </div>
+      </section>
+
+      <section className="makkos-section px-5 py-14 md:px-8 md:py-20" data-section="makkos">
+        <div className="container">
+          <div className="section-head-xl">
+            <span className="eyebrow">006 · Musikk-DNA</span>
+            <h2 className="display display-2">Makkos</h2>
+          </div>
+          <Makkos spotifyUrl={getSpotifyUrl(s)} />
         </div>
       </section>
 
