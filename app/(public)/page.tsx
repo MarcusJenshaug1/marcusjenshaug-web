@@ -6,8 +6,8 @@ import { getLatestNowEntry } from '@/lib/now'
 import { readingTime } from '@/lib/mdx'
 import { SafeMdx } from '@/components/SafeMdx'
 import { OsloTerminal } from '@/components/OsloTerminal'
-import { ProjectCard } from '@/components/ProjectCard'
 import { Hero } from '@/components/home/Hero'
+import { FeaturedProjects } from '@/components/home/FeaturedProjects'
 import { IntroOverlay } from '@/components/home/IntroOverlay'
 import { FiClock } from 'react-icons/fi'
 
@@ -24,20 +24,30 @@ export default async function HomePage() {
       <IntroOverlay name={s.full_name} />
       <Hero settings={s} />
 
-      <section className="px-5 py-10 md:px-8 md:py-10" data-section="prosjekter">
+      <section className="px-5 py-14 md:px-8 md:py-20" data-section="prosjekter">
         <div className="container">
-          <div className="section-head">
-            <h2>Utvalgte prosjekter</h2>
-            <Link href="/prosjekter" className="muted" style={{ fontSize: '.8125rem' }}>Alle prosjekter →</Link>
+          <div className="section-head-xl">
+            <span className="eyebrow">002 · Utvalgte prosjekter</span>
+            <h2 className="display display-2">Arbeid</h2>
+            <Link href="/prosjekter" className="section-head-link mono">
+              Alle prosjekter →
+            </Link>
           </div>
           {featured.length === 0 ? (
             <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-              {featured.slice(0, 3).map((p) => (
-                <ProjectCard key={p.id} project={p} />
-              ))}
-            </div>
+            <FeaturedProjects
+              projects={featured.slice(0, 4).map((p) => ({
+                id: p.id,
+                slug: p.slug,
+                title: p.title,
+                description: p.description,
+                tech_stack: p.tech_stack,
+                status: p.status,
+                cover_image: p.cover_image,
+                started_at: p.started_at,
+              }))}
+            />
           )}
         </div>
       </section>

@@ -519,6 +519,113 @@ kbd {
 }
 .hero-scroll { display: inline-flex; align-items: center; gap: .375rem; }
 
+/* Stor seksjonsheading */
+.section-head-xl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: .5rem 1rem;
+  margin-bottom: 2.5rem;
+}
+.section-head-xl .eyebrow { grid-column: 1 / -1; }
+.section-head-xl h2 { margin: 0; }
+.section-head-link {
+  font-size: .75rem;
+  letter-spacing: .1em;
+  color: var(--ink-3);
+  transition: color .15s;
+}
+.section-head-link:hover { color: var(--accent); }
+
+/* Prosjektrader (Igor Mahr-stil) */
+.project-list { position: relative; border-top: 1px solid var(--rule); }
+.project-row-xl {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    'index main meta'
+    'index tech meta';
+  gap: 0.25rem 1.5rem;
+  align-items: baseline;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+  transition: padding-left .25s var(--ease-out-expo);
+}
+.project-row-xl:hover { padding-left: 1.25rem; }
+.project-row-index {
+  grid-area: index;
+  font-size: .6875rem;
+  letter-spacing: .14em;
+  color: var(--ink-4);
+}
+.project-row-main { grid-area: main; display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
+.project-row-title {
+  color: var(--ink);
+  transition: color .15s;
+}
+.project-row-xl:hover .project-row-title { color: var(--accent); }
+.project-row-desc {
+  color: var(--ink-3);
+  font-size: .9375rem;
+  max-width: 38rem;
+}
+.project-row-thumb { display: none; }
+.project-row-meta {
+  grid-area: meta;
+  display: flex; align-items: center; gap: 1.25rem;
+  font-size: .6875rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.project-row-status { color: var(--ink-3); }
+.project-row-arrow {
+  font-size: 1rem;
+  color: var(--ink-4);
+  transition: transform .2s var(--ease-out-expo), color .15s;
+}
+.project-row-xl:hover .project-row-arrow { transform: translate(3px, -3px); color: var(--accent); }
+.project-row-tech {
+  grid-area: tech;
+  font-size: .6875rem;
+  letter-spacing: .08em;
+  color: var(--ink-4);
+  margin-top: .25rem;
+}
+
+.hover-preview {
+  position: fixed;
+  top: -140px; left: -210px;
+  width: 420px; height: 280px;
+  z-index: 50;
+  pointer-events: none;
+  visibility: hidden;
+  border: 1px solid var(--rule-strong);
+}
+.hover-preview canvas { display: block; width: 100%; height: 100%; }
+
+@media (max-width: 768px) {
+  .project-row-xl {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    grid-template-areas:
+      'index main'
+      'index thumb'
+      'index tech'
+      'index meta';
+    padding: 1.5rem 0;
+  }
+  .project-row-xl:hover { padding-left: .375rem; }
+  .project-row-thumb {
+    display: block;
+    grid-area: thumb;
+    margin-top: .75rem;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+  }
+  .project-row-meta { grid-area: meta; margin-top: .625rem; }
+}
+
 /* Store CTA-knapper */
 .btn-xl {
   display: inline-flex; align-items: center; gap: .625rem;
