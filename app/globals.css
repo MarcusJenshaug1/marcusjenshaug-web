@@ -435,14 +435,15 @@ kbd {
   padding-top: 3rem;
   padding-bottom: 5rem;
 }
+.hero-content { container-type: inline-size; min-width: 0; position: relative; z-index: 2; }
 .hero-eyebrow { margin-bottom: 1.5rem; display: flex; align-items: center; gap: .5rem; }
 .hero-status-dot {
   width: 7px; height: 7px;
   background: var(--ok);
   display: inline-block;
 }
-.hero-name { margin: 0; }
-.hero-name-line { display: block; }
+.hero-name { margin: 0; font-size: clamp(2.75rem, 18cqi, 9rem); }
+.hero-name-line { display: block; overflow-wrap: break-word; }
 .hero-name-line + .hero-name-line { color: var(--ink-2); }
 .hero-role {
   margin-top: 1.5rem;
