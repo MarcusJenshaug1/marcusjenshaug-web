@@ -12,7 +12,11 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <ThemeProvider>
       <MotionRoot>
-        <Header socialLinks={settings.social_links} email={settings.email} />
+        <Header
+          socialLinks={settings.social_links}
+          email={settings.email}
+          portraitSrc={settings.image_url ?? '/portrett.jpg'}
+        />
         <main id="main">{children}</main>
         <Footer settings={settings} />
       </MotionRoot>
