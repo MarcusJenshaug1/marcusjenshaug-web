@@ -1,23 +1,33 @@
 import Link from 'next/link'
 import { getSiteSettings } from '@/lib/site-settings'
-import { getFeaturedProjects } from '@/lib/projects'
+import { getFeaturedProjects, getPublishedProjects } from '@/lib/projects'
 import { getLatestPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
+import { STACK } from '@/lib/stack'
 import { readingTime } from '@/lib/mdx'
 import { SafeMdx } from '@/components/SafeMdx'
 import { OsloTerminal } from '@/components/OsloTerminal'
 import { Hero } from '@/components/home/Hero'
 import { FeaturedProjects } from '@/components/home/FeaturedProjects'
+import { TechStack } from '@/components/home/TechStack'
 import { IntroOverlay } from '@/components/home/IntroOverlay'
 import { FiClock } from 'react-icons/fi'
 
 export default async function HomePage() {
-  const [s, featured, posts, latestNow] = await Promise.all([
+  const [s, featured, posts, latestNow, allProjects] = await Promise.all([
     getSiteSettings(),
     getFeaturedProjects(),
     getLatestPosts(4),
     getLatestNowEntry(),
+    getPublishedProjects(),
   ])
+
+  const stackItems = STACK.map((item) => ({
+    ...item,
+    projectCount: allProjects.filter((p) =>
+      p.tech_stack.some((t) => t.toLowerCase() === item.name.toLowerCase())
+    ).length,
+  }))
 
   return (
     <>
@@ -52,7 +62,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <hr className="rule container" />
+      <section className="py-14 md:py-20" data-section="stack">
+        <div className="container px-5 md:px-8">
+          <div className="section-head-xl">
+            <span className="eyebrow">003 · Verktøykassa</span>
+            <h2 className="display display-2">Stack</h2>
+          </div>
+        </div>
+        <TechStack items={stackItems} />
+      </section>
 
       <section className="px-5 py-10 md:px-8 md:py-10" data-section="notater">
         <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2">
