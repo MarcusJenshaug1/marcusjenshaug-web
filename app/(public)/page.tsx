@@ -9,7 +9,7 @@ import { getUsesItems } from '@/lib/uses'
 import { Hero } from '@/components/home/Hero'
 import { FeaturedProjects } from '@/components/home/FeaturedProjects'
 import { TechStack } from '@/components/home/TechStack'
-import { SocialProof } from '@/components/home/SocialProof'
+import { SocialProofScene } from '@/components/home/SocialProofScene'
 import { LatestPosts } from '@/components/home/LatestPosts'
 import { IntroOverlay } from '@/components/home/IntroOverlay'
 import { Makkos } from '@/components/home/Makkos'
@@ -91,14 +91,14 @@ export default async function HomePage() {
       </section>
 
       {(stats.length > 0 || QUOTES.length > 0) && (
-        <section className="px-5 py-14 md:px-8 md:py-20" data-section="tall">
-          <div className="container">
+        <section className="py-14 md:py-20" data-section="tall">
+          <div className="container px-5 md:px-8">
             <div className="section-head-xl">
               <span className="eyebrow">004 · I tall</span>
               <h2 className="display display-2">Bevis</h2>
             </div>
-            <SocialProof stats={stats} quotes={QUOTES} />
           </div>
+          <SocialProofScene stats={stats} quotes={QUOTES} />
         </section>
       )}
 

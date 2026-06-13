@@ -6,7 +6,7 @@ import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { Reveal } from '@/components/motion/Reveal'
 import type { Quote } from '@/lib/social-proof'
 
-type ResolvedStat = { label: string; value: number; suffix?: string }
+export type ResolvedStat = { label: string; value: number; suffix?: string }
 
 function StatNumber({ value, suffix }: { value: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
