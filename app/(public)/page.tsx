@@ -6,8 +6,6 @@ import { getLatestNowEntry } from '@/lib/now'
 import { STACK } from '@/lib/stack'
 import { STATS, QUOTES, type Stat } from '@/lib/social-proof'
 import { getUsesItems } from '@/lib/uses'
-import { SafeMdx } from '@/components/SafeMdx'
-import { OsloTerminal } from '@/components/OsloTerminal'
 import { Hero } from '@/components/home/Hero'
 import { FeaturedProjects } from '@/components/home/FeaturedProjects'
 import { TechStack } from '@/components/home/TechStack'
@@ -15,6 +13,8 @@ import { SocialProof } from '@/components/home/SocialProof'
 import { LatestPosts } from '@/components/home/LatestPosts'
 import { IntroOverlay } from '@/components/home/IntroOverlay'
 import { Makkos } from '@/components/home/Makkos'
+import { NowTerminal } from '@/components/home/NowTerminal'
+import { ContactCta } from '@/components/home/ContactCta'
 import { getSpotifyUrl } from '@/lib/makkos'
 
 export default async function HomePage() {
@@ -138,26 +138,15 @@ export default async function HomePage() {
               Arkiv →
             </Link>
           </div>
-          {latestNow ? (
-            <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.75rem' }}>
-                <span className="eyebrow">Sist oppdatert</span>
-                <span className="mono dim" style={{ fontSize: '.75rem' }}>
-                  {new Date(latestNow.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })}
-                </span>
-              </div>
-              <div className="prose" style={{ fontSize: '.9375rem', lineHeight: 1.6, maxWidth: 'none' }}>
-                <SafeMdx source={latestNow.content} />
-              </div>
-            </div>
-          ) : (
-            <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
-              <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
-            </div>
-          )}
-          <OsloTerminal />
+          <NowTerminal entry={latestNow} />
         </div>
       </section>
+
+      <ContactCta
+        email={s.email}
+        available={s.available_for_work}
+        availabilityNote={s.availability_note}
+      />
     </>
   )
 }
