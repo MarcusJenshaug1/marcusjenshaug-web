@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { JetBrains_Mono, Martian_Mono } from 'next/font/google'
 import { AdminShortcut } from '@/components/AdminShortcut'
+import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const jetbrainsMono = JetBrains_Mono({
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         {children}
         <AdminShortcut />
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
