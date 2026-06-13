@@ -1,5 +1,6 @@
 import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
+import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import type { SiteSettings } from '@/lib/types/app'
 
 type Props = {
@@ -10,8 +11,8 @@ export function Footer({ settings }: Props) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="statement-footer">
-      <div className="statement-footer-name-wrap container">
+    <footer className="statement-footer" data-parallax-root>
+      <ParallaxLayer speed={-7} className="statement-footer-name-wrap container">
         <TransitionLink href="/" className="statement-footer-name display" aria-label="Til forsiden">
           {settings.full_name.split(' ').map((line) => (
             <span key={line} className="statement-footer-name-line">
@@ -22,7 +23,7 @@ export function Footer({ settings }: Props) {
         <p className="statement-footer-bio">
           {settings.bio_short || 'Fullstack-utvikler i Redi AS.'}
         </p>
-      </div>
+      </ParallaxLayer>
       <div className="statement-footer-grid container">
         <div>
           <h4 className="mono">Innhold</h4>

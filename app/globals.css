@@ -418,6 +418,8 @@ kbd {
   transition: color .15s;
 }
 .hero-socials a:hover { color: var(--ink); }
+.hero-glow-layer { position: absolute; inset: -12% 0; z-index: 0; pointer-events: none; }
+.hero-glow-layer .mesh-glow { inset: 0; }
 .hero-visual { position: relative; z-index: 1; }
 .hero-visual-inner {
   position: relative;
@@ -754,6 +756,8 @@ kbd {
   overflow: hidden;
   border-top: 1px solid var(--rule);
 }
+.cta-glow-layer { position: absolute; inset: -16% 0; z-index: 0; pointer-events: none; }
+.cta-glow-layer .mesh-glow { inset: 0; }
 .cta-inner {
   position: relative;
   z-index: 2;

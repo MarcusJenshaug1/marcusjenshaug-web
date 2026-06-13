@@ -5,6 +5,7 @@ import { Magnetic } from '@/components/motion/Magnetic'
 import { Reveal } from '@/components/motion/Reveal'
 import { HeroVisual } from '@/components/fx/HeroVisual'
 import { MeshGlow } from '@/components/fx/MeshGlow'
+import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import { RoleRotator } from '@/components/home/RoleRotator'
 import { SectionCounter } from '@/components/home/SectionCounter'
 import type { SiteSettings } from '@/lib/types/app'
@@ -21,10 +22,12 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
   const roles = [s.headline || 'Fullstack-utvikler', 'Produktbygger', 'Selvhoster', 'Makkos']
 
   return (
-    <section className="hero" data-section="hero">
-      <MeshGlow />
+    <section className="hero" data-section="hero" data-parallax-root>
+      <ParallaxLayer speed={-8} start="top top" className="hero-glow-layer" ariaHidden>
+        <MeshGlow />
+      </ParallaxLayer>
       <div className="hero-grid container">
-        <div className="hero-content">
+        <ParallaxLayer speed={-5} start="top top" className="hero-content">
           <div className="eyebrow hero-eyebrow">
             {available && <span className="status-dot hero-status-dot" />}
             {available
@@ -92,14 +95,14 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
               )}
             </div>
           )}
-        </div>
-        <div className="hero-visual">
+        </ParallaxLayer>
+        <ParallaxLayer speed={14} start="top top" className="hero-visual">
           <HeroVisual
             textureSrc="/portrett.jpg"
             fallbackSrc={s.image_url ?? '/portrett.jpg'}
             alt={`Portrett av ${s.full_name}`}
           />
-        </div>
+        </ParallaxLayer>
       </div>
       <div className="hero-foot container mono">
         <span className="hero-scroll">

@@ -2,6 +2,7 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { Magnetic } from '@/components/motion/Magnetic'
 import { MeshGlow } from '@/components/fx/MeshGlow'
+import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 
 type ContactCtaProps = {
   email?: string
@@ -11,9 +12,11 @@ type ContactCtaProps = {
 
 export function ContactCta({ email, available, availabilityNote }: ContactCtaProps) {
   return (
-    <section className="cta-section" data-section="kontakt-cta">
-      <MeshGlow />
-      <div className="cta-inner container">
+    <section className="cta-section" data-section="kontakt-cta" data-parallax-root>
+      <ParallaxLayer speed={-14} className="cta-glow-layer" ariaHidden>
+        <MeshGlow />
+      </ParallaxLayer>
+      <ParallaxLayer speed={8} className="cta-inner container">
         <span className="eyebrow">
           008 · Neste steg
           {available && (
@@ -41,7 +44,7 @@ export function ContactCta({ email, available, availabilityNote }: ContactCtaPro
             {email}
           </a>
         )}
-      </div>
+      </ParallaxLayer>
     </section>
   )
 }
