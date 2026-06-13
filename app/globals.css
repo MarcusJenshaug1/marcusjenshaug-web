@@ -674,6 +674,53 @@ kbd {
 .tech-detail-name { color: var(--ink); text-transform: uppercase; }
 .tech-detail-count { color: var(--accent); }
 
+/* Redaksjonelle notatkort */
+.post-list-xl { border-top: 1px solid var(--rule); }
+.post-card-xl {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: start;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--rule);
+  transition: padding-left .25s var(--ease-out-expo);
+}
+.post-card-xl:hover { padding-left: 1rem; }
+.post-card-date { display: flex; flex-direction: column; gap: .25rem; }
+.post-card-day {
+  font-size: 2.5rem;
+  color: var(--ink-4);
+  line-height: 1;
+  transition: color .15s;
+}
+.post-card-xl:hover .post-card-day { color: var(--accent); }
+.post-card-rest { font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-4); }
+.post-card-main { display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
+.post-card-title { color: var(--ink); transition: color .15s; }
+.post-card-xl:hover .post-card-title { color: var(--accent); }
+.post-card-desc { color: var(--ink-3); font-size: .9375rem; max-width: 40rem; }
+.post-card-meta { display: flex; gap: 1rem; margin-top: .25rem; flex-wrap: wrap; }
+.post-card-tag {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .6875rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.post-card-arrow {
+  font-size: 1.125rem;
+  color: var(--ink-4);
+  margin-top: .5rem;
+  transition: transform .2s var(--ease-out-expo), color .15s;
+}
+.post-card-xl:hover .post-card-arrow { transform: translate(3px, -3px); color: var(--accent); }
+
+@media (max-width: 640px) {
+  .post-card-xl { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  .post-card-arrow { display: none; }
+  .post-card-day { font-size: 1.75rem; }
+}
+
 /* Statistikk og sitater */
 .stats-grid {
   display: grid;
