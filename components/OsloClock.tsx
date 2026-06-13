@@ -11,9 +11,10 @@ function osloTime(d: Date) {
 }
 
 export function OsloClock() {
-  const [time, setTime] = useState(() => osloTime(new Date()))
+  const [time, setTime] = useState('')
 
   useEffect(() => {
+    setTime(osloTime(new Date()))
     const t = setInterval(() => setTime(osloTime(new Date())), 30000)
     return () => clearInterval(t)
   }, [])
