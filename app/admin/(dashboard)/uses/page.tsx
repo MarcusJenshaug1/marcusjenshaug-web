@@ -41,7 +41,7 @@ export default async function AdminUsesPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {categories.map((cat) => (
             <section key={cat}>
-              <h2 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, fontSize: '1.25rem', marginBottom: '.875rem' }}>{cat}</h2>
+              <h2 style={{ fontWeight: 600, fontSize: '1.25rem', marginBottom: '.875rem' }}>{cat}</h2>
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.875rem' }}>
                   <tbody>

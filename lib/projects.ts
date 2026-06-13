@@ -69,3 +69,16 @@ export function countByStatus(projects: Project[]): Record<ProjectStatus | 'alle
   }
   return counts
 }
+
+export async function getAdjacentProjects(slug: string): Promise<{
+  prev: Project | null
+  next: Project | null
+}> {
+  const all = await getPublishedProjects()
+  if (all.length < 2) return { prev: null, next: null }
+  const index = all.findIndex((p) => p.slug === slug)
+  if (index === -1) return { prev: null, next: null }
+  const prev = all[(index - 1 + all.length) % all.length]
+  const next = all[(index + 1) % all.length]
+  return { prev, next }
+}

@@ -11,7 +11,7 @@ function formatOslo(d: Date) {
   })
 }
 
-export function OsloTerminal() {
+export function OsloTerminalLine() {
   const [value, setValue] = useState(() => formatOslo(new Date()))
 
   useEffect(() => {
@@ -20,14 +20,26 @@ export function OsloTerminal() {
   }, [])
 
   return (
-    <div className="term" style={{ marginTop: '1rem', fontSize: '.75rem' }}>
-      <div><span className="com"># lokal tid i Oslo</span></div>
+    <>
       <div>
         <span className="prompt">marcus@redi</span>{' '}
         <span className="str">~/jenshaug</span>{' '}
         $ date +&quot;%A %H:%M&quot;
       </div>
-      <div style={{ color: '#d4cfc1' }}>{value}</div>
+      <div style={{ color: 'var(--term-ink)' }} suppressHydrationWarning>
+        {value}
+      </div>
+    </>
+  )
+}
+
+export function OsloTerminal() {
+  return (
+    <div className="term" style={{ marginTop: '1rem', fontSize: '.75rem' }}>
+      <div>
+        <span className="com"># lokal tid i Oslo</span>
+      </div>
+      <OsloTerminalLine />
     </div>
   )
 }

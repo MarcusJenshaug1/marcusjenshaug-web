@@ -1,179 +1,152 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin, FiDownload } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
-import { getFeaturedProjects } from '@/lib/projects'
-import { getLatestPosts } from '@/lib/posts'
+import { getFeaturedProjects, getPublishedProjects } from '@/lib/projects'
+import { getLatestPosts, getPublishedPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
-import { readingTime } from '@/lib/mdx'
-import { SafeMdx } from '@/components/SafeMdx'
-import { OsloClock } from '@/components/OsloClock'
-import { OsloTerminal } from '@/components/OsloTerminal'
-import { ProjectCard } from '@/components/ProjectCard'
-import { FiClock } from 'react-icons/fi'
-
-function socialByPlatform(links: { platform: string; url: string }[], name: string) {
-  return links.find((l) => l.platform.toLowerCase() === name)
-}
+import { STACK } from '@/lib/stack'
+import { STATS, QUOTES, type Stat } from '@/lib/social-proof'
+import { getUsesItems } from '@/lib/uses'
+import { Hero } from '@/components/home/Hero'
+import { FeaturedProjects } from '@/components/home/FeaturedProjects'
+import { TechStack } from '@/components/home/TechStack'
+import { SocialProofScene } from '@/components/home/SocialProofScene'
+import { LatestPosts } from '@/components/home/LatestPosts'
+import { IntroOverlay } from '@/components/home/IntroOverlay'
+import { Makkos } from '@/components/home/Makkos'
+import { NowTerminal } from '@/components/home/NowTerminal'
+import { ContactCta } from '@/components/home/ContactCta'
+import { getSpotifyUrl } from '@/lib/makkos'
 
 export default async function HomePage() {
-  const [s, featured, posts, latestNow] = await Promise.all([
+  const [s, featured, posts, latestNow, allProjects, allPosts, usesItems] = await Promise.all([
     getSiteSettings(),
     getFeaturedProjects(),
     getLatestPosts(4),
     getLatestNowEntry(),
+    getPublishedProjects(),
+    getPublishedPosts(),
+    getUsesItems(),
   ])
-  const github = socialByPlatform(s.social_links, 'github')
-  const linkedin = socialByPlatform(s.social_links, 'linkedin')
-  const available = s.available_for_work
+
+  const stackItems = STACK.map((item) => ({
+    ...item,
+    projectCount: allProjects.filter((p) =>
+      p.tech_stack.some((t) => t.toLowerCase() === item.name.toLowerCase())
+    ).length,
+  }))
+
+  const derived: Record<Extract<Stat['value'], string>, number> = {
+    'derived:projects': allProjects.length,
+    'derived:in-production': allProjects.filter((p) => p.status === 'i-drift' || p.status === 'aktiv').length,
+    'derived:posts': allPosts.length,
+    'derived:uses': usesItems.length,
+  }
+  const stats = STATS.map((stat) => ({
+    label: stat.label,
+    value: typeof stat.value === 'number' ? stat.value : derived[stat.value],
+    suffix: stat.suffix,
+  })).filter((stat) => stat.value > 0)
 
   return (
     <>
-      <section className="px-5 py-10 md:px-8 md:py-14">
-        <div className="container grid gap-8 md:gap-12 items-start grid-cols-1 md:grid-cols-[1fr_280px]">
-          <div>
-            <div className="eyebrow" style={{ marginBottom: '1rem' }}>
-              {available && (
-                <span className="status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'oklch(0.70 0.16 145)', marginRight: 8, verticalAlign: 'middle' }} />
-              )}
-              {available ? (s.availability_note || 'Tilgjengelig for samtaler') : 'Ikke tilgjengelig akkurat nå'}
-              {' · Oslo '}<OsloClock />
-            </div>
-            <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1.25rem' }}>
-              {s.full_name}.<br />
-              <span style={{ color: 'var(--ink-3)' }}>{s.headline || 'Fullstack-utvikler'}</span>
-            </h1>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--ink-2)', maxWidth: '36rem', lineHeight: 1.65, marginTop: '1.5rem' }}>
-              {s.bio_short || 'Notater, prosjekter og verktøy fra arbeidet mitt som fullstack-utvikler.'}
-            </p>
-            <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
-              <Link href="/prosjekter" className="btn btn-primary"><FiGrid /> Se prosjekter</Link>
-              <Link href="/blogg" className="btn"><FiFile /> Les blogg</Link>
-              {s.cv_url && (
-                <a href={s.cv_url} className="btn" target="_blank" rel="noopener noreferrer"><FiDownload /> Last ned CV</a>
-              )}
-              <Link href="/kontakt" className="btn btn-ghost">Ta kontakt <FiArrowRight style={{ fontSize: '.85em' }} /></Link>
-            </div>
-            {(github || linkedin) && (
-              <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2rem', alignItems: 'center' }}>
-                {github && (
-                  <a href={github.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
-                    <FiGithub /> {github.url.replace(/^https?:\/\//, '')}
-                  </a>
-                )}
-                {linkedin && (
-                  <a href={linkedin.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
-                    <FiLinkedin /> {linkedin.url.replace(/^https?:\/\//, '')}
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-          <aside className="max-w-[280px] w-full mx-auto md:mx-0">
-            {s.image_url && (
-              <>
-                <div style={{ position: 'relative', aspectRatio: '4/5', background: 'var(--bg-sunken)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--rule)' }}>
-                  <Image
-                    src={s.image_url}
-                    alt={`Portrett av ${s.full_name}`}
-                    fill
-                    sizes="(max-width: 768px) 280px, 280px"
-                    priority
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '.75rem .875rem', background: 'linear-gradient(to top, rgba(0,0,0,.7), transparent)', color: '#fff', fontFamily: 'var(--ff-mono)', fontSize: '.6875rem', letterSpacing: '.05em' }}>
-                    MARCUS · NO
-                  </div>
-                </div>
-                <div className="mono" style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--ink-4)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span><span className="scroll-arrow">↓</span> SCROLL</span>
-                  <span>001 / 007</span>
-                </div>
-              </>
-            )}
-          </aside>
-        </div>
-      </section>
+      <IntroOverlay name={s.full_name} />
+      <Hero settings={s} />
 
-      <hr className="rule container" />
-
-      <section className="px-5 py-10 md:px-8 md:py-10">
+      <section className="px-5 py-14 md:px-8 md:py-20" data-section="prosjekter">
         <div className="container">
-          <div className="section-head">
-            <h2>Utvalgte prosjekter</h2>
-            <Link href="/prosjekter" className="muted" style={{ fontSize: '.8125rem' }}>Alle prosjekter →</Link>
+          <div className="section-head-xl">
+            <span className="eyebrow">002 · Utvalgte prosjekter</span>
+            <h2 className="display display-2">Arbeid</h2>
+            <Link href="/prosjekter" className="section-head-link mono">
+              Alle prosjekter →
+            </Link>
           </div>
           {featured.length === 0 ? (
             <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-              {featured.slice(0, 3).map((p) => (
-                <ProjectCard key={p.id} project={p} />
-              ))}
-            </div>
+            <FeaturedProjects
+              projects={featured.slice(0, 4).map((p) => ({
+                id: p.id,
+                slug: p.slug,
+                title: p.title,
+                description: p.description,
+                tech_stack: p.tech_stack,
+                status: p.status,
+                cover_image: p.cover_image,
+                started_at: p.started_at,
+              }))}
+            />
           )}
         </div>
       </section>
 
-      <hr className="rule container" />
-
-      <section className="px-5 py-10 md:px-8 md:py-10">
-        <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2">
-          <div>
-            <div className="section-head">
-              <h2>Siste notater</h2>
-              <Link href="/blogg" className="muted" style={{ fontSize: '.8125rem' }}>Alle →</Link>
-            </div>
-            {posts.length === 0 ? (
-              <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
-            ) : (
-              <div>
-                {posts.map((p) => (
-                  <Link key={p.id} href={`/blogg/${p.slug}`} className="post-row">
-                    <div>
-                      <div className="post-title">{p.title}</div>
-                      <div className="post-desc">{p.description}</div>
-                      <div style={{ display: 'flex', gap: '.375rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
-                        {p.tags.slice(0, 2).map((t) => <span key={t} className="chip">{t}</span>)}
-                        <span className="chip"><FiClock /> {readingTime(p.content)} min</span>
-                      </div>
-                    </div>
-                    <span className="post-date">
-                      {p.published_at
-                        ? new Date(p.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })
-                        : ''}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="section-head">
-              <h2>Akkurat nå</h2>
-              <Link href="/na" className="muted" style={{ fontSize: '.8125rem' }}>Arkiv →</Link>
-            </div>
-            {latestNow ? (
-              <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.75rem' }}>
-                  <span className="eyebrow">Sist oppdatert</span>
-                  <span className="mono dim" style={{ fontSize: '.75rem' }}>
-                    {new Date(latestNow.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </span>
-                </div>
-                <div className="prose" style={{ fontSize: '.9375rem', lineHeight: 1.6, maxWidth: 'none' }}>
-                  <SafeMdx source={latestNow.content} />
-                </div>
-              </div>
-            ) : (
-              <div className="card" style={{ padding: '1.25rem 1.375rem' }}>
-                <p className="muted" style={{ fontSize: '.9375rem' }}>Ingen oppdateringer enda.</p>
-              </div>
-            )}
-            <OsloTerminal />
+      <section className="py-14 md:py-20" data-section="stack">
+        <div className="container px-5 md:px-8">
+          <div className="section-head-xl">
+            <span className="eyebrow">003 · Verktøykassa</span>
+            <h2 className="display display-2">Stack</h2>
           </div>
         </div>
+        <TechStack items={stackItems} />
       </section>
+
+      {(stats.length > 0 || QUOTES.length > 0) && (
+        <section className="py-14 md:py-20" data-section="tall">
+          <div className="container px-5 md:px-8">
+            <div className="section-head-xl">
+              <span className="eyebrow">004 · I tall</span>
+              <h2 className="display display-2">Bevis</h2>
+            </div>
+          </div>
+          <SocialProofScene stats={stats} quotes={QUOTES} />
+        </section>
+      )}
+
+      <section className="px-5 py-14 md:px-8 md:py-20" data-section="notater">
+        <div className="container">
+          <div className="section-head-xl">
+            <span className="eyebrow">005 · Siste notater</span>
+            <h2 className="display display-2">Notater</h2>
+            <Link href="/blogg" className="section-head-link mono">
+              Alle notater →
+            </Link>
+          </div>
+          {posts.length === 0 ? (
+            <p className="muted" style={{ fontSize: '.9375rem' }}>Kommer snart.</p>
+          ) : (
+            <LatestPosts posts={posts} />
+          )}
+        </div>
+      </section>
+
+      <section className="makkos-section px-5 py-14 md:px-8 md:py-20" data-section="makkos">
+        <div className="container">
+          <div className="section-head-xl">
+            <span className="eyebrow">006 · Musikk-DNA</span>
+            <h2 className="display display-2">Makkos</h2>
+          </div>
+          <Makkos spotifyUrl={getSpotifyUrl(s)} />
+        </div>
+      </section>
+
+      <section className="px-5 py-14 md:px-8 md:py-20" data-section="naa">
+        <div className="container">
+          <div className="section-head-xl">
+            <span className="eyebrow">007 · Akkurat nå</span>
+            <h2 className="display display-2">Nå</h2>
+            <Link href="/na" className="section-head-link mono">
+              Arkiv →
+            </Link>
+          </div>
+          <NowTerminal entry={latestNow} />
+        </div>
+      </section>
+
+      <ContactCta
+        email={s.email}
+        available={s.available_for_work}
+        availabilityNote={s.availability_note}
+      />
     </>
   )
 }

@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { FiArrowUpRight } from 'react-icons/fi'
+import { TransitionLink } from '@/components/motion/TransitionLink'
+import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import type { SiteSettings } from '@/lib/types/app'
 
 type Props = {
@@ -10,34 +11,44 @@ export function Footer({ settings }: Props) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="site-footer">
-      <div className="grid">
+    <footer className="statement-footer" data-parallax-root>
+      <ParallaxLayer speed={-7} className="statement-footer-name-wrap container">
+        <TransitionLink href="/" className="statement-footer-name display" aria-label="Til forsiden">
+          {settings.full_name.split(' ').map((line) => (
+            <span key={line} className="statement-footer-name-line">
+              {line}
+            </span>
+          ))}
+        </TransitionLink>
+        <p className="statement-footer-bio">
+          {settings.bio_short || 'Fullstack-utvikler i Redi AS.'}
+        </p>
+      </ParallaxLayer>
+      <div className="statement-footer-grid container">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '.5rem' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />
-            {settings.full_name}
-          </div>
-          <p style={{ color: 'var(--ink-3)', maxWidth: '22rem', fontSize: '.8125rem' }}>
-            {settings.bio_short || 'Fullstack-utvikler i Redi AS.'}
-          </p>
-        </div>
-        <div>
-          <h4>Innhold</h4>
+          <h4 className="mono">Innhold</h4>
           <ul>
-            <li><Link href="/blogg">Blogg</Link></li>
-            <li><Link href="/prosjekter">Prosjekter</Link></li>
-            <li><Link href="/na">Nå</Link></li>
-            <li><Link href="/uses">Uses</Link></li>
+            <li><TransitionLink href="/blogg">Blogg</TransitionLink></li>
+            <li><TransitionLink href="/prosjekter">Prosjekter</TransitionLink></li>
+            <li><TransitionLink href="/na">Nå</TransitionLink></li>
+            <li><TransitionLink href="/uses">Uses</TransitionLink></li>
+            <li><TransitionLink href="/om">Om</TransitionLink></li>
+            <li><TransitionLink href="/kontakt">Kontakt</TransitionLink></li>
           </ul>
         </div>
         <div>
-          <h4>Koble til</h4>
+          <h4 className="mono">Koble til</h4>
           <ul>
             {settings.social_links.map((link) => (
               <li key={link.url}>
-                <a href={link.url} target="_blank" rel="me noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '.25rem' }}>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="me noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '.25rem' }}
+                >
                   <span style={{ textTransform: 'capitalize' }}>{link.platform}</span>
-                  <FiArrowUpRight style={{ fontSize: '.7em', opacity: 0.6 }} />
+                  <FiArrowUpRight style={{ fontSize: '.7em', opacity: 0.6 }} aria-hidden />
                 </a>
               </li>
             ))}
@@ -47,18 +58,18 @@ export function Footer({ settings }: Props) {
           </ul>
         </div>
         <div>
-          <h4>Feeds</h4>
+          <h4 className="mono">Feeds</h4>
           <ul>
-            <li><Link href="/rss.xml">RSS</Link></li>
-            <li><Link href="/feed.json">JSON Feed</Link></li>
-            <li><Link href="/llms.txt">llms.txt</Link></li>
-            <li><Link href="/sitemap.xml">Sitemap</Link></li>
+            <li><a href="/rss.xml">RSS</a></li>
+            <li><a href="/feed.json">JSON Feed</a></li>
+            <li><a href="/llms.txt">llms.txt</a></li>
+            <li><a href="/sitemap.xml">Sitemap</a></li>
           </ul>
         </div>
       </div>
-      <div className="meta">
+      <div className="statement-footer-meta container mono">
         <span>© {year} {settings.full_name}</span>
-        <span className="mono">Bygget med Next.js · Hostet på Vercel</span>
+        <span>Bygget med Next.js · Hostet på Vercel</span>
       </div>
     </footer>
   )
