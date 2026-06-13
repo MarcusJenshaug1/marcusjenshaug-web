@@ -146,9 +146,9 @@ export function ProjectForm({ project }: Props) {
             <Field label="Rolle" htmlFor="role" hint="F.eks. «Fullstack-utvikler»">
               <input id="role" name="role" defaultValue={project?.role ?? ''} style={inputStyle} />
             </Field>
-            <Field label="Sortering" htmlFor="order_index" hint="Lavere = tidligere i lister">
-              <input id="order_index" name="order_index" type="number" defaultValue={project?.order_index ?? 0} style={inputStyle} />
-            </Field>
+            <p style={{ fontSize: '.75rem', color: 'var(--ink-4)', marginTop: '-.25rem' }}>
+              Rekkefølge styres ved å dra prosjektene i listen.
+            </p>
           </section>
 
           <section>

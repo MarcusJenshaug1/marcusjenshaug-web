@@ -9,7 +9,6 @@ export const getPublishedProjects = cache(async (): Promise<Project[]> => {
     .from('projects')
     .select('*')
     .eq('draft', false)
-    .order('featured', { ascending: false })
     .order('order_index', { ascending: true })
     .order('started_at', { ascending: false, nullsFirst: false })
   return (data ?? []) as Project[]
@@ -51,7 +50,8 @@ export async function getAllProjectsAdmin(): Promise<Project[]> {
   const { data } = await admin
     .from('projects')
     .select('*')
-    .order('updated_at', { ascending: false })
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true })
   return (data ?? []) as Project[]
 }
 
