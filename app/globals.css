@@ -1443,6 +1443,49 @@ body.has-cursor, body.has-cursor * { cursor: none !important; }
   .prose { font-size: 1rem; line-height: 1.65; }
 }
 
+/* Admin: sorterbar liste (dra-og-slipp) */
+.sortable { list-style: none; margin: 0; }
+.sortable-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-top: 1px solid var(--rule);
+  background: var(--bg-elev);
+  position: relative;
+}
+.sortable-row:first-child { border-top: 0; }
+.sortable-row.drag-over::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: -1px;
+  height: 2px;
+  background: var(--accent);
+}
+.sortable-row.drag-below::before { top: auto; bottom: -1px; }
+.sortable-main { flex: 1; min-width: 0; }
+.sortable-date { flex-shrink: 0; }
+.sortable-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-4);
+  cursor: grab;
+  transition: background .12s, color .12s;
+  touch-action: none;
+}
+.sortable-handle:hover { background: var(--bg-sunken); color: var(--ink-2); }
+.sortable-handle:active { cursor: grabbing; }
+@media (max-width: 640px) {
+  .sortable-date { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

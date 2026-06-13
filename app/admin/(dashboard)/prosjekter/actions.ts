@@ -23,7 +23,6 @@ const projectSchema = z.object({
   role: z.string().optional().default(''),
   status: statusEnum,
   featured: z.boolean(),
-  order_index: z.coerce.number().int().default(0),
   started_at: z.string().optional().default(''),
   ended_at: z.string().optional().default(''),
   draft: z.boolean(),
@@ -55,7 +54,6 @@ function parseForm(formData: FormData) {
     role: formData.get('role') ?? '',
     status: formData.get('status'),
     featured: formData.get('featured') === 'on',
-    order_index: formData.get('order_index') ?? 0,
     started_at: formData.get('started_at') ?? '',
     ended_at: formData.get('ended_at') ?? '',
     draft: formData.get('draft') === 'on',
@@ -80,7 +78,6 @@ function toDbValues(data: z.infer<typeof projectSchema>) {
     role: data.role || null,
     status: data.status,
     featured: data.featured,
-    order_index: data.order_index,
     started_at: data.started_at || null,
     ended_at: data.ended_at || null,
     draft: data.draft,
@@ -99,9 +96,17 @@ export async function createProject(
   }
 
   const admin = createAdminClient()
+  const { data: last } = await admin
+    .from('projects')
+    .select('order_index')
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const order_index = (last?.order_index ?? -1) + 1
+
   const { data, error } = await admin
     .from('projects')
-    .insert(toDbValues(parsed.data))
+    .insert({ ...toDbValues(parsed.data), order_index })
     .select('id')
     .single()
 
@@ -168,6 +173,30 @@ export async function deleteProject(id: string) {
   revalidatePath('/admin/prosjekter')
   revalidatePath('/')
   redirect('/admin/prosjekter')
+}
+
+const reorderSchema = z.array(z.string().uuid()).min(1)
+
+export async function reorderProjects(
+  orderedIds: string[]
+): Promise<{ error?: string } | void> {
+  await requireAdmin()
+  const parsed = reorderSchema.safeParse(orderedIds)
+  if (!parsed.success) return { error: 'Ugyldig rekkefølge' }
+
+  const admin = createAdminClient()
+  const results = await Promise.all(
+    parsed.data.map((id, index) =>
+      admin.from('projects').update({ order_index: index }).eq('id', id)
+    )
+  )
+
+  revalidatePath('/prosjekter')
+  revalidatePath('/admin/prosjekter')
+  revalidatePath('/')
+
+  const failed = results.find((r) => r.error)
+  if (failed?.error) return { error: 'Kunne ikke lagre rekkefølge: ' + failed.error.message }
 }
 
 export async function suggestSlug(title: string): Promise<string> {
