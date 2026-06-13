@@ -1158,6 +1158,89 @@ a.uses-item:hover .uses-item-arrow { color: var(--accent); }
 }
 .error-link { color: var(--term-prompt); text-decoration: underline; }
 
+/* Kontakt */
+.kontakt-eyebrow { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.kontakt-status-dot { width: 7px; height: 7px; background: var(--ok); display: inline-block; }
+.kontakt-title { margin-bottom: .5rem; }
+.kontakt-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 4rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+.kontakt-links { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.kontakt-link {
+  display: flex; align-items: center; gap: .875rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: .9375rem;
+  color: var(--ink-2);
+  transition: color .15s, padding-left .2s var(--ease-out-expo);
+}
+.kontakt-link:hover { color: var(--ink); padding-left: .625rem; }
+.kontakt-link-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.5rem; height: 1.5rem;
+  color: var(--accent);
+  font-size: .8125rem;
+}
+.kontakt-link-arrow { margin-left: auto; color: var(--ink-4); transition: transform .2s var(--ease-out-expo), color .15s; }
+.kontakt-link:hover .kontakt-link-arrow { transform: translate(3px, -3px); color: var(--accent); }
+
+.kontakt-form-fields { display: flex; flex-direction: column; gap: 2rem; position: relative; }
+.form-field { display: flex; flex-direction: column; gap: .625rem; }
+.form-label {
+  font-size: .6875rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.form-input {
+  width: 100%;
+  padding: .75rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--rule-strong);
+  background: transparent;
+  font-size: 1.125rem;
+  color: var(--ink);
+  border-radius: 0;
+  transition: border-color .2s;
+}
+.form-input::placeholder { color: var(--ink-4); }
+.form-input:focus { outline: none; border-bottom-color: var(--accent); }
+.form-input:focus-visible { outline: none; border-radius: 0; }
+.form-textarea { resize: vertical; line-height: 1.6; min-height: 8rem; }
+.kontakt-form-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+  margin-top: .5rem;
+}
+.kontakt-success {
+  padding: 3rem 2rem;
+  border: 1px solid var(--rule);
+  text-align: center;
+  background: var(--bg-elev);
+}
+.kontakt-success-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 3rem; height: 3rem;
+  border-radius: 50%;
+  background: var(--ok-bg);
+  color: var(--ok);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  animation: success-pop .45s var(--ease-snap);
+}
+@keyframes success-pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .kontakt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+}
+
 /* Store CTA-knapper */
 .btn-xl {
   display: inline-flex; align-items: center; gap: .625rem;

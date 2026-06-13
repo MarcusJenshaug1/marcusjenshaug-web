@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FiMail, FiArrowUpRight } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
+import { Reveal } from '@/components/motion/Reveal'
 import { ContactForm } from './ContactForm'
 
 export const metadata: Metadata = {
@@ -9,64 +10,74 @@ export const metadata: Metadata = {
   alternates: { canonical: '/kontakt' },
 }
 
-const platformIconMap: Record<string, string> = {
-  linkedin: 'FiLinkedin',
-  github: 'FiGithub',
-  twitter: 'FiTwitter',
-  x: 'FiTwitter',
-}
-
 export default async function KontaktPage() {
   const s = await getSiteSettings()
 
   return (
-    <section className="px-5 py-10 md:px-8 md:py-12">
-      <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2" style={{ maxWidth: '56rem' }}>
-        <div>
-          <div className="eyebrow" style={{ marginBottom: '.75rem' }}>/KONTAKT</div>
-          <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1rem' }}>
-            Send meg en beskjed.
-          </h1>
-          <p className="muted" style={{ marginBottom: '2rem', maxWidth: '22rem' }}>
-            Jeg svarer som regel innen ett døgn. Klart du heller kan ta e-post direkte — eller koble til på en av plattformene nedenfor.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-            {s.email && (
-              <a
-                href={`mailto:${s.email}`}
-                style={{ display: 'flex', alignItems: 'center', gap: '.625rem', padding: '.625rem .875rem', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '.9375rem', color: 'var(--ink-2)' }}
-              >
-                <span style={{ color: 'var(--accent)' }}><FiMail /></span>
-                {s.email}
-                <FiArrowUpRight style={{ marginLeft: 'auto', fontSize: '.85em', color: 'var(--ink-4)' }} />
-              </a>
-            )}
-            {s.social_links.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target="_blank"
-                rel="me noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: '.625rem', padding: '.625rem .875rem', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '.9375rem', color: 'var(--ink-2)' }}
-              >
-                <span style={{ color: 'var(--accent)', textTransform: 'capitalize', fontFamily: 'var(--ff-mono)', fontSize: '.75rem', width: '1em', textAlign: 'center' }}>
-                  {link.platform.charAt(0).toUpperCase()}
+    <section className="px-5 py-12 md:px-8 md:py-16">
+      <div className="container">
+        <div className="page-head">
+          <div className="eyebrow kontakt-eyebrow">
+            /KONTAKT
+            {s.available_for_work && (
+              <>
+                {' · '}
+                <span className="status-dot kontakt-status-dot" aria-hidden />
+                <span className="cta-available">
+                  {s.availability_note || 'Tilgjengelig for samtaler'}
                 </span>
-                {link.url.replace(/^https?:\/\//, '')}
-                <FiArrowUpRight style={{ marginLeft: 'auto', fontSize: '.85em', color: 'var(--ink-4)' }} />
-              </a>
-            ))}
+              </>
+            )}
           </div>
-
-          <div className="term" style={{ marginTop: '2rem' }}>
-            <div><span className="com"># svartid</span></div>
-            <div>Vanligvis: &lt; 24t</div>
-            <div>Mest sannsynlig: morgen (CET)</div>
-          </div>
+          <Reveal variant="chars">
+            <h1 className="display display-1 kontakt-title">Si hei.</h1>
+          </Reveal>
+          <p className="page-lede">
+            Jeg svarer som regel innen ett døgn. Klart du heller kan ta e-post direkte — eller
+            koble til på en av plattformene nedenfor.
+          </p>
         </div>
-        <div>
-          <ContactForm />
+
+        <div className="kontakt-layout">
+          <div className="kontakt-side">
+            <div className="kontakt-links">
+              {s.email && (
+                <a href={`mailto:${s.email}`} className="kontakt-link">
+                  <span className="kontakt-link-icon">
+                    <FiMail aria-hidden />
+                  </span>
+                  {s.email}
+                  <FiArrowUpRight aria-hidden className="kontakt-link-arrow" />
+                </a>
+              )}
+              {s.social_links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="me noopener noreferrer"
+                  className="kontakt-link"
+                >
+                  <span className="kontakt-link-icon mono">
+                    {link.platform.charAt(0).toUpperCase()}
+                  </span>
+                  {link.url.replace(/^https?:\/\//, '')}
+                  <FiArrowUpRight aria-hidden className="kontakt-link-arrow" />
+                </a>
+              ))}
+            </div>
+
+            <div className="term" style={{ marginTop: '2rem' }}>
+              <div>
+                <span className="com"># svartid</span>
+              </div>
+              <div>Vanligvis: &lt; 24t</div>
+              <div>Mest sannsynlig: morgen (CET)</div>
+            </div>
+          </div>
+          <div className="kontakt-form">
+            <ContactForm />
+          </div>
         </div>
       </div>
     </section>
