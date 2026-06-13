@@ -29,6 +29,7 @@ export type ProjectRowData = {
 export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
   const [active, setActive] = useState<number | null>(null)
   const [engaged, setEngaged] = useState(false)
+  const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null)
   const reduced = useReducedMotion()
   const coarse = useIsCoarsePointer()
   const usePreview = !reduced && !coarse
@@ -44,8 +45,25 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
     [projects]
   )
 
+  const engage = (i: number, el?: HTMLElement) => {
+    setActive(i)
+    setEngaged(true)
+    if (el) {
+      const rect = el.getBoundingClientRect()
+      setFocusPoint({ x: rect.left + rect.width * 0.72, y: rect.top + rect.height / 2 })
+    } else {
+      setFocusPoint(null)
+    }
+  }
+
   return (
-    <div className="project-list" onPointerLeave={() => setActive(null)}>
+    <div
+      className="project-list"
+      onPointerLeave={() => setActive(null)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setActive(null)
+      }}
+    >
       {projects.map((p, i) => (
         <TransitionLink
           key={p.id}
@@ -53,10 +71,8 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
           className="project-row-xl"
           data-cursor="view"
           data-cursor-label="Åpne"
-          onPointerEnter={() => {
-            setActive(i)
-            setEngaged(true)
-          }}
+          onPointerEnter={() => engage(i)}
+          onFocus={(e) => engage(i, e.currentTarget)}
         >
           <span className="project-row-index mono">00{i + 1}</span>
           <span className="project-row-main">
@@ -82,7 +98,9 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
           <span className="project-row-tech mono">{p.tech_stack.slice(0, 4).join(' · ')}</span>
         </TransitionLink>
       ))}
-      {usePreview && engaged && <HoverPreview items={previewItems} activeIndex={active} />}
+      {usePreview && engaged && (
+        <HoverPreview items={previewItems} activeIndex={active} focusPoint={focusPoint} />
+      )}
     </div>
   )
 }

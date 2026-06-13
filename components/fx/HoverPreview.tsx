@@ -214,11 +214,14 @@ function PreviewPlane({
 type HoverPreviewProps = {
   items: PreviewItem[]
   activeIndex: number | null
+  focusPoint: { x: number; y: number } | null
 }
 
-export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
+export function HoverPreview({ items, activeIndex, focusPoint }: HoverPreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const lastActive = useRef(0)
+  const xToRef = useRef<((value: number) => void) | null>(null)
+  const yToRef = useRef<((value: number) => void) | null>(null)
   const [drawing, setDrawing] = useState(true)
   const visible = activeIndex !== null
 
@@ -229,6 +232,8 @@ export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
     if (!el) return
     const xTo = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' })
     const yTo = gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' })
+    xToRef.current = xTo
+    yToRef.current = yTo
     const onMove = (e: PointerEvent) => {
       xTo(e.clientX)
       yTo(e.clientY)
@@ -236,6 +241,12 @@ export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
+
+  useEffect(() => {
+    if (!focusPoint) return
+    xToRef.current?.(focusPoint.x)
+    yToRef.current?.(focusPoint.y)
+  }, [focusPoint])
 
   useEffect(() => {
     const el = wrapperRef.current

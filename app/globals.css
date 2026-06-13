@@ -528,9 +528,11 @@ kbd {
   padding: 2rem 0;
   border-bottom: 1px solid var(--rule);
   position: relative;
-  transition: padding-left .25s var(--ease-out-expo);
+  transition: padding-left .25s var(--ease-out-expo), background-color .2s ease;
 }
-.project-row-xl:hover { padding-left: 1.25rem; }
+.project-row-xl:hover,
+.project-row-xl:focus-visible { background: var(--bg-elev); padding-left: 1.25rem; }
+.project-row-xl:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .project-row-index {
   grid-area: index;
   font-size: .6875rem;
@@ -542,7 +544,8 @@ kbd {
   color: var(--ink);
   transition: color .15s;
 }
-.project-row-xl:hover .project-row-title { color: var(--accent); }
+.project-row-xl:hover .project-row-title,
+.project-row-xl:focus-visible .project-row-title { color: var(--accent); }
 .project-row-desc {
   color: var(--ink-3);
   font-size: .9375rem;
@@ -563,7 +566,8 @@ kbd {
   color: var(--ink-4);
   transition: transform .2s var(--ease-out-expo), color .15s;
 }
-.project-row-xl:hover .project-row-arrow { transform: translate(3px, -3px); color: var(--accent); }
+.project-row-xl:hover .project-row-arrow,
+.project-row-xl:focus-visible .project-row-arrow { transform: translate(3px, -3px); color: var(--accent); }
 .project-row-tech {
   grid-area: tech;
   font-size: .6875rem;
