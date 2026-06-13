@@ -1,15 +1,8 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
-import { Fraunces, JetBrains_Mono, Martian_Mono } from 'next/font/google'
+import { JetBrains_Mono, Martian_Mono } from 'next/font/google'
 import { AdminShortcut } from '@/components/AdminShortcut'
 import './globals.css'
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  axes: ['opsz'],
-  variable: '--font-fraunces',
-  display: 'swap',
-})
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -67,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="nb"
-      className={`${GeistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${martianMono.variable}`}
+      className={`${GeistSans.variable} ${jetbrainsMono.variable} ${martianMono.variable}`}
       suppressHydrationWarning
     >
       <body>
