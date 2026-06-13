@@ -220,8 +220,7 @@ type HoverPreviewProps = {
 export function HoverPreview({ items, activeIndex, focusPoint }: HoverPreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const lastActive = useRef(0)
-  const xToRef = useRef<((value: number) => void) | null>(null)
-  const yToRef = useRef<((value: number) => void) | null>(null)
+  const placeRef = useRef<((x: number, y: number) => void) | null>(null)
   const [drawing, setDrawing] = useState(true)
   const visible = activeIndex !== null
 
@@ -232,20 +231,27 @@ export function HoverPreview({ items, activeIndex, focusPoint }: HoverPreviewPro
     if (!el) return
     const xTo = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' })
     const yTo = gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' })
-    xToRef.current = xTo
-    yToRef.current = yTo
-    const onMove = (e: PointerEvent) => {
-      xTo(e.clientX)
-      yTo(e.clientY)
+    const style = getComputedStyle(el)
+    const offsetX = parseFloat(style.left) || 0
+    const offsetY = parseFloat(style.top) || 0
+    const place = (x: number, y: number) => {
+      const edge = 16
+      const minX = edge - offsetX
+      const minY = edge - offsetY
+      const maxX = window.innerWidth - edge - offsetX - el.offsetWidth
+      const maxY = window.innerHeight - edge - offsetY - el.offsetHeight
+      xTo(Math.min(Math.max(x, minX), Math.max(minX, maxX)))
+      yTo(Math.min(Math.max(y, minY), Math.max(minY, maxY)))
     }
+    placeRef.current = place
+    const onMove = (e: PointerEvent) => place(e.clientX, e.clientY)
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
   useEffect(() => {
     if (!focusPoint) return
-    xToRef.current?.(focusPoint.x)
-    yToRef.current?.(focusPoint.y)
+    placeRef.current?.(focusPoint.x, focusPoint.y)
   }, [focusPoint])
 
   useEffect(() => {
