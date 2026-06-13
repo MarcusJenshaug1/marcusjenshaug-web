@@ -25,7 +25,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const [enabled, setEnabledState] = useState(false)
 
   useEffect(() => {
-    setEnabledState(localStorage.getItem(STORAGE_KEY) === '1')
+    const stored = localStorage.getItem(STORAGE_KEY)
+    setEnabledState(stored === null ? true : stored === '1')
   }, [])
 
   useEffect(() => {
