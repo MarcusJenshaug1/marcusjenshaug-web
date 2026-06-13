@@ -8,8 +8,8 @@
   --bg-sunken: oklch(0.12 0.01 75);
   --ink: oklch(0.95 0.012 85);
   --ink-2: oklch(0.82 0.015 85);
-  --ink-3: oklch(0.65 0.02 80);
-  --ink-4: oklch(0.48 0.02 80);
+  --ink-3: oklch(0.68 0.02 80);
+  --ink-4: oklch(0.57 0.02 80);
   --rule: oklch(0.26 0.015 75);
   --rule-strong: oklch(0.34 0.018 75);
   --accent: oklch(0.72 0.19 38);
@@ -252,6 +252,7 @@ main#main { padding-top: 4rem; }
   letter-spacing: 0.04em;
   color: var(--ink-3);
   max-width: 22rem;
+  min-height: 2.5rem;
 }
 
 @media (max-width: 860px) {
@@ -1115,6 +1116,7 @@ kbd {
 .uses-rail-index { color: var(--ink-4); font-size: .625rem; }
 .uses-rail-count { margin-left: auto; color: var(--accent); }
 .uses-groups { display: flex; flex-direction: column; gap: 3.5rem; }
+.uses-group { scroll-margin-top: 5.5rem; }
 .uses-group-head { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem; }
 .uses-group-count { font-size: .75rem; }
 .uses-table { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
