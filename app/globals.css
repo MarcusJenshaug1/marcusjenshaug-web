@@ -1040,6 +1040,124 @@ kbd {
   border: 1px solid var(--rule);
 }
 
+/* Nå-side (terminallogg) */
+.inline-code { background: var(--bg-sunken); padding: 1px 5px; border-radius: 4px; font-size: .875em; font-family: var(--ff-mono); }
+.na-log { max-width: none; }
+.na-entry {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem !important;
+  border-left: 2px solid var(--term-rule);
+  margin-left: 1.25rem !important;
+}
+.na-entry-latest { border-left-color: var(--accent); }
+.na-entry-head { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .5rem; flex-wrap: wrap; }
+.na-entry-date { color: var(--term-com); }
+.na-entry-badge {
+  font-size: .625rem;
+  letter-spacing: .1em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: .1rem .45rem;
+}
+.na-entry .now-terminal-content { margin: 0; padding: 0 !important; }
+
+/* Uses */
+.uses-layout {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+.uses-rail {
+  position: sticky;
+  top: 6rem;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--rule);
+}
+.uses-rail-link {
+  display: flex; align-items: baseline; gap: .625rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: .75rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color .15s, padding-left .2s var(--ease-out-expo);
+}
+.uses-rail-link:hover { color: var(--ink); padding-left: .5rem; }
+.uses-rail-index { color: var(--ink-4); font-size: .625rem; }
+.uses-rail-count { margin-left: auto; color: var(--accent); }
+.uses-groups { display: flex; flex-direction: column; gap: 3.5rem; }
+.uses-group-head { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem; }
+.uses-group-count { font-size: .75rem; }
+.uses-table { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.uses-item {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: baseline;
+  padding: .875rem 0;
+  border-bottom: 1px solid var(--rule);
+  transition: padding-left .2s var(--ease-out-expo);
+}
+a.uses-item:hover { padding-left: .625rem; }
+a.uses-item:hover .uses-item-name { color: var(--accent); }
+.uses-item-name { font-weight: 500; transition: color .15s; }
+.uses-item-desc { color: var(--ink-3); font-size: .9375rem; }
+.uses-item-arrow { color: var(--ink-4); font-size: .875rem; }
+a.uses-item:hover .uses-item-arrow { color: var(--accent); }
+
+@media (max-width: 768px) {
+  .uses-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .uses-rail { position: static; }
+  .uses-item { grid-template-columns: minmax(0, 1fr) auto; }
+  .uses-item-desc { grid-column: 1 / -1; }
+}
+
+/* Om */
+.om-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr);
+  gap: 3.5rem;
+  align-items: start;
+}
+.om-sidebar { position: sticky; top: 6rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.om-portrait {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--rule-strong);
+}
+.om-meta { display: flex; flex-direction: column; border-top: 1px solid var(--rule); font-size: .6875rem; letter-spacing: .06em; }
+.om-meta-row {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: .625rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.om-meta-row span:first-child { color: var(--ink-4); text-transform: uppercase; }
+.om-meta-row span:last-child { color: var(--ink-2); text-align: right; }
+.om-cv { justify-content: center; }
+.om-title { margin-bottom: 2rem; }
+.om-contact { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+.om-elsewhere { margin-top: 2.5rem; }
+
+@media (max-width: 768px) {
+  .om-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+  .om-sidebar { position: static; max-width: 24rem; }
+}
+
+/* Feilsider */
+.error-page { padding-top: 8rem; padding-bottom: 8rem; }
+.error-code {
+  font-size: clamp(4rem, 18vw, 9rem);
+  color: transparent;
+  -webkit-text-stroke: 2px var(--accent);
+  line-height: 1;
+  margin: 1rem 0;
+}
+.error-link { color: var(--term-prompt); text-decoration: underline; }
+
 /* Store CTA-knapper */
 .btn-xl {
   display: inline-flex; align-items: center; gap: .625rem;

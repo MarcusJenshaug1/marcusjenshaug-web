@@ -14,16 +14,26 @@ export default function Error({
   }, [error])
 
   return (
-    <section style={{ padding: '6rem 2rem' }}>
-      <div className="container" style={{ maxWidth: '32rem', textAlign: 'center' }}>
-        <div className="eyebrow" style={{ marginBottom: '1rem' }}>ERROR · UVENTET FEIL</div>
-        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1rem' }}>
-          Noe gikk galt.
-        </h1>
-        <p className="muted" style={{ marginBottom: '2rem' }}>
-          En uventet feil oppsto. Prøv igjen, eller gå tilbake til forsiden.
-        </p>
-        <button onClick={reset} className="btn btn-primary">Prøv igjen</button>
+    <section className="error-page px-5 md:px-8">
+      <div className="container" style={{ maxWidth: '40rem' }}>
+        <div className="term">
+          <div className="now-terminal-bar">
+            <span className="now-terminal-dot" aria-hidden style={{ background: 'var(--accent)' }} />
+            <span className="now-terminal-title">marcus@redi — uventet feil</span>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem' }}>
+            <div>
+              <span className="prompt">marcus@redi</span> <span className="str">~</span> $ ./kjør
+            </div>
+            <div className="error-code display">500</div>
+            <p style={{ color: 'var(--term-ink)', margin: '0 0 1rem' }}>
+              Noe gikk galt. Prøv igjen, eller gå tilbake til forsiden.
+            </p>
+            <button onClick={reset} className="btn-xl btn-xl-solid mono">
+              Prøv igjen
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   )

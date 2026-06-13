@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { FiExternalLink } from 'react-icons/fi'
+import { FiArrowUpRight } from 'react-icons/fi'
 import { getUsesItems, groupByCategory } from '@/lib/uses'
+import { Reveal } from '@/components/motion/Reveal'
 
 export const metadata: Metadata = {
   title: 'Uses',
@@ -14,53 +15,76 @@ export default async function UsesPage() {
   const categories = Object.keys(groups)
 
   return (
-    <section className="px-5 py-10 md:px-8 md:py-12">
-      <div className="container" style={{ maxWidth: '48rem' }}>
-        <div className="eyebrow" style={{ marginBottom: '.75rem' }}>/USES · SETUP</div>
-        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500 }}>
-          Verktøy, programvare og hardware jeg faktisk bruker.
-        </h1>
-        <p className="muted" style={{ marginTop: '.75rem', maxWidth: '34rem' }}>
-          Inspirert av <a href="https://usesthis.com" className="link">usesthis.com</a>. Jeg prøver å holde dette ærlig: kun ting jeg bruker daglig eller ukentlig.
-        </p>
+    <section className="px-5 py-12 md:px-8 md:py-16">
+      <div className="container">
+        <div className="page-head">
+          <div className="eyebrow">/USES · SETUP · {String(items.length).padStart(2, '0')}</div>
+          <Reveal variant="lines">
+            <h1 className="display display-2 page-title">
+              Verktøy, programvare og hardware jeg faktisk bruker
+            </h1>
+          </Reveal>
+          <p className="page-lede">
+            Inspirert av{' '}
+            <a href="https://usesthis.com" className="link">
+              usesthis.com
+            </a>
+            . Jeg prøver å holde dette ærlig: kun ting jeg bruker daglig eller ukentlig.
+          </p>
+        </div>
 
         {categories.length === 0 ? (
-          <div className="card" style={{ marginTop: '2rem' }}>
-            <p className="muted">Liste kommer snart.</p>
-          </div>
+          <p className="muted">Liste kommer snart.</p>
         ) : (
-          <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            {categories.map((cat) => (
-              <section key={cat}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '.75rem', marginBottom: '1rem' }}>
-                  <h2 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, fontSize: '1.5rem' }}>{cat}</h2>
-                  <span className="mono dim" style={{ fontSize: '.75rem' }}>· {groups[cat].length}</span>
-                </div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
-                  {groups[cat].map((it) => (
-                    <li
-                      key={it.id}
-                      className="grid gap-x-4 gap-y-1 py-3 items-baseline border-t border-rule grid-cols-[1fr_auto] md:grid-cols-[14rem_1fr_auto]"
-                    >
-                      <div style={{ fontWeight: 500 }}>{it.name}</div>
-                      <div
-                        className="muted col-span-2 md:col-span-1 md:order-none order-last"
-                        style={{ fontSize: '.9375rem' }}
-                      >
-                        {it.description ?? ''}
-                      </div>
-                      {it.url ? (
-                        <a href={it.url} target="_blank" rel="noopener noreferrer" className="dim" style={{ fontSize: '.8125rem' }}>
-                          <FiExternalLink />
-                        </a>
-                      ) : (
-                        <span />
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+          <div className="uses-layout">
+            <nav className="uses-rail mono" aria-label="Kategorier">
+              {categories.map((cat, i) => (
+                <a key={cat} href={`#uses-${i}`} className="uses-rail-link">
+                  <span className="uses-rail-index">{String(i + 1).padStart(2, '0')}</span>
+                  {cat}
+                  <span className="uses-rail-count">{groups[cat].length}</span>
+                </a>
+              ))}
+            </nav>
+            <div className="uses-groups">
+              {categories.map((cat, i) => (
+                <section key={cat} id={`uses-${i}`} className="uses-group">
+                  <div className="uses-group-head">
+                    <h2 className="display display-3">{cat}</h2>
+                    <span className="mono dim uses-group-count">
+                      {String(groups[cat].length).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <ul className="uses-table">
+                    {groups[cat].map((it) => {
+                      const inner = (
+                        <>
+                          <span className="uses-item-name">{it.name}</span>
+                          <span className="uses-item-desc">{it.description ?? ''}</span>
+                          {it.url && <FiArrowUpRight aria-hidden className="uses-item-arrow" />}
+                        </>
+                      )
+                      return (
+                        <li key={it.id}>
+                          {it.url ? (
+                            <a
+                              href={it.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="uses-item"
+                            >
+                              {inner}
+                            </a>
+                          ) : (
+                            <span className="uses-item">{inner}</span>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </section>
+              ))}
+            </div>
           </div>
         )}
       </div>
