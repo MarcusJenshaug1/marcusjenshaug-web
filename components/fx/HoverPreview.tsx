@@ -85,9 +85,11 @@ function aspectOf(tex: THREE.Texture): number {
 function PreviewPlane({
   items,
   activeIndex,
+  drawing,
 }: {
   items: PreviewItem[]
   activeIndex: number
+  drawing: boolean
 }) {
   const textures = useRef<(THREE.Texture | null)[]>([])
   const displayedTex = useRef<THREE.Texture | null>(null)
@@ -189,6 +191,12 @@ function PreviewPlane({
     )
   }, [activeIndex, material, tick])
 
+  useEffect(() => {
+    if (drawing) return
+    velocity.current = 0
+    material.uniforms.uVelocity.value = 0
+  }, [drawing, material])
+
   useFrame(() => {
     velocity.current *= 0.9
     const u = material.uniforms
@@ -211,8 +219,10 @@ type HoverPreviewProps = {
 export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const lastActive = useRef(0)
+  const [drawing, setDrawing] = useState(true)
+  const visible = activeIndex !== null
 
-  if (activeIndex !== null) lastActive.current = activeIndex
+  if (visible) lastActive.current = activeIndex
 
   useEffect(() => {
     const el = wrapperRef.current
@@ -230,23 +240,30 @@ export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
   useEffect(() => {
     const el = wrapperRef.current
     if (!el) return
-    gsap.to(el, {
-      scale: activeIndex !== null ? 1 : 0.85,
-      autoAlpha: activeIndex !== null ? 1 : 0,
-      duration: 0.35,
-      ease: 'power3.out',
-    })
-  }, [activeIndex])
+    if (visible) {
+      setDrawing(true)
+      gsap.to(el, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'power3.out', overwrite: true })
+    } else {
+      gsap.to(el, {
+        scale: 0.85,
+        autoAlpha: 0,
+        duration: 0.35,
+        ease: 'power3.out',
+        overwrite: true,
+        onComplete: () => setDrawing(false),
+      })
+    }
+  }, [visible])
 
   return (
     <div ref={wrapperRef} className="hover-preview" aria-hidden>
       <Canvas
         dpr={[1, 1.5]}
-        frameloop="always"
+        frameloop={drawing ? 'always' : 'never'}
         gl={{ antialias: false, powerPreference: 'low-power' }}
         camera={{ position: [0, 0, 2], fov: 50 }}
       >
-        <PreviewPlane items={items} activeIndex={activeIndex ?? lastActive.current} />
+        <PreviewPlane items={items} activeIndex={activeIndex ?? lastActive.current} drawing={drawing} />
       </Canvas>
     </div>
   )
