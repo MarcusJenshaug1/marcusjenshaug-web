@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { gsap } from '@/lib/motion/gsap'
@@ -77,17 +77,26 @@ function makeTypographicTile(title: string, index: number): THREE.Texture {
   return texture
 }
 
+function aspectOf(tex: THREE.Texture): number {
+  const img = tex.image as { width?: number; height?: number } | undefined
+  return img?.width && img?.height ? img.width / img.height : 1.5
+}
+
 function PreviewPlane({
   items,
   activeIndex,
+  drawing,
 }: {
   items: PreviewItem[]
   activeIndex: number
+  drawing: boolean
 }) {
   const textures = useRef<(THREE.Texture | null)[]>([])
-  const current = useRef(0)
+  const displayedTex = useRef<THREE.Texture | null>(null)
+  const target = useRef(-1)
   const velocity = useRef(0)
   const lastX = useRef(0)
+  const [tick, setTick] = useState(0)
 
   const material = useMemo(
     () =>
@@ -109,10 +118,12 @@ function PreviewPlane({
   useEffect(() => {
     const loader = new THREE.TextureLoader()
     loader.setCrossOrigin('anonymous')
+    const store = (i: number, texture: THREE.Texture) => {
+      textures.current[i] = texture
+      setTick((t) => t + 1)
+    }
     items.forEach((item, i) => {
-      const useTile = () => {
-        textures.current[i] = makeTypographicTile(item.title, item.index)
-      }
+      const useTile = () => store(i, makeTypographicTile(item.title, item.index))
       if (!item.src) {
         useTile()
         return
@@ -121,14 +132,14 @@ function PreviewPlane({
         item.src,
         (texture) => {
           texture.colorSpace = THREE.SRGBColorSpace
-          textures.current[i] = texture
+          store(i, texture)
         },
         undefined,
         useTile
       )
     })
-    const initial = textures.current
-    return () => initial.forEach((t) => t?.dispose())
+    const loaded = textures.current
+    return () => loaded.forEach((t) => t?.dispose())
   }, [items])
 
   useEffect(() => {
@@ -141,23 +152,26 @@ function PreviewPlane({
   }, [])
 
   useEffect(() => {
-    const next = textures.current[activeIndex]
-    if (!next) return
+    const tex = textures.current[activeIndex]
+    if (!tex) return
+    if (target.current === activeIndex) return
     const u = material.uniforms
-    const aspect = (tex: THREE.Texture) => {
-      const img = tex.image as { width?: number; height?: number } | undefined
-      return img?.width && img?.height ? img.width / img.height : 1.5
-    }
-    if (!u.uTexA.value) {
-      u.uTexA.value = next
-      u.uAspectA.value = aspect(next)
-      current.current = activeIndex
+    const a = aspectOf(tex)
+    if (!displayedTex.current) {
+      u.uTexA.value = tex
+      u.uAspectA.value = a
+      u.uProgress.value = 0
+      displayedTex.current = tex
+      target.current = activeIndex
       return
     }
-    if (current.current === activeIndex) return
-    current.current = activeIndex
-    u.uTexB.value = next
-    u.uAspectB.value = aspect(next)
+    u.uTexA.value = displayedTex.current
+    u.uAspectA.value = aspectOf(displayedTex.current)
+    u.uTexB.value = tex
+    u.uAspectB.value = a
+    target.current = activeIndex
+    const committed = tex
+    const committedIndex = activeIndex
     gsap.fromTo(
       u.uProgress,
       { value: 0 },
@@ -167,13 +181,21 @@ function PreviewPlane({
         ease: 'power3.out',
         overwrite: true,
         onComplete: () => {
-          u.uTexA.value = u.uTexB.value
-          u.uAspectA.value = u.uAspectB.value
+          if (target.current !== committedIndex) return
+          displayedTex.current = committed
+          u.uTexA.value = committed
+          u.uAspectA.value = aspectOf(committed)
           u.uProgress.value = 0
         },
       }
     )
-  }, [activeIndex, material])
+  }, [activeIndex, material, tick])
+
+  useEffect(() => {
+    if (drawing) return
+    velocity.current = 0
+    material.uniforms.uVelocity.value = 0
+  }, [drawing, material])
 
   useFrame(() => {
     velocity.current *= 0.9
@@ -192,47 +214,73 @@ function PreviewPlane({
 type HoverPreviewProps = {
   items: PreviewItem[]
   activeIndex: number | null
+  focusPoint: { x: number; y: number } | null
 }
 
-export function HoverPreview({ items, activeIndex }: HoverPreviewProps) {
+export function HoverPreview({ items, activeIndex, focusPoint }: HoverPreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const lastActive = useRef(0)
+  const placeRef = useRef<((x: number, y: number) => void) | null>(null)
+  const [drawing, setDrawing] = useState(true)
+  const visible = activeIndex !== null
 
-  if (activeIndex !== null) lastActive.current = activeIndex
+  if (visible) lastActive.current = activeIndex
 
   useEffect(() => {
     const el = wrapperRef.current
     if (!el) return
     const xTo = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' })
     const yTo = gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' })
-    const onMove = (e: PointerEvent) => {
-      xTo(e.clientX)
-      yTo(e.clientY)
+    const style = getComputedStyle(el)
+    const offsetX = parseFloat(style.left) || 0
+    const offsetY = parseFloat(style.top) || 0
+    const place = (x: number, y: number) => {
+      const edge = 16
+      const minX = edge - offsetX
+      const minY = edge - offsetY
+      const maxX = window.innerWidth - edge - offsetX - el.offsetWidth
+      const maxY = window.innerHeight - edge - offsetY - el.offsetHeight
+      xTo(Math.min(Math.max(x, minX), Math.max(minX, maxX)))
+      yTo(Math.min(Math.max(y, minY), Math.max(minY, maxY)))
     }
+    placeRef.current = place
+    const onMove = (e: PointerEvent) => place(e.clientX, e.clientY)
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
   useEffect(() => {
+    if (!focusPoint) return
+    placeRef.current?.(focusPoint.x, focusPoint.y)
+  }, [focusPoint])
+
+  useEffect(() => {
     const el = wrapperRef.current
     if (!el) return
-    gsap.to(el, {
-      scale: activeIndex !== null ? 1 : 0.85,
-      autoAlpha: activeIndex !== null ? 1 : 0,
-      duration: 0.35,
-      ease: 'power3.out',
-    })
-  }, [activeIndex])
+    if (visible) {
+      setDrawing(true)
+      gsap.to(el, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'power3.out', overwrite: true })
+    } else {
+      gsap.to(el, {
+        scale: 0.85,
+        autoAlpha: 0,
+        duration: 0.35,
+        ease: 'power3.out',
+        overwrite: true,
+        onComplete: () => setDrawing(false),
+      })
+    }
+  }, [visible])
 
   return (
     <div ref={wrapperRef} className="hover-preview" aria-hidden>
       <Canvas
         dpr={[1, 1.5]}
-        frameloop="always"
+        frameloop={drawing ? 'always' : 'never'}
         gl={{ antialias: false, powerPreference: 'low-power' }}
         camera={{ position: [0, 0, 2], fov: 50 }}
       >
-        <PreviewPlane items={items} activeIndex={activeIndex ?? lastActive.current} />
+        <PreviewPlane items={items} activeIndex={activeIndex ?? lastActive.current} drawing={drawing} />
       </Canvas>
     </div>
   )
