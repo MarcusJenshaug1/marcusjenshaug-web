@@ -50,7 +50,7 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
     setEngaged(true)
     if (el) {
       const rect = el.getBoundingClientRect()
-      setFocusPoint({ x: rect.left + rect.width * 0.72, y: rect.top + rect.height / 2 })
+      setFocusPoint({ x: rect.left + 40, y: rect.top + rect.height / 2 })
     } else {
       setFocusPoint(null)
     }

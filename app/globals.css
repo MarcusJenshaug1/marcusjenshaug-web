@@ -578,7 +578,7 @@ kbd {
 
 .hover-preview {
   position: fixed;
-  top: -140px; left: -210px;
+  top: -16px; left: 32px;
   width: 420px; height: 280px;
   z-index: 50;
   pointer-events: none;
