@@ -84,7 +84,8 @@ function PinnedScene({ stats, quotes }: Props) {
               data-value={stat.value}
               data-suffix={stat.suffix ?? ''}
             >
-              0{stat.suffix ?? ''}
+              {stat.value}
+              {stat.suffix ?? ''}
             </span>
             <span className="proof-panel-label mono">{stat.label}</span>
           </div>
