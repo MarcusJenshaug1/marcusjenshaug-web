@@ -1,20 +1,15 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import { FiGrid, FiFile, FiArrowRight, FiGithub, FiLinkedin, FiDownload } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects } from '@/lib/projects'
 import { getLatestPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
 import { readingTime } from '@/lib/mdx'
 import { SafeMdx } from '@/components/SafeMdx'
-import { OsloClock } from '@/components/OsloClock'
 import { OsloTerminal } from '@/components/OsloTerminal'
 import { ProjectCard } from '@/components/ProjectCard'
+import { Hero } from '@/components/home/Hero'
+import { IntroOverlay } from '@/components/home/IntroOverlay'
 import { FiClock } from 'react-icons/fi'
-
-function socialByPlatform(links: { platform: string; url: string }[], name: string) {
-  return links.find((l) => l.platform.toLowerCase() === name)
-}
 
 export default async function HomePage() {
   const [s, featured, posts, latestNow] = await Promise.all([
@@ -23,81 +18,13 @@ export default async function HomePage() {
     getLatestPosts(4),
     getLatestNowEntry(),
   ])
-  const github = socialByPlatform(s.social_links, 'github')
-  const linkedin = socialByPlatform(s.social_links, 'linkedin')
-  const available = s.available_for_work
 
   return (
     <>
-      <section className="px-5 py-10 md:px-8 md:py-14">
-        <div className="container grid gap-8 md:gap-12 items-start grid-cols-1 md:grid-cols-[1fr_280px]">
-          <div>
-            <div className="eyebrow" style={{ marginBottom: '1rem' }}>
-              {available && (
-                <span className="status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)', marginRight: 8, verticalAlign: 'middle' }} />
-              )}
-              {available ? (s.availability_note || 'Tilgjengelig for samtaler') : 'Ikke tilgjengelig akkurat nå'}
-              {' · Oslo '}<OsloClock />
-            </div>
-            <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1.25rem' }}>
-              {s.full_name}.<br />
-              <span style={{ color: 'var(--ink-3)' }}>{s.headline || 'Fullstack-utvikler'}</span>
-            </h1>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--ink-2)', maxWidth: '36rem', lineHeight: 1.65, marginTop: '1.5rem' }}>
-              {s.bio_short || 'Notater, prosjekter og verktøy fra arbeidet mitt som fullstack-utvikler.'}
-            </p>
-            <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
-              <Link href="/prosjekter" className="btn btn-primary"><FiGrid /> Se prosjekter</Link>
-              <Link href="/blogg" className="btn"><FiFile /> Les blogg</Link>
-              {s.cv_url && (
-                <a href={s.cv_url} className="btn" target="_blank" rel="noopener noreferrer"><FiDownload /> Last ned CV</a>
-              )}
-              <Link href="/kontakt" className="btn btn-ghost">Ta kontakt <FiArrowRight style={{ fontSize: '.85em' }} /></Link>
-            </div>
-            {(github || linkedin) && (
-              <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2rem', alignItems: 'center' }}>
-                {github && (
-                  <a href={github.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
-                    <FiGithub /> {github.url.replace(/^https?:\/\//, '')}
-                  </a>
-                )}
-                {linkedin && (
-                  <a href={linkedin.url} target="_blank" rel="me noopener noreferrer" className="muted" style={{ display: 'flex', alignItems: 'center', gap: '.375rem', fontSize: '.875rem' }}>
-                    <FiLinkedin /> {linkedin.url.replace(/^https?:\/\//, '')}
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-          <aside className="max-w-[280px] w-full mx-auto md:mx-0">
-            {s.image_url && (
-              <>
-                <div style={{ position: 'relative', aspectRatio: '4/5', background: 'var(--bg-sunken)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--rule)' }}>
-                  <Image
-                    src={s.image_url}
-                    alt={`Portrett av ${s.full_name}`}
-                    fill
-                    sizes="(max-width: 768px) 280px, 280px"
-                    priority
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '.75rem .875rem', background: 'linear-gradient(to top, rgba(0,0,0,.7), transparent)', color: '#fff', fontFamily: 'var(--ff-mono)', fontSize: '.6875rem', letterSpacing: '.05em' }}>
-                    MARCUS · NO
-                  </div>
-                </div>
-                <div className="mono" style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--ink-4)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span><span className="scroll-arrow">↓</span> SCROLL</span>
-                  <span>001 / 007</span>
-                </div>
-              </>
-            )}
-          </aside>
-        </div>
-      </section>
+      <IntroOverlay name={s.full_name} />
+      <Hero settings={s} />
 
-      <hr className="rule container" />
-
-      <section className="px-5 py-10 md:px-8 md:py-10">
+      <section className="px-5 py-10 md:px-8 md:py-10" data-section="prosjekter">
         <div className="container">
           <div className="section-head">
             <h2>Utvalgte prosjekter</h2>
@@ -117,7 +44,7 @@ export default async function HomePage() {
 
       <hr className="rule container" />
 
-      <section className="px-5 py-10 md:px-8 md:py-10">
+      <section className="px-5 py-10 md:px-8 md:py-10" data-section="notater">
         <div className="container grid gap-8 md:gap-12 grid-cols-1 md:grid-cols-2">
           <div>
             <div className="section-head">
