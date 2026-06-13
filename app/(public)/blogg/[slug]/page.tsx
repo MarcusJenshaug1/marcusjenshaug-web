@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getPostBySlug } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
 import { readingTime } from '@/lib/mdx'
 import { SafeMdx } from '@/components/SafeMdx'
+import { TransitionLink } from '@/components/motion/TransitionLink'
+import { Reveal } from '@/components/motion/Reveal'
+import { Parallax } from '@/components/fx/Parallax'
+import { ReadingProgress } from '@/components/fx/ReadingProgress'
 
 type Params = { slug: string }
 type Search = { preview?: string }
@@ -112,12 +115,13 @@ export default async function PostDetailPage({
   }
 
   return (
-    <section className="px-5 py-10 md:px-8 md:py-12">
-      <div className="container" style={{ maxWidth: '44rem' }}>
-        <nav className="mono dim" style={{ fontSize: '.75rem', marginBottom: '1.5rem' }}>
-          <Link href="/" style={{ color: 'inherit' }}>hjem</Link> /{' '}
-          <Link href="/blogg" style={{ color: 'inherit' }}>blogg</Link> /{' '}
-          <span style={{ color: 'var(--ink-2)' }}>{post.slug}</span>
+    <article className="px-5 py-12 md:px-8 md:py-16">
+      <ReadingProgress />
+      <div className="container" style={{ maxWidth: '46rem' }}>
+        <nav className="breadcrumb mono">
+          <TransitionLink href="/">hjem</TransitionLink> /{' '}
+          <TransitionLink href="/blogg">blogg</TransitionLink> /{' '}
+          <span>{post.slug}</span>
         </nav>
 
         {isPreview && post.draft && (
@@ -126,43 +130,38 @@ export default async function PostDetailPage({
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="article-meta mono">
           {post.tags.map((t) => (
-            <span key={t} className="chip">{t}</span>
+            <span key={t} className="article-meta-tag">
+              {t}
+            </span>
           ))}
-          <span className="dim" style={{ fontSize: '.8125rem' }}>
-            · {formatLong(post.published_at)} · {readingTime(post.content)} min
-          </span>
+          <span>{formatLong(post.published_at)}</span>
+          <span>{readingTime(post.content)} min lesing</span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, marginBottom: '1rem', fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)' }}>
-          {post.title}
-        </h1>
+        <Reveal variant="lines">
+          <h1 className="display display-2 article-title">{post.title}</h1>
+        </Reveal>
 
-        <p style={{ fontSize: '1.125rem', color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: post.cover_image ? '2rem' : '2.5rem' }}>
-          {post.description}
-        </p>
+        <Reveal variant="fade" delay={0.2}>
+          <p className="article-lede">{post.description}</p>
+        </Reveal>
 
         {post.cover_image && (
-          <div
-            style={{
-              position: 'relative',
-              aspectRatio: '16 / 9',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              border: '1px solid var(--rule)',
-              marginBottom: '2.5rem',
-              background: 'var(--bg-sunken)',
-            }}
-          >
-            <Image
-              src={post.cover_image}
-              alt={post.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 704px"
-              priority
-              style={{ objectFit: 'cover' }}
-            />
+          <div className="article-cover">
+            <Parallax speed={10}>
+              <div className="article-cover-inner">
+                <Image
+                  src={post.cover_image}
+                  alt={post.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 736px"
+                  priority
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
+            </Parallax>
           </div>
         )}
 
@@ -170,12 +169,12 @@ export default async function PostDetailPage({
           <SafeMdx source={post.content} />
         </div>
 
-        <div style={{ marginTop: '3rem', padding: '1.5rem', background: 'var(--bg-sunken)', borderRadius: '8px' }}>
+        <div className="article-outro">
           <div className="eyebrow" style={{ marginBottom: '.5rem' }}>Hvis du likte dette</div>
           <p style={{ fontSize: '.9375rem' }}>
-            Abonnér via <Link href="/rss.xml" className="link">RSS</Link> eller{' '}
-            <Link href="/feed.json" className="link">JSON Feed</Link>, eller{' '}
-            <Link href="/kontakt" className="link">ta kontakt</Link>.
+            Abonnér via <a href="/rss.xml" className="link">RSS</a> eller{' '}
+            <a href="/feed.json" className="link">JSON Feed</a>, eller{' '}
+            <TransitionLink href="/kontakt" className="link">ta kontakt</TransitionLink>.
           </p>
           {settings.social_links.length > 0 && (
             <p style={{ fontSize: '.875rem', marginTop: '.75rem' }} className="muted">
@@ -195,6 +194,6 @@ export default async function PostDetailPage({
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-    </section>
+    </article>
   )
 }

@@ -1,21 +1,13 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { FiRss, FiClock } from 'react-icons/fi'
+import { FiRss } from 'react-icons/fi'
 import { getPublishedPosts } from '@/lib/posts'
-import { readingTime } from '@/lib/mdx'
+import { LatestPosts } from '@/components/home/LatestPosts'
+import { Reveal } from '@/components/motion/Reveal'
 
 export const metadata: Metadata = {
   title: 'Blogg',
   description: 'Notater og lengre stykker om koden jeg skriver.',
   alternates: { canonical: '/blogg' },
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('nb-NO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
 }
 
 export default async function BloggPage() {
@@ -30,51 +22,42 @@ export default async function BloggPage() {
   const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a))
 
   return (
-    <section className="px-5 py-10 md:px-8 md:py-12">
-      <div className="container" style={{ maxWidth: '52rem' }}>
-        <div className="eyebrow" style={{ marginBottom: '.75rem' }}>ARTICLE · ARKIV</div>
-        <h1 style={{ fontFamily: 'var(--ff-serif)', fontWeight: 500, maxWidth: '28rem' }}>
-          Notater og lengre stykker om koden jeg skriver.
-        </h1>
-
-        <div style={{ display: 'flex', gap: '.75rem', marginTop: '1rem', alignItems: 'center' }}>
-          <a href="/rss.xml" className="chip"><FiRss /> RSS</a>
-          <a href="/feed.json" className="chip">JSON Feed</a>
-          <span className="dim" style={{ fontSize: '.8125rem', marginLeft: 'auto' }}>
-            {posts.length} {posts.length === 1 ? 'publisert notat' : 'publiserte notater'}
-          </span>
+    <section className="px-5 py-12 md:px-8 md:py-16">
+      <div className="container">
+        <div className="page-head">
+          <div className="eyebrow">ARTICLE · ARKIV · {String(posts.length).padStart(2, '0')}</div>
+          <Reveal variant="lines">
+            <h1 className="display display-2 page-title">
+              Notater og lengre stykker om koden jeg skriver
+            </h1>
+          </Reveal>
+          <div className="feed-row mono">
+            <a href="/rss.xml" className="filter-chip">
+              <FiRss aria-hidden /> RSS
+            </a>
+            <a href="/feed.json" className="filter-chip">
+              JSON Feed
+            </a>
+            <span className="feed-row-count">
+              {posts.length} {posts.length === 1 ? 'publisert notat' : 'publiserte notater'}
+            </span>
+          </div>
         </div>
 
         {posts.length === 0 ? (
-          <div className="card" style={{ marginTop: '2rem' }}>
-            <p className="muted">Første innlegg kommer snart.</p>
-          </div>
+          <p className="muted">Første innlegg kommer snart.</p>
         ) : (
-          <div style={{ marginTop: '2.5rem' }}>
-            {years.map((year) => (
-              <div key={year} style={{ marginBottom: '2.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '.5rem' }}>
-                  <h2 style={{ fontFamily: 'var(--ff-serif)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: 'var(--ink-4)', fontWeight: 400 }}>{year}</h2>
-                  <span className="mono dim" style={{ fontSize: '.75rem' }}>
-                    {groups[year].length} {groups[year].length === 1 ? 'notat' : 'notater'}
-                  </span>
-                </div>
-                {groups[year].map((p) => (
-                  <Link key={p.id} href={`/blogg/${p.slug}`} className="post-row">
-                    <div>
-                      <div className="post-title">{p.title}</div>
-                      <div className="post-desc">{p.description}</div>
-                      <div style={{ display: 'flex', gap: '.375rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
-                        {p.tags.map((t) => <span key={t} className="chip">{t}</span>)}
-                        <span className="chip"><FiClock /> {readingTime(p.content)} min</span>
-                      </div>
-                    </div>
-                    <span className="post-date">{p.published_at ? formatDate(p.published_at) : ''}</span>
-                  </Link>
-                ))}
+          years.map((year) => (
+            <div key={year} className="year-group">
+              <div className="year-group-head">
+                <span className="year-group-year display tabular">{year}</span>
+                <span className="mono dim year-group-count">
+                  {groups[year].length} {groups[year].length === 1 ? 'notat' : 'notater'}
+                </span>
               </div>
-            ))}
-          </div>
+              <LatestPosts posts={groups[year]} />
+            </div>
+          ))
         )}
       </div>
     </section>
