@@ -485,6 +485,9 @@ kbd {
 }
 .hero-canvas { position: absolute; inset: 0; }
 .hero-canvas canvas { display: block; width: 100%; height: 100%; }
+/* Matcher den ACES-tonemappede WebGL-rendringen på desktop. Synlig kun når
+   canvas ikke vises (mobil og fallback), siden canvas dekker bildet ellers. */
+.hero-portrait-img { filter: brightness(0.88) contrast(1.12) saturate(1.05); }
 .hero-foot {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -1331,9 +1334,12 @@ a.uses-item:hover .uses-item-arrow { color: var(--accent); }
 .intro-meta { font-size: .6875rem; letter-spacing: .2em; color: var(--ink-4); visibility: hidden; }
 
 @media (max-width: 768px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 2rem; padding-bottom: 6rem; }
+  .hero { justify-content: flex-start; }
+  .hero-grid { grid-template-columns: 1fr; gap: 2rem; padding-bottom: 2rem; }
   .hero-visual { order: -1; }
   .hero-visual-inner { aspect-ratio: 16 / 11; }
+  .hero-portrait-img { object-position: 50% 15%; }
+  .hero-foot { position: static; margin-top: auto; padding-top: 1.5rem; }
 }
 
 /* Egendefinert cursor */
