@@ -633,13 +633,32 @@ kbd {
 }
 
 /* Marquee */
-.marquee { overflow: hidden; width: 100%; }
+.marquee {
+  position: relative;
+  overflow: hidden;
+  /* min/max-width hindrer at sporet kan dytte containeren bredere enn
+     forelderen i flex/grid-kontekst — ellers vokser bredden i en evig loop. */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.marquee-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  visibility: hidden;
+  pointer-events: none;
+}
 .marquee-track {
   display: flex;
   width: max-content;
   animation: marquee-scroll linear infinite;
 }
 .marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-group { display: flex; flex-shrink: 0; }
 .marquee-content { display: flex; align-items: center; flex-shrink: 0; }
 .marquee-static { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
 @keyframes marquee-scroll {
