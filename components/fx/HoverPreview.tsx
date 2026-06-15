@@ -259,14 +259,16 @@ export function HoverPreview({ items, activeIndex, focusPoint }: HoverPreviewPro
     if (!el) return
     if (visible) {
       setDrawing(true)
-      gsap.to(el, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'power3.out', overwrite: true })
+      // overwrite: 'auto' rører kun scale/opacity — ikke x/y-quickTo-ene som
+      // følger pekeren. Med overwrite: true ble de drept, og preview-en frøs fast.
+      gsap.to(el, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'power3.out', overwrite: 'auto' })
     } else {
       gsap.to(el, {
         scale: 0.85,
         autoAlpha: 0,
         duration: 0.35,
         ease: 'power3.out',
-        overwrite: true,
+        overwrite: 'auto',
         onComplete: () => setDrawing(false),
       })
     }
