@@ -115,7 +115,7 @@ export default async function OmPage() {
         <div className="om-main">
           <div className="eyebrow" style={{ marginBottom: '1rem' }}>OM · PERSON · @id=#person</div>
           <Reveal variant="lines">
-            <h1 className="display display-2 om-title">
+            <h1 className="om-title">
               {s.bio_short || 'Jeg bygger digitale verktøy.'}
             </h1>
           </Reveal>

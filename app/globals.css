@@ -1214,7 +1214,17 @@ a.uses-item:hover .uses-item-arrow { color: var(--accent); }
 .om-meta-row span:first-child { color: var(--ink-4); text-transform: uppercase; }
 .om-meta-row span:last-child { color: var(--ink-2); text-align: right; }
 .om-cv { justify-content: center; }
-.om-title { margin-bottom: 2rem; }
+.om-title {
+  font-family: var(--ff-sans);
+  font-size: clamp(1.625rem, 3.2vw, 2.625rem);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  max-width: 30ch;
+  color: var(--ink);
+  margin-bottom: 2.5rem;
+}
 .om-contact { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
 .om-elsewhere { margin-top: 2.5rem; }
 
