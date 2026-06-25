@@ -1214,16 +1214,25 @@ a.uses-item:hover .uses-item-arrow { color: var(--accent); }
 .om-meta-row span:first-child { color: var(--ink-4); text-transform: uppercase; }
 .om-meta-row span:last-child { color: var(--ink-2); text-align: right; }
 .om-cv { justify-content: center; }
+.om-header { margin-bottom: 3rem; }
 .om-title {
   font-family: var(--ff-sans);
-  font-size: clamp(1.625rem, 3.2vw, 2.625rem);
-  font-weight: 500;
-  line-height: 1.18;
-  letter-spacing: -0.025em;
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-wrap: balance;
-  max-width: 30ch;
   color: var(--ink);
-  margin-bottom: 2.5rem;
+}
+.om-lead {
+  margin-top: 1.25rem;
+  max-width: 44ch;
+  font-size: clamp(1.0625rem, 1.7vw, 1.375rem);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: var(--ink-2);
+  text-wrap: pretty;
 }
 .om-contact { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
 .om-elsewhere { margin-top: 2.5rem; }

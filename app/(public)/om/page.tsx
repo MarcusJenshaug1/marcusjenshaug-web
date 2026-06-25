@@ -30,6 +30,13 @@ export default async function OmPage() {
   const s = await getSiteSettings()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
+  const omTitle = s.headline?.trim() || 'Fullstack-utvikler'
+  const bioShort = s.bio_short?.trim() || ''
+  const omLead =
+    omTitle && bioShort.toLowerCase().startsWith(omTitle.toLowerCase())
+      ? bioShort.slice(omTitle.length).replace(/^[\s.,—–-]+/, '').trim()
+      : bioShort
+
   const personSchema = {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -113,12 +120,13 @@ export default async function OmPage() {
           )}
         </aside>
         <div className="om-main">
-          <div className="eyebrow" style={{ marginBottom: '1rem' }}>OM · PERSON · @id=#person</div>
-          <Reveal variant="lines">
-            <h1 className="om-title">
-              {s.bio_short || 'Jeg bygger digitale verktøy.'}
-            </h1>
-          </Reveal>
+          <div className="om-header">
+            <div className="eyebrow" style={{ marginBottom: '1rem' }}>OM · PERSON · @id=#person</div>
+            <Reveal variant="lines">
+              <h1 className="om-title">{omTitle}</h1>
+            </Reveal>
+            {omLead && <p className="om-lead">{omLead}</p>}
+          </div>
           <div className="prose om-prose" style={{ maxWidth: 'none' }}>
             {s.bio_long ? (
               <SafeMdx source={s.bio_long} />
