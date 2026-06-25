@@ -13,10 +13,13 @@ const items = [
 export function AdminNav() {
   return (
     <aside className="w-60 border-r border-rule bg-bg-elev p-6 sticky top-0 h-screen">
-      <div className="flex items-center gap-2.5 font-semibold tracking-tight mb-8">
+      <Link
+        href="/admin"
+        className="flex items-center gap-2.5 font-semibold tracking-tight mb-8 text-ink hover:text-accent transition-colors"
+      >
         <span className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
         Admin
-      </div>
+      </Link>
       <nav className="flex flex-col gap-1">
         {items.map(({ href, label, Icon }) => (
           <Link
