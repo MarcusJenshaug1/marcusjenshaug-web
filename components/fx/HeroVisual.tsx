@@ -51,6 +51,16 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
 
   const useScene = capable && !reduced && !coarse && !lost
 
+  // R3F oppretter ikke scenen før react-use-measure har målt beholderen, og
+  // den første målingen uteblir ofte her. Et resize-event får den til å måle.
+  useEffect(() => {
+    if (!useScene) return
+    const timers = [200, 800, 2000].map((ms) =>
+      window.setTimeout(() => window.dispatchEvent(new Event('resize')), ms)
+    )
+    return () => timers.forEach((t) => window.clearTimeout(t))
+  }, [useScene])
+
   useEffect(() => {
     const el = ref.current
     if (!el || !useScene) return
