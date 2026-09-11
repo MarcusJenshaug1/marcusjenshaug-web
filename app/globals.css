@@ -509,9 +509,11 @@ kbd {
   border: 1px solid var(--rule-strong);
   background: var(--bg-sunken);
 }
+.hero-canvas { position: absolute; inset: 0; }
+.hero-canvas canvas { display: block; width: 100%; height: 100%; }
 /* Matcher den ACES-tonemappede WebGL-rendringen på desktop. Synlig kun når
    canvas ikke vises (mobil og fallback), siden canvas dekker bildet ellers. */
-.hero-portrait-img, .face-tracker { filter: brightness(0.88) contrast(1.12) saturate(1.05); }
+.hero-portrait-img { filter: brightness(0.88) contrast(1.12) saturate(1.05); }
 .hero-foot {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -1580,15 +1582,3 @@ body.has-cursor :is(input, textarea, [contenteditable]) { cursor: text !importan
     transition-duration: 0.01ms !important;
   }
 }
-
-/* Portrett som følger musa */
-.face-tracker { position: relative; overflow: hidden; }
-.face-sprite, .face-closed {
-  position: absolute; inset: 0;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  pointer-events: none;
-  transition: opacity .3s ease;
-  will-change: opacity;
-}
-.face-closed { background-size: cover; transition-duration: .08s; }
