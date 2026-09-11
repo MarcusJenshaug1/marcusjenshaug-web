@@ -18,7 +18,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (reduced) return
 
-    const instance = new Lenis({ autoRaf: false, lerp: 0.1 })
+    const instance = new Lenis({ autoRaf: false, lerp: 0.18 })
     setLenis(instance)
 
     instance.on('scroll', ScrollTrigger.update)

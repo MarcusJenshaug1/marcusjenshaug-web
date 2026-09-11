@@ -1420,10 +1420,11 @@ body.has-cursor, body.has-cursor * { cursor: none !important; }
   top: -4px; left: -4px;
   width: 8px; height: 8px;
   background: var(--ink);
+  box-shadow: 0 0 0 1px var(--bg);
   z-index: 9995;
   pointer-events: none;
   visibility: hidden;
-  mix-blend-mode: difference;
+  will-change: transform;
 }
 .cursor-ring {
   position: fixed;
@@ -1434,6 +1435,7 @@ body.has-cursor, body.has-cursor * { cursor: none !important; }
   z-index: 9994;
   pointer-events: none;
   visibility: hidden;
+  will-change: transform;
   display: flex; align-items: center; justify-content: center;
 }
 .cursor-label {
@@ -1474,7 +1476,7 @@ body.has-cursor, body.has-cursor * { cursor: none !important; }
   z-index: 9990;
   pointer-events: none;
   opacity: 0.06;
-  mix-blend-mode: overlay;
+  will-change: transform;
   animation: grain-jitter 0.9s steps(4) infinite;
 }
 @keyframes grain-jitter {
