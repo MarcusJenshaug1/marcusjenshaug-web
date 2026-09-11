@@ -100,6 +100,7 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
           <HeroVisual
             textureSrc={s.image_url ?? '/portrett.jpg'}
             depthSrc={s.image_url ? undefined : '/portrett-depth.webp'}
+            faceMesh={!s.image_url}
             fallbackSrc={s.image_url ?? '/portrett.jpg'}
             alt={`Portrett av ${s.full_name}`}
           />

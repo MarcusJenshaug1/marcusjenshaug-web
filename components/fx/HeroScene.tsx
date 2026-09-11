@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
+import { FaceWarp } from '@/components/fx/FaceWarp'
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -18,6 +19,7 @@ const fragmentShader = /* glsl */ `
   uniform sampler2D uDepth;
   uniform vec2 uLook;
   uniform float uParallax;
+  uniform float uFace;
   uniform float uTime;
   uniform float uVelocity;
   uniform vec2 uMouse;
@@ -59,13 +61,17 @@ const fragmentShader = /* glsl */ `
   }
 
   void main() {
-    vec2 uv = coverUv(vUv);
+    // Ansiktsmeshet (uFace = 1) har allerede bilde-uv og er flyttet i geometrien,
+    // så det hopper over cover-mapping og dybdeparallakse.
+    vec2 uv = uFace > 0.5 ? vUv : coverUv(vUv);
 
-    // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
-    // flytter seg dit pekeren er.
-    float depth = smoothstep(0.12, 0.55, texture2D(uDepth, uv).r);
-    uv += uLook * uParallax * (depth - 0.5);
-    uv = clamp(uv, vec2(0.002), vec2(0.998));
+    if (uFace < 0.5) {
+      // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
+      // flytter seg dit pekeren er.
+      float depth = smoothstep(0.12, 0.55, texture2D(uDepth, uv).r);
+      uv += uLook * uParallax * (depth - 0.5);
+      uv = clamp(uv, vec2(0.002), vec2(0.998));
+    }
 
     float drift = snoise(uv * 2.4 + uTime * 0.12) * 0.006;
     float dist = distance(vUv, uMouse);
@@ -114,12 +120,19 @@ function ResizeSync() {
   return null
 }
 
-function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
+function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?: string; face?: boolean }) {
   const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
   const { viewport, gl } = useThree()
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
   const targetLook = useRef(new THREE.Vector2(0, 0))
+  const hover = useRef(false)
+
+  const image = texture.image as { width: number; height: number }
+  const coverScale = useMemo<[number, number]>(() => {
+    const ratio = viewport.width / viewport.height / (image.width / image.height)
+    return ratio > 1 ? [1, 1 / ratio] : [ratio, 1]
+  }, [viewport.width, viewport.height, image.width, image.height])
 
   useEffect(() => {
     const canvas = gl.domElement
@@ -151,6 +164,7 @@ function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
         uDepth: { value: depthTexture },
         uLook: { value: new THREE.Vector2(0, 0) },
         uParallax: { value: depthSrc ? PARALLAX_STRENGTH : 0 },
+        uFace: { value: 0 },
         uTime: { value: 0 },
         uVelocity: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -171,32 +185,54 @@ function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
   })
 
   return (
-    <mesh
-      scale={[viewport.width, viewport.height, 1]}
-      onPointerMove={(e) => {
-        if (!e.uv) return
-        const prev = targetMouse.current.clone()
-        targetMouse.current.set(e.uv.x, e.uv.y)
-        targetVelocity.current = Math.min(
-          targetVelocity.current + prev.distanceTo(targetMouse.current) * 6,
-          1.2
-        )
-      }}
-    >
-      <planeGeometry args={[1, 1]} />
-      <primitive object={material} attach="material" />
-    </mesh>
+    <>
+      <mesh
+        scale={[viewport.width, viewport.height, 1]}
+        onPointerOver={() => {
+          hover.current = true
+        }}
+        onPointerOut={() => {
+          hover.current = false
+        }}
+        onPointerMove={(e) => {
+          if (!e.uv) return
+          const prev = targetMouse.current.clone()
+          targetMouse.current.set(e.uv.x, e.uv.y)
+          targetVelocity.current = Math.min(
+            targetVelocity.current + prev.distanceTo(targetMouse.current) * 6,
+            1.2
+          )
+        }}
+      >
+        <planeGeometry args={[1, 1]} />
+        <primitive object={material} attach="material" />
+      </mesh>
+      {face && (
+        <group scale={[viewport.width, viewport.height, 1]}>
+          <FaceWarp
+            vertexShader={vertexShader}
+            fragmentShader={fragmentShader}
+            uniforms={material.uniforms}
+            scale={coverScale}
+            parallax={depthSrc ? PARALLAX_STRENGTH : 0}
+            look={material.uniforms.uLook.value as THREE.Vector2}
+            hover={hover}
+          />
+        </group>
+      )}
+    </>
   )
 }
 
 type HeroSceneProps = {
   src: string
   depthSrc?: string
+  face?: boolean
   paused?: boolean
   onContextLost?: () => void
 }
 
-export default function HeroScene({ src, depthSrc, paused = false, onContextLost }: HeroSceneProps) {
+export default function HeroScene({ src, depthSrc, face = false, paused = false, onContextLost }: HeroSceneProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -211,7 +247,7 @@ export default function HeroScene({ src, depthSrc, paused = false, onContextLost
       }}
     >
       <ResizeSync />
-      <PortraitPlane src={src} depthSrc={depthSrc} />
+      <PortraitPlane src={src} depthSrc={depthSrc} face={face} />
     </Canvas>
   )
 }

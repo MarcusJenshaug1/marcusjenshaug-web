@@ -7,7 +7,7 @@ import { gsap } from '@/lib/motion/gsap'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { useIsCoarsePointer } from '@/lib/motion/useIsCoarsePointer'
 
-const TILT_DEG = 7
+const TILT_DEG = 5
 const TILT_REACH = 0.45
 
 const HeroScene = dynamic(() => import('@/components/fx/HeroScene'), { ssr: false })
@@ -24,11 +24,12 @@ function supportsWebGL() {
 type HeroVisualProps = {
   textureSrc: string
   depthSrc?: string
+  faceMesh?: boolean
   fallbackSrc: string
   alt: string
 }
 
-export function HeroVisual({ textureSrc, depthSrc, fallbackSrc, alt }: HeroVisualProps) {
+export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc, alt }: HeroVisualProps) {
   const reduced = useReducedMotion()
   const coarse = useIsCoarsePointer()
   const [capable, setCapable] = useState(false)
@@ -89,7 +90,7 @@ export function HeroVisual({ textureSrc, depthSrc, fallbackSrc, alt }: HeroVisua
       />
       {useScene && (
         <div className="hero-canvas" aria-hidden>
-          <HeroScene src={textureSrc} depthSrc={depthSrc} paused={!visible} onContextLost={() => setLost(true)} />
+          <HeroScene src={textureSrc} depthSrc={depthSrc} face={faceMesh} paused={!visible} onContextLost={() => setLost(true)} />
         </div>
       )}
     </div>
