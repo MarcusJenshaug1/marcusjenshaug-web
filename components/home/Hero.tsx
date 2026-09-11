@@ -3,7 +3,7 @@ import { OsloClock } from '@/components/OsloClock'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { Magnetic } from '@/components/motion/Magnetic'
 import { Reveal } from '@/components/motion/Reveal'
-import { HeroVisual } from '@/components/fx/HeroVisual'
+import { FaceTracker } from '@/components/home/FaceTracker'
 import { MeshGlow } from '@/components/fx/MeshGlow'
 import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import { RoleRotator } from '@/components/home/RoleRotator'
@@ -97,9 +97,13 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
           )}
         </ParallaxLayer>
         <ParallaxLayer speed={14} start="top top" className="hero-visual">
-          <HeroVisual
-            textureSrc={s.image_url ?? '/portrett.jpg'}
-            fallbackSrc={s.image_url ?? '/portrett.jpg'}
+          <FaceTracker
+            baseSrc="/face/base.webp"
+            spriteSrc="/face/sprite.webp"
+            closedSrc="/face/closed.webp"
+            cols={7}
+            rows={7}
+            eyes={{ x: 0.3, y: 0.24, w: 0.4, h: 0.12 }}
             alt={`Portrett av ${s.full_name}`}
           />
         </ParallaxLayer>
