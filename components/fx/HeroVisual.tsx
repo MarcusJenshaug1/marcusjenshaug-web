@@ -3,12 +3,8 @@
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
-import { gsap } from '@/lib/motion/gsap'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { useIsCoarsePointer } from '@/lib/motion/useIsCoarsePointer'
-
-const TILT_DEG = 5
-const TILT_REACH = 0.45
 
 const HeroScene = dynamic(() => import('@/components/fx/HeroScene'), { ssr: false })
 
@@ -59,32 +55,6 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
       window.setTimeout(() => window.dispatchEvent(new Event('resize')), ms)
     )
     return () => timers.forEach((t) => window.clearTimeout(t))
-  }, [useScene])
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el || !useScene) return
-    gsap.set(el, { transformPerspective: 1200 })
-    const rotX = gsap.quickTo(el, 'rotationX', { duration: 0.6, ease: 'power3.out' })
-    const rotY = gsap.quickTo(el, 'rotationY', { duration: 0.6, ease: 'power3.out' })
-    const onMove = (e: PointerEvent) => {
-      const rect = el.getBoundingClientRect()
-      const nx = gsap.utils.clamp(-1, 1, (e.clientX - (rect.left + rect.width / 2)) / (window.innerWidth * TILT_REACH))
-      const ny = gsap.utils.clamp(-1, 1, (e.clientY - (rect.top + rect.height / 2)) / (window.innerHeight * TILT_REACH))
-      rotY(nx * TILT_DEG)
-      rotX(-ny * TILT_DEG)
-    }
-    const onLeave = () => {
-      rotX(0)
-      rotY(0)
-    }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    document.documentElement.addEventListener('pointerleave', onLeave)
-    return () => {
-      window.removeEventListener('pointermove', onMove)
-      document.documentElement.removeEventListener('pointerleave', onLeave)
-      gsap.set(el, { clearProps: 'transform' })
-    }
   }, [useScene])
 
   return (

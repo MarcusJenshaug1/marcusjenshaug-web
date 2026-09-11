@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import { FaceWarp } from '@/components/fx/FaceWarp'
+import { HeadWarp } from '@/components/fx/HeadWarp'
+import headGrid from '@/components/fx/face/head-grid.json'
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -20,6 +21,17 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uLook;
   uniform float uParallax;
   uniform float uFace;
+  uniform vec4 uEyeA;
+  uniform vec4 uEyeB;
+  uniform vec2 uEyeShift;
+
+  // Flytter bildet inne i øyeåpningen mot blikkretningen, med myk kant mot
+  // øyelokkene, så iris ser ut til å følge pekeren.
+  vec2 eyeShift(vec2 uv, vec4 eye) {
+    vec2 e = (uv - eye.xy) / eye.zw;
+    float mask = smoothstep(1.0, 0.5, length(e));
+    return uLook * uEyeShift * mask;
+  }
   uniform float uTime;
   uniform float uVelocity;
   uniform vec2 uMouse;
@@ -65,7 +77,9 @@ const fragmentShader = /* glsl */ `
     // så det hopper over cover-mapping og dybdeparallakse.
     vec2 uv = uFace > 0.5 ? vUv : coverUv(vUv);
 
-    if (uFace < 0.5) {
+    if (uFace > 0.5) {
+      uv -= eyeShift(uv, uEyeA) + eyeShift(uv, uEyeB);
+    } else {
       // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
       // flytter seg dit pekeren er.
       float depth = smoothstep(0.12, 0.55, texture2D(uDepth, uv).r);
@@ -91,7 +105,13 @@ const fragmentShader = /* glsl */ `
 
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
-const PARALLAX_STRENGTH = 0.055
+const PARALLAX_STRENGTH = 0
+const EYE_SHIFT_X = 0.014
+const EYE_SHIFT_Y = 0.007
+
+function eyeUniform(eye: { cx: number; cy: number; rx: number; ry: number }) {
+  return new THREE.Vector4(eye.cx, 1 - eye.cy, eye.rx, eye.ry)
+}
 
 // R3F måler ikke alltid beholderen riktig ved første montering (lerretet blir
 // stående på 300x150), så vi speiler beholderstørrelsen inn selv.
@@ -126,7 +146,6 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
   const targetLook = useRef(new THREE.Vector2(0, 0))
-  const hover = useRef(false)
 
   const image = texture.image as { width: number; height: number }
   const coverScale = useMemo<[number, number]>(() => {
@@ -165,6 +184,9 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
         uLook: { value: new THREE.Vector2(0, 0) },
         uParallax: { value: depthSrc ? PARALLAX_STRENGTH : 0 },
         uFace: { value: 0 },
+        uEyeA: { value: eyeUniform(headGrid.eyes[0]) },
+        uEyeB: { value: eyeUniform(headGrid.eyes[1]) },
+        uEyeShift: { value: new THREE.Vector2(EYE_SHIFT_X, EYE_SHIFT_Y) },
         uTime: { value: 0 },
         uVelocity: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -188,12 +210,6 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
     <>
       <mesh
         scale={[viewport.width, viewport.height, 1]}
-        onPointerOver={() => {
-          hover.current = true
-        }}
-        onPointerOut={() => {
-          hover.current = false
-        }}
         onPointerMove={(e) => {
           if (!e.uv) return
           const prev = targetMouse.current.clone()
@@ -209,14 +225,12 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
       </mesh>
       {face && (
         <group scale={[viewport.width, viewport.height, 1]}>
-          <FaceWarp
+          <HeadWarp
             vertexShader={vertexShader}
             fragmentShader={fragmentShader}
             uniforms={material.uniforms}
             scale={coverScale}
-            parallax={depthSrc ? PARALLAX_STRENGTH : 0}
             look={material.uniforms.uLook.value as THREE.Vector2}
-            hover={hover}
           />
         </group>
       )}
