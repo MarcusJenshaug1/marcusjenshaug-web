@@ -4,29 +4,22 @@ import { useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { FiUpload, FiX } from 'react-icons/fi'
 import { createUploadUrl } from '@/app/admin/upload-actions'
+import { Button } from '@/components/Button'
+import { Input } from './Input'
 
 const MAX_MB = 8
 const BUCKET = 'media'
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '.5625rem .75rem',
-  border: '1px solid var(--rule-strong)',
-  borderRadius: '6px',
-  background: 'var(--bg-elev)',
-  fontFamily: 'var(--ff-mono)',
-  fontSize: '.8125rem',
-}
 
 type Props = {
   name: string
   value: string
   onChange: (value: string) => void
+  id?: string
   folder?: string
   placeholder?: string
 }
 
-export function ImageUploader({ name, value, onChange, folder = 'misc', placeholder }: Props) {
+export function ImageUploader({ name, value, onChange, id, folder = 'misc', placeholder }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -78,31 +71,23 @@ export function ImageUploader({ name, value, onChange, folder = 'misc', placehol
   return (
     <div>
       <input type="hidden" name={name} value={value} />
-      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'stretch' }}>
-        <input
+      <div className="flex gap-2 items-stretch">
+        <Input
+          id={id}
           type="text"
+          mono
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder ?? 'URL eller last opp'}
-          style={{ ...inputStyle, flex: 1 }}
+          className="flex-1"
         />
-        <button
-          type="button"
-          className="btn btn-sm"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-        >
-          <FiUpload /> {uploading ? 'Laster opp …' : 'Last opp'}
-        </button>
+        <Button type="button" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+          <FiUpload aria-hidden /> {uploading ? 'Laster opp …' : 'Last opp'}
+        </Button>
         {value && (
-          <button
-            type="button"
-            className="btn btn-sm btn-ghost"
-            onClick={() => onChange('')}
-            title="Fjern"
-          >
-            <FiX />
-          </button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => onChange('')} aria-label="Fjern bilde" title="Fjern">
+            <FiX aria-hidden />
+          </Button>
         )}
       </div>
       <input
@@ -113,18 +98,12 @@ export function ImageUploader({ name, value, onChange, folder = 'misc', placehol
           const f = e.target.files?.[0]
           if (f) handleFile(f)
         }}
-        style={{ display: 'none' }}
+        className="hidden"
       />
-      {error && (
-        <p style={{ marginTop: '.375rem', fontSize: '.75rem', color: 'var(--accent)' }}>{error}</p>
-      )}
+      {error && <p role="alert" className="mt-1.5 text-xs text-accent">{error}</p>}
       {value && !error && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={value}
-          alt="Forhåndsvisning"
-          style={{ marginTop: '.5rem', maxWidth: '240px', maxHeight: '160px', border: '1px solid var(--rule)', borderRadius: '6px' }}
-        />
+        <img src={value} alt="Forhåndsvisning" className="mt-2 max-w-60 max-h-40 border border-rule rounded-md" />
       )}
     </div>
   )

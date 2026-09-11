@@ -1,9 +1,10 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TAGS } from '@/lib/cache-tags'
 import { cleanEmDashes } from '@/lib/text'
 
 const socialLinkSchema = z.object({
@@ -85,6 +86,6 @@ export async function updateSettings(
     return { error: 'Kunne ikke lagre. Prøv igjen.' }
   }
 
-  revalidatePath('/', 'layout')
+  revalidateTag(TAGS.settings)
   return { success: true }
 }

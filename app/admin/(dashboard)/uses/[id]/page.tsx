@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getUsesItemByIdAdmin, getAllUsesAdmin } from '@/lib/uses'
-import { EditUsesForm } from './EditUsesForm'
+import { UsesForm } from '../UsesForm'
 
 export const metadata: Metadata = {
   title: 'Rediger uses-oppføring',
@@ -24,7 +24,7 @@ export default async function EditUsesPage({ params }: { params: Promise<{ id: s
       <header style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--rule)' }}>
         <h1 style={{ fontSize: '1.375rem' }}>{item.name}</h1>
       </header>
-      <EditUsesForm item={item} existingCategories={categories} />
+      <UsesForm item={item} existingCategories={categories} />
     </div>
   )
 }

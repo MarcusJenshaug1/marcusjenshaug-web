@@ -10,10 +10,16 @@ export async function getClientIp(): Promise<string> {
   )
 }
 
+export async function recordRateLimitHit(bucket: string): Promise<void> {
+  const admin = createAdminClient()
+  await admin.from('rate_limits').insert({ bucket })
+}
+
 export async function checkRateLimit(
   bucket: string,
   limit: number,
-  windowMinutes: number
+  windowMinutes: number,
+  { record = true }: { record?: boolean } = {}
 ): Promise<{ allowed: boolean }> {
   const admin = createAdminClient()
   const since = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString()
@@ -26,6 +32,6 @@ export async function checkRateLimit(
 
   if ((count ?? 0) >= limit) return { allowed: false }
 
-  await admin.from('rate_limits').insert({ bucket })
+  if (record) await recordRateLimitHit(bucket)
   return { allowed: true }
 }

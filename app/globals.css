@@ -153,7 +153,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
   padding: 0 1.5rem;
   height: 4rem;
   border-bottom: 1px solid var(--rule);
-  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

@@ -1,10 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TAGS, postTag } from '@/lib/cache-tags'
 import { cleanEmDashes } from '@/lib/text'
 
 const postSchema = z.object({
@@ -60,6 +61,18 @@ function toDbValues(data: z.infer<typeof postSchema>) {
   })
 }
 
+function revalidatePosts(...slugs: Array<string | null | undefined>) {
+  revalidateTag(TAGS.posts)
+  for (const slug of new Set(slugs)) {
+    if (slug) revalidateTag(postTag(slug))
+  }
+}
+
+async function getCurrentSlug(admin: ReturnType<typeof createAdminClient>, id: string) {
+  const { data } = await admin.from('posts').select('slug').eq('id', id).maybeSingle()
+  return data?.slug ?? null
+}
+
 export async function createPost(
   _prev: PostFormState,
   formData: FormData
@@ -82,8 +95,7 @@ export async function createPost(
     return { error: 'Kunne ikke opprette: ' + error.message }
   }
 
-  revalidatePath('/blogg')
-  revalidatePath('/')
+  revalidatePosts(parsed.data.slug)
   redirect(`/admin/blogg/${data.id}`)
 }
 
@@ -99,6 +111,7 @@ export async function updatePost(
   }
 
   const admin = createAdminClient()
+  const previousSlug = await getCurrentSlug(admin, id)
   const { error } = await admin.from('posts').update(toDbValues(parsed.data)).eq('id', id)
 
   if (error) {
@@ -106,11 +119,7 @@ export async function updatePost(
     return { error: 'Kunne ikke lagre: ' + error.message }
   }
 
-  revalidatePath(`/blogg/${parsed.data.slug}`)
-  revalidatePath('/blogg')
-  revalidatePath('/')
-  revalidatePath('/rss.xml')
-  revalidatePath('/feed.json')
+  revalidatePosts(previousSlug, parsed.data.slug)
   return { success: true }
 }
 
@@ -120,8 +129,10 @@ export async function autosavePost(id: string, formData: FormData): Promise<{ er
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const admin = createAdminClient()
+  const previousSlug = await getCurrentSlug(admin, id)
   const { error } = await admin.from('posts').update(toDbValues(parsed.data)).eq('id', id)
   if (error) return { error: error.message }
+  revalidatePosts(previousSlug, parsed.data.slug)
   revalidatePath(`/admin/blogg/${id}`)
 }
 
@@ -135,20 +146,28 @@ export async function togglePublish(id: string, currentDraft: boolean) {
   if (currentDraft) {
     patch.published_at = new Date().toISOString()
   }
-  const { error } = await admin.from('posts').update(patch).eq('id', id)
+  const { data, error } = await admin
+    .from('posts')
+    .update(patch)
+    .eq('id', id)
+    .select('slug')
+    .maybeSingle()
   if (error) throw new Error('Kunne ikke endre synlighet: ' + error.message)
-  revalidatePath('/blogg')
+  revalidatePosts(data?.slug)
   revalidatePath('/admin/blogg')
-  revalidatePath('/')
 }
 
 export async function deletePost(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  const { error } = await admin.from('posts').delete().eq('id', id)
+  const { data, error } = await admin
+    .from('posts')
+    .delete()
+    .eq('id', id)
+    .select('slug')
+    .maybeSingle()
   if (error) throw new Error('Kunne ikke slette innlegget: ' + error.message)
-  revalidatePath('/blogg')
+  revalidatePosts(data?.slug)
   revalidatePath('/admin/blogg')
-  revalidatePath('/')
   redirect('/admin/blogg')
 }

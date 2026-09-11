@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { PublicShell } from '@/components/PublicShell'
 
 export const metadata: Metadata = {
@@ -7,7 +8,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function NotFound() {
+export default async function NotFound() {
+  await connection()
   return (
     <PublicShell>
       <section className="error-page px-5 md:px-8">

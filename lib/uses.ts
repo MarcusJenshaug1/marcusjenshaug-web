@@ -1,19 +1,24 @@
-import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/public'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { CACHE_REVALIDATE_SECONDS, TAGS } from '@/lib/cache-tags'
 import type { UsesItem } from '@/lib/types/app'
 
-export const getUsesItems = cache(async (): Promise<UsesItem[]> => {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('uses_items')
-    .select('*')
-    .order('category', { ascending: true })
-    .order('order_index', { ascending: true })
-    .order('name', { ascending: true })
-  if (error) throw error
-  return (data ?? []) as UsesItem[]
-})
+export const getUsesItems = unstable_cache(
+  async (): Promise<UsesItem[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('uses_items')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('order_index', { ascending: true })
+      .order('name', { ascending: true })
+    if (error) throw error
+    return (data ?? []) as UsesItem[]
+  },
+  ['uses-items'],
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [TAGS.uses] }
+)
 
 export function groupByCategory(items: UsesItem[]): Record<string, UsesItem[]> {
   const groups: Record<string, UsesItem[]> = {}

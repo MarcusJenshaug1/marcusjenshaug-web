@@ -1,29 +1,27 @@
-import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/public'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { CACHE_REVALIDATE_SECONDS, TAGS } from '@/lib/cache-tags'
 import type { NowEntry } from '@/lib/types/app'
 
-export const getNowEntries = cache(async (): Promise<NowEntry[]> => {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('now_entries')
-    .select('*')
-    .order('published_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as NowEntry[]
-})
+export const getNowEntries = unstable_cache(
+  async (): Promise<NowEntry[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('now_entries')
+      .select('*')
+      .order('published_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []) as NowEntry[]
+  },
+  ['now-entries'],
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [TAGS.now] }
+)
 
-export const getLatestNowEntry = cache(async (): Promise<NowEntry | null> => {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('now_entries')
-    .select('*')
-    .order('published_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  if (error) throw error
-  return data as NowEntry | null
-})
+export async function getLatestNowEntry(): Promise<NowEntry | null> {
+  const entries = await getNowEntries()
+  return entries[0] ?? null
+}
 
 export async function getAllNowAdmin(): Promise<NowEntry[]> {
   const admin = createAdminClient()

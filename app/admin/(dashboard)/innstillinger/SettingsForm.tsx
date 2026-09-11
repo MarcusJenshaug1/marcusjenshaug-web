@@ -3,9 +3,12 @@
 import { useActionState, useState } from 'react'
 import { FiPlus, FiX } from 'react-icons/fi'
 import { Button } from '@/components/Button'
-import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
+import { FormStatus } from '@/components/ui/FormStatus'
+import { Input } from '@/components/ui/Input'
+import { SubmitButton } from '@/components/ui/SubmitButton'
+import { Textarea } from '@/components/ui/Textarea'
 import type { SiteSettings, SocialLink } from '@/lib/types/app'
 import { updateSettings, type SettingsState } from './actions'
 
@@ -16,7 +19,7 @@ type Props = {
 }
 
 export function SettingsForm({ settings }: Props) {
-  const [state, action, pending] = useActionState(updateSettings, initial)
+  const [state, action] = useActionState(updateSettings, initial)
   const [links, setLinks] = useState<SocialLink[]>(settings.social_links)
 
   const addLink = () => setLinks([...links, { platform: '', url: '' }])
@@ -43,7 +46,7 @@ export function SettingsForm({ settings }: Props) {
       </FormField>
 
       <FormField label="Lang bio (MDX)" htmlFor="bio_long" hint="Full om-side-tekst. Støtter markdown/MDX.">
-        <Textarea id="bio_long" name="bio_long" defaultValue={settings.bio_long} rows={10} required />
+        <Textarea id="bio_long" name="bio_long" mono defaultValue={settings.bio_long} rows={10} required />
       </FormField>
 
       <FormField label="E-post" htmlFor="email">
@@ -55,16 +58,12 @@ export function SettingsForm({ settings }: Props) {
       </FormField>
 
       <FormField label="Tilgjengelig for arbeid" htmlFor="available_for_work">
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input
-            id="available_for_work"
-            name="available_for_work"
-            type="checkbox"
-            defaultChecked={settings.available_for_work}
-            className="w-4 h-4"
-          />
-          Vis «åpen for samarbeid»-merke
-        </label>
+        <Checkbox
+          id="available_for_work"
+          name="available_for_work"
+          defaultChecked={settings.available_for_work}
+          label="Vis «åpen for samarbeid»-merke"
+        />
       </FormField>
 
       <FormField label="Tilgjengelighetsnotat" htmlFor="availability_note" hint="F.eks. «Åpen for samarbeid Q3 2026»">
@@ -83,39 +82,34 @@ export function SettingsForm({ settings }: Props) {
           {links.map((link, i) => (
             <div key={i} className="flex gap-2">
               <Input
+                aria-label={`Plattform for lenke ${i + 1}`}
                 placeholder="platform (linkedin, github …)"
                 value={link.platform}
                 onChange={(e) => updateLink(i, 'platform', e.target.value)}
                 className="flex-1"
               />
               <Input
+                aria-label={`URL for lenke ${i + 1}`}
+                type="url"
                 placeholder="https://…"
                 value={link.url}
                 onChange={(e) => updateLink(i, 'url', e.target.value)}
                 className="flex-[2]"
               />
-              <button
-                type="button"
-                onClick={() => removeLink(i)}
-                className="px-2 text-ink-3 hover:text-ink"
-                aria-label="Fjern"
-              >
-                <FiX size={16} />
-              </button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => removeLink(i)} aria-label={`Fjern lenke ${i + 1}`}>
+                <FiX size={16} aria-hidden />
+              </Button>
             </div>
           ))}
-          <Button type="button" variant="ghost" size="sm" onClick={addLink}>
-            <FiPlus size={14} /> Legg til lenke
+          <Button type="button" variant="ghost" size="sm" onClick={addLink} className="self-start">
+            <FiPlus size={14} aria-hidden /> Legg til lenke
           </Button>
         </div>
       </fieldset>
 
       <div className="flex items-center gap-4 mt-8">
-        <Button type="submit" variant="primary" disabled={pending}>
-          {pending ? 'Lagrer …' : 'Lagre'}
-        </Button>
-        {state.success && <span className="text-sm text-ink-3">Lagret.</span>}
-        {state.error && <span className="text-sm text-accent">{state.error}</span>}
+        <SubmitButton pendingLabel="Lagrer …">Lagre</SubmitButton>
+        <FormStatus success={state.success ? 'Lagret' : undefined} error={state.error} />
       </div>
     </form>
   )

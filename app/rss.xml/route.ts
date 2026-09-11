@@ -2,6 +2,8 @@ import { getPublishedPosts } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
 import { siteUrl } from '@/lib/site'
 
+export const dynamic = 'force-dynamic'
+
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

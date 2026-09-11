@@ -1,10 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TAGS } from '@/lib/cache-tags'
 import { cleanEmDashes } from '@/lib/text'
 
 const usesSchema = z.object({
@@ -58,7 +59,7 @@ export async function createUsesItem(
     return { error: 'Kunne ikke opprette: ' + error.message }
   }
 
-  revalidatePath('/uses')
+  revalidateTag(TAGS.uses)
   revalidatePath('/admin/uses')
   return { success: true }
 }
@@ -81,7 +82,7 @@ export async function updateUsesItem(
     return { error: 'Kunne ikke lagre: ' + error.message }
   }
 
-  revalidatePath('/uses')
+  revalidateTag(TAGS.uses)
   revalidatePath('/admin/uses')
   return { success: true }
 }
@@ -91,7 +92,7 @@ export async function deleteUsesItem(id: string) {
   const admin = createAdminClient()
   const { error } = await admin.from('uses_items').delete().eq('id', id)
   if (error) throw new Error('Kunne ikke slette oppføringen: ' + error.message)
-  revalidatePath('/uses')
+  revalidateTag(TAGS.uses)
   revalidatePath('/admin/uses')
   redirect('/admin/uses')
 }
@@ -152,6 +153,6 @@ export async function reorderUsesItem(id: string, delta: number) {
   const swapError = a.error ?? b.error
   if (swapError) throw new Error('Kunne ikke flytte: ' + swapError.message)
 
-  revalidatePath('/uses')
+  revalidateTag(TAGS.uses)
   revalidatePath('/admin/uses')
 }

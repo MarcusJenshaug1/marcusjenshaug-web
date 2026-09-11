@@ -2,6 +2,8 @@ import { getPublishedPosts } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
 import { absoluteUrl, siteUrl } from '@/lib/site'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const [posts, settings] = await Promise.all([getPublishedPosts(), getSiteSettings()])
 

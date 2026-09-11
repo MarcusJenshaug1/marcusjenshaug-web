@@ -4,7 +4,8 @@ import { FiEdit3 } from 'react-icons/fi'
 import { getAllNowAdmin } from '@/lib/now'
 import { formatDate } from '@/lib/site'
 import { NewNowForm } from './NewNowForm'
-import { DeleteInlineForm } from './DeleteInlineForm'
+import { DeleteInlineForm } from '@/components/admin/DeleteInlineForm'
+import { deleteNowEntry } from './actions'
 
 export const metadata: Metadata = {
   title: 'Nå',
@@ -56,7 +57,7 @@ export default async function AdminNaPage() {
                     <Link href={`/admin/na/${e.id}`} className="btn btn-sm btn-ghost">
                       <FiEdit3 /> Rediger
                     </Link>
-                    <DeleteInlineForm id={e.id} />
+                    <DeleteInlineForm action={deleteNowEntry.bind(null, e.id)} confirmText="Slette denne oppføringen?" />
                   </div>
                 </div>
                 <p style={{ fontSize: '.9375rem', color: 'var(--ink-2)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>

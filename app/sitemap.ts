@@ -3,6 +3,8 @@ import { getPublishedProjects } from '@/lib/projects'
 import { getPublishedPosts } from '@/lib/posts'
 import { siteUrl } from '@/lib/site'
 
+export const dynamic = 'force-dynamic'
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const staticRoutes: MetadataRoute.Sitemap = [
