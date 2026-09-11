@@ -85,7 +85,26 @@ const fragmentShader = /* glsl */ `
 
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
-const PARALLAX_STRENGTH = 0.04
+const PARALLAX_STRENGTH = 0.055
+
+// R3F måler ikke alltid beholderen riktig ved første montering (lerretet blir
+// stående på 300x150), så vi speiler beholderstørrelsen inn selv.
+function ResizeSync() {
+  const { gl, setSize } = useThree()
+  useEffect(() => {
+    const el = gl.domElement.parentElement
+    if (!el) return
+    const sync = () => {
+      const r = el.getBoundingClientRect()
+      if (r.width > 0 && r.height > 0) setSize(r.width, r.height)
+    }
+    const observer = new ResizeObserver(sync)
+    observer.observe(el)
+    sync()
+    return () => observer.disconnect()
+  }, [gl, setSize])
+  return null
+}
 
 function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
   const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
@@ -183,6 +202,7 @@ export default function HeroScene({ src, depthSrc, paused = false, onContextLost
         })
       }}
     >
+      <ResizeSync />
       <PortraitPlane src={src} depthSrc={depthSrc} />
     </Canvas>
   )
