@@ -101,7 +101,15 @@ function ResizeSync() {
     const observer = new ResizeObserver(sync)
     observer.observe(el)
     sync()
-    return () => observer.disconnect()
+    const timers = [100, 500, 1500].map((ms) => window.setTimeout(sync, ms))
+    window.addEventListener('resize', sync)
+    window.addEventListener('load', sync)
+    return () => {
+      observer.disconnect()
+      timers.forEach((t) => window.clearTimeout(t))
+      window.removeEventListener('resize', sync)
+      window.removeEventListener('load', sync)
+    }
   }, [gl, setSize])
   return null
 }
