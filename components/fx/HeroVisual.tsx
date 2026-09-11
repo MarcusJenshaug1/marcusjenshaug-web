@@ -19,11 +19,12 @@ function supportsWebGL() {
 
 type HeroVisualProps = {
   textureSrc: string
+  depthSrc?: string
   fallbackSrc: string
   alt: string
 }
 
-export function HeroVisual({ textureSrc, fallbackSrc, alt }: HeroVisualProps) {
+export function HeroVisual({ textureSrc, depthSrc, fallbackSrc, alt }: HeroVisualProps) {
   const reduced = useReducedMotion()
   const coarse = useIsCoarsePointer()
   const [capable, setCapable] = useState(false)
@@ -58,7 +59,7 @@ export function HeroVisual({ textureSrc, fallbackSrc, alt }: HeroVisualProps) {
       />
       {useScene && (
         <div className="hero-canvas" aria-hidden>
-          <HeroScene src={textureSrc} paused={!visible} onContextLost={() => setLost(true)} />
+          <HeroScene src={textureSrc} depthSrc={depthSrc} paused={!visible} onContextLost={() => setLost(true)} />
         </div>
       )}
     </div>

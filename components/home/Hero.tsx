@@ -99,6 +99,7 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
         <ParallaxLayer speed={14} start="top top" className="hero-visual">
           <HeroVisual
             textureSrc={s.image_url ?? '/portrett.jpg'}
+            depthSrc={s.image_url ? undefined : '/portrett-depth.webp'}
             fallbackSrc={s.image_url ?? '/portrett.jpg'}
             alt={`Portrett av ${s.full_name}`}
           />
