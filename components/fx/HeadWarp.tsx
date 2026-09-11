@@ -2,111 +2,97 @@
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber'
 import grid from '@/components/fx/face/head-grid.json'
 
 const YAW_DEG = 10
 const PITCH_DEG = 6
-const PIVOT_Z = -0.1
-const HEAD_Z = 0.12
-const RELIEF = 2.5
-const HEAD_MID = 0.44
+const PIVOT_Z = 0.1
+const HEAD_Z = 0.1
+const RELIEF = 0.08
+
+// Rotasjonen skjer i vertex-shaderen: hvert vertex har relieff (aRelief, 0–1 fra
+// dybdekartet) og vekt (aWeight, 1 i hodet, 0 ved kanten). Vertexet løftes til
+// z = HEAD_Z + relieff·RELIEF, roteres om et pivot bak hodet og blandes tilbake
+// mot basisposisjonen med vekten, så kantene ligger fast. uv følger basis.
+const headVertexShader = /* glsl */ `
+  attribute float aRelief;
+  attribute float aWeight;
+  uniform vec2 uLook;
+  uniform vec2 uAngles;
+  uniform vec3 uPivot;
+  uniform float uHeadZ;
+  uniform float uRelief;
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    float yaw = uLook.x * uAngles.x;
+    float pitch = uLook.y * uAngles.y;
+    vec3 p = vec3(position.xy, uHeadZ + aRelief * uRelief) - uPivot;
+    float cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch);
+    vec3 r = vec3(p.x * cy + p.z * sy, p.y, -p.x * sy + p.z * cy);
+    r = vec3(r.x, r.y * cp + r.z * sp, -r.y * sp + r.z * cp);
+    vec2 moved = (r + uPivot).xy;
+    vec3 warped = vec3(mix(position.xy, moved, aWeight), 0.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(warped, 1.0);
+  }
+`
 
 type Props = {
-  vertexShader: string
   fragmentShader: string
   uniforms: Record<string, THREE.IUniform>
   scale: [number, number]
-  look: THREE.Vector2
 }
 
-function smooth(t: number) {
-  const c = Math.min(1, Math.max(0, t))
-  return c * c * (3 - 2 * c)
-}
-
-export function HeadWarp({ vertexShader, fragmentShader, uniforms, scale, look }: Props) {
-  const built = useMemo(() => {
+export function HeadWarp({ fragmentShader, uniforms, scale }: Props) {
+  const mesh = useMemo(() => {
     const [sx, sy] = scale
-    const { cols, rows, region, ellipse, inner, depth } = grid
+    const { cols, rows, region, relief, weight } = grid
     const n = cols * rows
-    const base = new Float32Array(n * 3)
+    const position = new Float32Array(n * 3)
     const uv = new Float32Array(n * 2)
-    const weight = new Float32Array(n)
-    const relief = new Float32Array(n)
-
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
         const k = j * cols + i
         const u = region.x0 + (i / (cols - 1)) * (region.x1 - region.x0)
         const v = region.y0 + (j / (rows - 1)) * (region.y1 - region.y0)
-        base[k * 3] = (u - 0.5) / sx
-        base[k * 3 + 1] = (0.5 - v) / sy
+        position[k * 3] = (u - 0.5) / sx
+        position[k * 3 + 1] = (0.5 - v) / sy
         uv[k * 2] = u
         uv[k * 2 + 1] = 1 - v
-
-        const ex = (u - ellipse.cx) / ellipse.rx
-        const ey = (v - ellipse.cy) / (v < ellipse.cy ? ellipse.ryTop : ellipse.ryBottom)
-        weight[k] = smooth((1 - Math.hypot(ex, ey)) / (1 - inner))
-
-        const d = depth[k]
-        const head = smooth((d - 0.25) / 0.25)
-        relief[k] = (head * (HEAD_Z + (d - HEAD_MID) * RELIEF)) / sx
       }
     }
-
     const index: number[] = []
     for (let j = 0; j < rows - 1; j++) {
       for (let i = 0; i < cols - 1; i++) {
         const a = j * cols + i
-        const b = a + 1
-        const c = a + cols
-        const d = c + 1
-        index.push(a, c, b, b, c, d)
+        index.push(a, a + cols, a + 1, a + 1, a + cols, a + cols + 1)
       }
     }
-
-    const position = new THREE.BufferAttribute(new Float32Array(base), 3)
     const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute('position', position)
+    geometry.setAttribute('position', new THREE.BufferAttribute(position, 3))
     geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
+    geometry.setAttribute('aRelief', new THREE.BufferAttribute(new Float32Array(relief), 1))
+    geometry.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array(weight), 1))
     geometry.setIndex(index)
 
+    const center = new THREE.Vector3((0.57 - 0.5) / sx, (0.5 - 0.4) / sy, -PIVOT_Z / sx)
     const material = new THREE.ShaderMaterial({
-      vertexShader,
+      vertexShader: headVertexShader,
       fragmentShader,
-      uniforms: { ...uniforms, uFace: { value: 1 } },
+      uniforms: {
+        ...uniforms,
+        uFace: { value: 1 },
+        uAngles: { value: new THREE.Vector2(THREE.MathUtils.degToRad(YAW_DEG), THREE.MathUtils.degToRad(PITCH_DEG)) },
+        uPivot: { value: center },
+        uHeadZ: { value: HEAD_Z / sx },
+        uRelief: { value: RELIEF / sx },
+      },
     })
-    const mesh = new THREE.Mesh(geometry, material)
-    mesh.position.z = 0.001
+    const m = new THREE.Mesh(geometry, material)
+    m.position.z = 0.001
+    return m
+  }, [scale, fragmentShader, uniforms])
 
-    const cx = (ellipse.cx - 0.5) / sx
-    const cy = (0.5 - ellipse.cy) / sy
-    return { mesh, position, base, weight, relief, cx, cy, n }
-  }, [scale, vertexShader, fragmentShader, uniforms])
-
-  useFrame(() => {
-    const { position, base, weight, relief, cx, cy, n } = built
-    const yaw = THREE.MathUtils.degToRad(look.x * YAW_DEG)
-    const pitch = THREE.MathUtils.degToRad(look.y * PITCH_DEG)
-    const cosY = Math.cos(yaw)
-    const sinY = Math.sin(yaw)
-    const cosP = Math.cos(pitch)
-    const sinP = Math.sin(pitch)
-    const out = position.array as Float32Array
-    for (let i = 0; i < n; i++) {
-      const x = base[i * 3] - cx
-      const y = base[i * 3 + 1] - cy
-      const z = relief[i] - PIVOT_Z
-      const x1 = x * cosY + z * sinY
-      const z1 = -x * sinY + z * cosY
-      const y1 = y * cosP + z1 * sinP
-      const w = weight[i]
-      out[i * 3] = cx + x + (x1 - x) * w
-      out[i * 3 + 1] = cy + y + (y1 - y) * w
-    }
-    position.needsUpdate = true
-  })
-
-  return <primitive object={built.mesh} />
+  return <primitive object={mesh} />
 }

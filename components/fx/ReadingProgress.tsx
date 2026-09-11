@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { gsap, ScrollTrigger } from '@/lib/motion/gsap'
+import { gsap } from '@/lib/motion/gsap'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 
 export function ReadingProgress() {
