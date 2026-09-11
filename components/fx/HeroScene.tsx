@@ -85,7 +85,7 @@ const fragmentShader = /* glsl */ `
 
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
-const PARALLAX_STRENGTH = 0.03
+const PARALLAX_STRENGTH = 0.04
 
 function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
   const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
