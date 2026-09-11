@@ -1,0 +1,16 @@
+{
+  "name": "portrait-assets",
+  "private": true,
+  "type": "module",
+  "description": "Engangsverktøy for dybdekart, landemerker og hodemesh til portrettet i hero-en",
+  "scripts": {
+    "depth": "node depth.mjs",
+    "serve": "node serve.mjs",
+    "grid": "node head-grid.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.7.0",
+    "@mediapipe/tasks-vision": "^0.10.21",
+    "sharp": "^0.34.0"
+  }
+}

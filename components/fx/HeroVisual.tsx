@@ -31,6 +31,7 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
   const [capable, setCapable] = useState(false)
   const [lost, setLost] = useState(false)
   const [visible, setVisible] = useState(true)
+  const [sized, setSized] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -45,17 +46,20 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
     return () => observer.disconnect()
   }, [])
 
-  const useScene = capable && !reduced && !coarse && !lost
-
-  // R3F oppretter ikke scenen før react-use-measure har målt beholderen, og
-  // den første målingen uteblir ofte her. Et resize-event får den til å måle.
+  // R3F måler beholderen kun én gang ved montering. Vi monterer derfor scenen
+  // først når boksen faktisk har en størrelse.
   useEffect(() => {
-    if (!useScene) return
-    const timers = [200, 800, 2000].map((ms) =>
-      window.setTimeout(() => window.dispatchEvent(new Event('resize')), ms)
-    )
-    return () => timers.forEach((t) => window.clearTimeout(t))
-  }, [useScene])
+    const el = ref.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      setSized(width > 0 && height > 0)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const useScene = capable && sized && !reduced && !coarse && !lost
 
   return (
     <div ref={ref} className="hero-visual-inner">

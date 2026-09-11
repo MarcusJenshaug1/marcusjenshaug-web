@@ -123,9 +123,9 @@ function PreviewPlane({
       setTick((t) => t + 1)
     }
     items.forEach((item, i) => {
-      const useTile = () => store(i, makeTypographicTile(item.title, item.index))
+      const fallbackTile = () => store(i, makeTypographicTile(item.title, item.index))
       if (!item.src) {
-        useTile()
+        fallbackTile()
         return
       }
       loader.load(
@@ -135,7 +135,7 @@ function PreviewPlane({
           store(i, texture)
         },
         undefined,
-        useTile
+        fallbackTile
       )
     })
     const loaded = textures.current

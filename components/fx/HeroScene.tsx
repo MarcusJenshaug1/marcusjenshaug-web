@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
@@ -21,16 +21,19 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uLook;
   uniform float uParallax;
   uniform float uFace;
-  uniform vec4 uEyeA;
-  uniform vec4 uEyeB;
+  uniform sampler2D uEyeMask;
+  uniform vec2 uIrisA;
+  uniform vec2 uIrisB;
+  uniform vec2 uEyeWidth;
   uniform vec2 uEyeShift;
 
-  // Flytter bildet inne i øyeåpningen mot blikkretningen, med myk kant mot
-  // øyelokkene, så iris ser ut til å følge pekeren.
-  vec2 eyeShift(vec2 uv, vec4 eye) {
-    vec2 e = (uv - eye.xy) / eye.zw;
-    float mask = smoothstep(1.0, 0.5, length(e));
-    return uLook * uEyeShift * mask;
+  // Flytter bildet inne i øyeåpningen (maske fra landemerke-polygonene) mot
+  // blikkretningen. Vekten er størst ved iris-senteret og null ved øyelokkene,
+  // så iris følger pekeren mens lokkene står stille.
+  vec2 eyeShift(vec2 uv, vec2 iris, float width, float mask) {
+    float r = length((uv - iris) / width);
+    float w = mask * smoothstep(0.55, 0.15, r);
+    return uLook * uEyeShift * width * w;
   }
   uniform float uTime;
   uniform float uVelocity;
@@ -78,7 +81,8 @@ const fragmentShader = /* glsl */ `
     vec2 uv = uFace > 0.5 ? vUv : coverUv(vUv);
 
     if (uFace > 0.5) {
-      uv -= eyeShift(uv, uEyeA) + eyeShift(uv, uEyeB);
+      float mask = texture2D(uEyeMask, uv).r;
+      uv -= eyeShift(uv, uIrisA, uEyeWidth.x, mask) + eyeShift(uv, uIrisB, uEyeWidth.y, mask);
     } else {
       // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
       // flytter seg dit pekeren er.
@@ -106,42 +110,16 @@ const fragmentShader = /* glsl */ `
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
 const PARALLAX_STRENGTH = 0
-const EYE_SHIFT_X = 0.014
-const EYE_SHIFT_Y = 0.007
+// Forskyvning av iris som andel av øyebredden (horisontalt, vertikalt)
+const EYE_SHIFT = new THREE.Vector2(0.12, 0.05)
+const EYE_MASK_SRC = '/portrett-eyes.png'
 
-function eyeUniform(eye: { cx: number; cy: number; rx: number; ry: number }) {
-  return new THREE.Vector4(eye.cx, 1 - eye.cy, eye.rx, eye.ry)
-}
-
-// R3F måler ikke alltid beholderen riktig ved første montering (lerretet blir
-// stående på 300x150), så vi speiler beholderstørrelsen inn selv.
-function ResizeSync() {
-  const { gl, setSize } = useThree()
-  useEffect(() => {
-    const el = gl.domElement.parentElement
-    if (!el) return
-    const sync = () => {
-      const r = el.getBoundingClientRect()
-      if (r.width > 0 && r.height > 0) setSize(r.width, r.height)
-    }
-    const observer = new ResizeObserver(sync)
-    observer.observe(el)
-    sync()
-    const timers = [100, 500, 1500].map((ms) => window.setTimeout(sync, ms))
-    window.addEventListener('resize', sync)
-    window.addEventListener('load', sync)
-    return () => {
-      observer.disconnect()
-      timers.forEach((t) => window.clearTimeout(t))
-      window.removeEventListener('resize', sync)
-      window.removeEventListener('load', sync)
-    }
-  }, [gl, setSize])
-  return null
+function irisUv(eye: { iris: number[] }) {
+  return new THREE.Vector2(eye.iris[0], 1 - eye.iris[1])
 }
 
 function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?: string; face?: boolean }) {
-  const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
+  const [texture, depthTexture, eyeMask] = useTexture([src, depthSrc ?? src, EYE_MASK_SRC])
   const { viewport, gl } = useThree()
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
@@ -184,9 +162,11 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
         uLook: { value: new THREE.Vector2(0, 0) },
         uParallax: { value: depthSrc ? PARALLAX_STRENGTH : 0 },
         uFace: { value: 0 },
-        uEyeA: { value: eyeUniform(headGrid.eyes[0]) },
-        uEyeB: { value: eyeUniform(headGrid.eyes[1]) },
-        uEyeShift: { value: new THREE.Vector2(EYE_SHIFT_X, EYE_SHIFT_Y) },
+        uEyeMask: { value: eyeMask },
+        uIrisA: { value: irisUv(headGrid.eyes[0]) },
+        uIrisB: { value: irisUv(headGrid.eyes[1]) },
+        uEyeWidth: { value: new THREE.Vector2(headGrid.eyes[0].width, headGrid.eyes[1].width) },
+        uEyeShift: { value: EYE_SHIFT },
         uTime: { value: 0 },
         uVelocity: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -194,11 +174,11 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
         uPlaneAspect: { value: 1 },
       },
     })
-  }, [texture, depthTexture, depthSrc])
+  }, [texture, depthTexture, eyeMask, depthSrc])
 
   useFrame((_, delta) => {
     const u = material.uniforms
-    u.uTime.value += delta
+    u.uTime.value += Math.min(delta, 0.1)
     u.uPlaneAspect.value = viewport.width / viewport.height
     ;(u.uMouse.value as THREE.Vector2).lerp(targetMouse.current, 0.08)
     ;(u.uLook.value as THREE.Vector2).lerp(targetLook.current, LOOK_EASE)
@@ -225,13 +205,7 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
       </mesh>
       {face && (
         <group scale={[viewport.width, viewport.height, 1]}>
-          <HeadWarp
-            vertexShader={vertexShader}
-            fragmentShader={fragmentShader}
-            uniforms={material.uniforms}
-            scale={coverScale}
-            look={material.uniforms.uLook.value as THREE.Vector2}
-          />
+          <HeadWarp fragmentShader={fragmentShader} uniforms={material.uniforms} scale={coverScale} />
         </group>
       )}
     </>
@@ -250,6 +224,7 @@ export default function HeroScene({ src, depthSrc, face = false, paused = false,
   return (
     <Canvas
       dpr={[1, 1.5]}
+      resize={{ scroll: false, debounce: 0, offsetSize: true }}
       frameloop={paused ? 'never' : 'always'}
       gl={{ antialias: false, powerPreference: 'low-power' }}
       camera={{ position: [0, 0, 1], fov: 50 }}
@@ -260,8 +235,9 @@ export default function HeroScene({ src, depthSrc, face = false, paused = false,
         })
       }}
     >
-      <ResizeSync />
-      <PortraitPlane src={src} depthSrc={depthSrc} face={face} />
+      <Suspense fallback={null}>
+        <PortraitPlane src={src} depthSrc={depthSrc} face={face} />
+      </Suspense>
     </Canvas>
   )
 }
