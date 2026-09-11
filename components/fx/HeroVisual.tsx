@@ -35,7 +35,7 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setCapable(window.innerWidth >= 768 && supportsWebGL())
+    setCapable(supportsWebGL())
   }, [])
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
     return () => observer.disconnect()
   }, [])
 
-  const useScene = capable && sized && !reduced && !coarse && !lost
+  const useScene = capable && sized && !reduced && !lost
 
   return (
     <div ref={ref} className="hero-visual-inner">
@@ -74,7 +74,14 @@ export function HeroVisual({ textureSrc, depthSrc, faceMesh = false, fallbackSrc
       />
       {useScene && (
         <div className="hero-canvas" aria-hidden>
-          <HeroScene src={textureSrc} depthSrc={depthSrc} face={faceMesh} paused={!visible} onContextLost={() => setLost(true)} />
+          <HeroScene
+            src={textureSrc}
+            depthSrc={depthSrc}
+            face={faceMesh}
+            input={coarse ? 'scroll' : 'pointer'}
+            paused={!visible}
+            onContextLost={() => setLost(true)}
+          />
         </div>
       )}
     </div>

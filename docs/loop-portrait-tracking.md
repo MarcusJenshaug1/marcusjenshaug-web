@@ -26,6 +26,7 @@ Filer: `components/fx/HeroVisual.tsx` (montering, fallback), `components/fx/Hero
 - **Stack:** three.js via `@react-three/fiber` 9 og `@react-three/drei` (`useTexture`). Scenen lastes med `next/dynamic` uten SSR, kun når WebGL finnes, viewport ≥ 768 px, ikke `prefers-reduced-motion`, ikke `pointer: coarse`. Ellers vises `next/image`-fallback.
 - **Bakgrunnsplan:** `planeGeometry` skalert til viewport, `ShaderMaterial` med `coverUv` (object-fit: cover), støy-drift, ripple ved pekerbevegelse over bildet (`uMouse`, `uVelocity`) og RGB-forskyvning. Uniforms: `uTexture`, `uDepth`, `uLook`, `uParallax` (0), `uFace`, `uEyeA`, `uEyeB`, `uEyeShift`, `uTime`, `uVelocity`, `uMouse`, `uImageAspect`, `uPlaneAspect`.
 - **Pekersporing:** én `pointermove`-lytter på `window`. Retning relativt til lerretets senter, normalisert med 45 % av viewport, klemt til [-1, 1], lagret i en ref. `useFrame` lerper `uLook` mot målet (0.06 per frame). `pointerleave` på `<html>` setter målet til (0, 0).
+- **Touch (`pointer: coarse`):** scenen monteres også der, men `input="scroll"`: én `scroll`-lytter mapper `scrollY / (60 % av viewport-høyden)` til blikk ned (0 → -1) med 35 % sideveis dreining. Øverst på siden ser han rett fram. Samme mesh, shader og lerp.
 - **Hodemesh:** 40×52-rutenett over regionen x 0.27–0.87, y 0.02–0.80 av bildet. Per vertex: bilde-uv (fast), dybde fra dybdekartet, elliptisk vekt (1 innenfor 60 % av ellipsen, 0 ved kanten). Rotasjon yaw ±10°, pitch ±6° om et pivot bak hodet, relieff fra dybde. Samme fragment-shader som bakgrunnen med `uFace = 1` (hopper over cover-mapping og parallakse), så drift/ripple/RGB-forskyvning ligger også på hodet.
 - **Øyne:** ellipser fra MediaPipe-landemerker (33/133/159/145 og 263/362/386/374). I `uFace`-grenen forskyves uv innenfor ellipsen mot `uLook` med `smoothstep(1.0, 0.5, r)` som maske.
 
@@ -104,7 +105,8 @@ Kjørt mot produksjon i wmux-nettleseren (synlig fane, 1264×625, dpr 1) med syn
 | Søm ved hals, skuldre, bakgrunn ved maks utslag | Ingen synlig |
 | Drift, ripple og RGB-forskyvning | Fungerer, også over hodemeshet (samme fragment-shader) |
 | Frametid under pekerbevegelse | 300 frames på 2,5 s (120 Hz), snitt 8,3 ms, maks 8,5 ms, 0 over 25 ms |
-| Touch og reduced motion | Verifisert i kode: `useIsCoarsePointer`/`useReducedMotion` gir `useScene = false`, scenen monteres ikke, `next/image` vises. Ikke emulert i nettleser. |
+| Reduced motion | Verifisert i kode: `useReducedMotion` gir `useScene = false`, scenen monteres ikke, `next/image` vises. |
+| Touch | Scenen monteres med `input="scroll"` (etter PR #21: blikket følger scrollingen). Verifisert i kode og med syntetisk `scrollY` i desktop-nettleser, ikke på fysisk telefon. |
 
 Merk for testing: i en skjult fane (`document.visibilityState === 'hidden'`) fyrer verken ResizeObserver eller rAF, så scenen monteres først når fanen blir synlig. Det er ønsket oppførsel, men Chrome-automatisering i bakgrunnsfaner gir falske negativer.
 

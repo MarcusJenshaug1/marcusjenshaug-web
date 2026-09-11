@@ -109,6 +109,10 @@ const fragmentShader = /* glsl */ `
 
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
+const SCROLL_REACH = 0.6
+const SCROLL_YAW = 0.35
+
+export type LookInput = 'pointer' | 'scroll'
 const PARALLAX_STRENGTH = 0
 // Forskyvning av iris som andel av øyebredden (horisontalt, vertikalt)
 const EYE_SHIFT = new THREE.Vector2(0.12, 0.05)
@@ -118,7 +122,14 @@ function irisUv(eye: { iris: number[] }) {
   return new THREE.Vector2(eye.iris[0], 1 - eye.iris[1])
 }
 
-function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?: string; face?: boolean }) {
+type PortraitPlaneProps = {
+  src: string
+  depthSrc?: string
+  face?: boolean
+  input: LookInput
+}
+
+function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProps) {
   const [texture, depthTexture, eyeMask] = useTexture([src, depthSrc ?? src, EYE_MASK_SRC])
   const { viewport, gl } = useThree()
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
@@ -133,6 +144,19 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
 
   useEffect(() => {
     const canvas = gl.domElement
+
+    if (input === 'scroll') {
+      // Touch: blikket følger scrollingen. Øverst ser han rett fram, og jo
+      // lenger ned du scroller, jo mer ser han ned og litt til siden.
+      const onScroll = () => {
+        const down = THREE.MathUtils.clamp(window.scrollY / (window.innerHeight * SCROLL_REACH), 0, 1)
+        targetLook.current.set(down * SCROLL_YAW, -down)
+      }
+      onScroll()
+      window.addEventListener('scroll', onScroll, { passive: true })
+      return () => window.removeEventListener('scroll', onScroll)
+    }
+
     const onMove = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect()
       const cx = rect.left + rect.width / 2
@@ -148,7 +172,7 @@ function PortraitPlane({ src, depthSrc, face = false }: { src: string; depthSrc?
       window.removeEventListener('pointermove', onMove)
       document.documentElement.removeEventListener('pointerleave', onLeave)
     }
-  }, [gl])
+  }, [gl, input])
 
   const material = useMemo(() => {
     texture.colorSpace = THREE.SRGBColorSpace
@@ -216,11 +240,19 @@ type HeroSceneProps = {
   src: string
   depthSrc?: string
   face?: boolean
+  input?: LookInput
   paused?: boolean
   onContextLost?: () => void
 }
 
-export default function HeroScene({ src, depthSrc, face = false, paused = false, onContextLost }: HeroSceneProps) {
+export default function HeroScene({
+  src,
+  depthSrc,
+  face = false,
+  input = 'pointer',
+  paused = false,
+  onContextLost,
+}: HeroSceneProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -236,7 +268,7 @@ export default function HeroScene({ src, depthSrc, face = false, paused = false,
       }}
     >
       <Suspense fallback={null}>
-        <PortraitPlane src={src} depthSrc={depthSrc} face={face} />
+        <PortraitPlane src={src} depthSrc={depthSrc} face={face} input={input} />
       </Suspense>
     </Canvas>
   )
