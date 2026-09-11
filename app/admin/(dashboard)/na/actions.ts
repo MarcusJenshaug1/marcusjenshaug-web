@@ -1,10 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TAGS } from '@/lib/cache-tags'
 import { cleanEmDashes } from '@/lib/text'
 
 const nowSchema = z.object({
@@ -54,9 +55,8 @@ export async function createNowEntry(
     return { error: 'Kunne ikke publisere: ' + error.message }
   }
 
-  revalidatePath('/na')
+  revalidateTag(TAGS.now)
   revalidatePath('/admin/na')
-  revalidatePath('/')
   return { success: true }
 }
 
@@ -78,9 +78,8 @@ export async function updateNowEntry(
     return { error: 'Kunne ikke lagre: ' + error.message }
   }
 
-  revalidatePath('/na')
+  revalidateTag(TAGS.now)
   revalidatePath('/admin/na')
-  revalidatePath('/')
   return { success: true }
 }
 
@@ -89,8 +88,7 @@ export async function deleteNowEntry(id: string) {
   const admin = createAdminClient()
   const { error } = await admin.from('now_entries').delete().eq('id', id)
   if (error) throw new Error('Kunne ikke slette oppføringen: ' + error.message)
-  revalidatePath('/na')
+  revalidateTag(TAGS.now)
   revalidatePath('/admin/na')
-  revalidatePath('/')
   redirect('/admin/na')
 }

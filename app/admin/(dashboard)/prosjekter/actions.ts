@@ -1,10 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TAGS, projectTag } from '@/lib/cache-tags'
 import { cleanEmDashes } from '@/lib/text'
 import { PROJECT_STATUSES } from '@/lib/types/app'
 
@@ -76,6 +77,18 @@ function toDbValues(data: z.infer<typeof projectSchema>) {
   })
 }
 
+function revalidateProjects(...slugs: Array<string | null | undefined>) {
+  revalidateTag(TAGS.projects)
+  for (const slug of new Set(slugs)) {
+    if (slug) revalidateTag(projectTag(slug))
+  }
+}
+
+async function getCurrentSlug(admin: ReturnType<typeof createAdminClient>, id: string) {
+  const { data } = await admin.from('projects').select('slug').eq('id', id).maybeSingle()
+  return data?.slug ?? null
+}
+
 export async function createProject(
   _prev: ProjectFormState,
   formData: FormData
@@ -106,8 +119,7 @@ export async function createProject(
     return { error: 'Kunne ikke opprette prosjekt: ' + error.message }
   }
 
-  revalidatePath('/prosjekter')
-  revalidatePath('/')
+  revalidateProjects(parsed.data.slug)
   redirect(`/admin/prosjekter/${data.id}`)
 }
 
@@ -123,6 +135,7 @@ export async function updateProject(
   }
 
   const admin = createAdminClient()
+  const previousSlug = await getCurrentSlug(admin, id)
   const { error } = await admin.from('projects').update(toDbValues(parsed.data)).eq('id', id)
 
   if (error) {
@@ -130,9 +143,7 @@ export async function updateProject(
     return { error: 'Kunne ikke lagre: ' + error.message }
   }
 
-  revalidatePath(`/prosjekter/${parsed.data.slug}`)
-  revalidatePath('/prosjekter')
-  revalidatePath('/')
+  revalidateProjects(previousSlug, parsed.data.slug)
   return { success: true }
 }
 
@@ -142,32 +153,39 @@ export async function autosaveProject(id: string, formData: FormData): Promise<{
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const admin = createAdminClient()
+  const previousSlug = await getCurrentSlug(admin, id)
   const { error } = await admin.from('projects').update(toDbValues(parsed.data)).eq('id', id)
   if (error) return { error: error.message }
+  revalidateProjects(previousSlug, parsed.data.slug)
   revalidatePath(`/admin/prosjekter/${id}`)
 }
 
 export async function togglePublish(id: string, currentDraft: boolean) {
   await requireAdmin()
   const admin = createAdminClient()
-  const { error } = await admin
+  const { data, error } = await admin
     .from('projects')
     .update({ draft: !currentDraft, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .select('slug')
+    .maybeSingle()
   if (error) throw new Error('Kunne ikke endre synlighet: ' + error.message)
-  revalidatePath('/prosjekter')
+  revalidateProjects(data?.slug)
   revalidatePath('/admin/prosjekter')
-  revalidatePath('/')
 }
 
 export async function deleteProject(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  const { error } = await admin.from('projects').delete().eq('id', id)
+  const { data, error } = await admin
+    .from('projects')
+    .delete()
+    .eq('id', id)
+    .select('slug')
+    .maybeSingle()
   if (error) throw new Error('Kunne ikke slette prosjektet: ' + error.message)
-  revalidatePath('/prosjekter')
+  revalidateProjects(data?.slug)
   revalidatePath('/admin/prosjekter')
-  revalidatePath('/')
   redirect('/admin/prosjekter')
 }
 
@@ -187,9 +205,8 @@ export async function reorderProjects(
     )
   )
 
-  revalidatePath('/prosjekter')
+  revalidateProjects()
   revalidatePath('/admin/prosjekter')
-  revalidatePath('/')
 
   const failed = results.find((r) => r.error)
   if (failed?.error) return { error: 'Kunne ikke lagre rekkefølge: ' + failed.error.message }

@@ -1,8 +1,7 @@
 'use server'
 
-import { headers } from 'next/headers'
 import { Resend } from 'resend'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit, getClientIp, recordRateLimitHit } from '@/lib/rate-limit'
 import { parseContact, type ContactFieldErrors } from './schema'
 
 export type ContactState = {
@@ -28,23 +27,9 @@ export async function sendContactMessage(
     return { success: true }
   }
 
-  const headerList = await headers()
-  const ip =
-    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    headerList.get('x-real-ip') ??
-    'unknown'
-
-  const bucket = `contact:${ip}`
-  const admin = createAdminClient()
-  const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString()
-
-  const { count } = await admin
-    .from('rate_limits')
-    .select('*', { count: 'exact', head: true })
-    .eq('bucket', bucket)
-    .gte('created_at', since)
-
-  if ((count ?? 0) >= LIMIT) {
+  const bucket = `contact:${await getClientIp()}`
+  const { allowed } = await checkRateLimit(bucket, LIMIT, WINDOW_MINUTES, { record: false })
+  if (!allowed) {
     return { error: 'For mange forespørsler. Prøv igjen om et minutt.' }
   }
 
@@ -65,7 +50,7 @@ export async function sendContactMessage(
     return { error: 'Kunne ikke sende melding. Prøv igjen senere.' }
   }
 
-  await admin.from('rate_limits').insert({ bucket })
+  await recordRateLimitHit(bucket)
 
   return { success: true }
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getFeaturedProjects, getPublishedProjects } from '@/lib/projects'
-import { getLatestPosts, getPublishedPosts } from '@/lib/posts'
+import { getPublishedPosts } from '@/lib/posts'
 import { getLatestNowEntry } from '@/lib/now'
 import { STACK } from '@/lib/stack'
 import { STATS, QUOTES, type Stat } from '@/lib/social-proof'
@@ -18,15 +18,15 @@ import { ContactCta } from '@/components/home/ContactCta'
 import { getSpotifyUrl } from '@/lib/makkos'
 
 export default async function HomePage() {
-  const [s, featured, posts, latestNow, allProjects, allPosts, usesItems] = await Promise.all([
+  const [s, featured, latestNow, allProjects, allPosts, usesItems] = await Promise.all([
     getSiteSettings(),
     getFeaturedProjects(),
-    getLatestPosts(4),
     getLatestNowEntry(),
     getPublishedProjects(),
     getPublishedPosts(),
     getUsesItems(),
   ])
+  const posts = allPosts.slice(0, 4)
 
   const stackItems = STACK.map((item) => ({
     ...item,

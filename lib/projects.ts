@@ -1,52 +1,58 @@
 import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/public'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isAdmin } from '@/lib/auth/requireAdmin'
+import { CACHE_REVALIDATE_SECONDS, TAGS, projectTag } from '@/lib/cache-tags'
 import { PROJECT_STATUSES, type Project, type ProjectStatus } from '@/lib/types/app'
 
-export const getPublishedProjects = cache(async (): Promise<Project[]> => {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('draft', false)
-    .order('order_index', { ascending: true })
-    .order('started_at', { ascending: false, nullsFirst: false })
-  if (error) throw error
-  return (data ?? []) as Project[]
-})
+export const getPublishedProjects = unstable_cache(
+  async (): Promise<Project[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('draft', false)
+      .order('order_index', { ascending: true })
+      .order('started_at', { ascending: false, nullsFirst: false })
+    if (error) throw error
+    return (data ?? []) as Project[]
+  },
+  ['published-projects'],
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [TAGS.projects] }
+)
 
-export const getFeaturedProjects = cache(async (): Promise<Project[]> => {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('draft', false)
-    .eq('featured', true)
-    .order('order_index', { ascending: true })
-  if (error) throw error
-  return (data ?? []) as Project[]
-})
+export async function getFeaturedProjects(): Promise<Project[]> {
+  const all = await getPublishedProjects()
+  return all.filter((p) => p.featured)
+}
 
-export const getProjectBySlug = cache(async (slug: string, preview = false): Promise<Project | null> => {
-  if (preview) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user?.email === process.env.ADMIN_EMAIL) {
-      const admin = createAdminClient()
-      const { data, error } = await admin.from('projects').select('*').eq('slug', slug).maybeSingle()
+function getCachedProjectBySlug(slug: string): Promise<Project | null> {
+  return unstable_cache(
+    async () => {
+      const supabase = createPublicClient()
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('slug', slug)
+        .eq('draft', false)
+        .maybeSingle()
       if (error) throw error
       return data as Project | null
-    }
+    },
+    ['project-by-slug', slug],
+    { revalidate: CACHE_REVALIDATE_SECONDS, tags: [TAGS.projects, projectTag(slug)] }
+  )()
+}
+
+export const getProjectBySlug = cache(async (slug: string, preview = false): Promise<Project | null> => {
+  if (preview && (await isAdmin())) {
+    const admin = createAdminClient()
+    const { data, error } = await admin.from('projects').select('*').eq('slug', slug).maybeSingle()
+    if (error) throw error
+    return data as Project | null
   }
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('slug', slug)
-    .eq('draft', false)
-    .maybeSingle()
-  if (error) throw error
-  return data as Project | null
+  return getCachedProjectBySlug(slug)
 })
 
 export async function getAllProjectsAdmin(): Promise<Project[]> {
