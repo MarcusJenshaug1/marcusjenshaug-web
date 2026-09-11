@@ -11,8 +11,8 @@ const PITCH_DEG = 8
 const DEPTH = 1.6
 const PIVOT_Z = -0.08
 const INNER = 0.5
-const LINE_IDLE = 0.26
-const LINE_HOVER = 0.55
+const LINE_IDLE = 0.3
+const LINE_HOVER = 0.6
 const LINE_COLOR = 0xf07a3e
 const POINT_COLOR = 0xffb08a
 

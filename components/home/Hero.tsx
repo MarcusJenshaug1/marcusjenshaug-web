@@ -20,6 +20,8 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
   const available = s.available_for_work
   const nameLines = s.full_name.split(' ')
   const roles = [s.headline || 'Fullstack-utvikler', 'Produktbygger', 'Selvhoster', 'Makkos']
+  const portrait = s.image_url || '/portrett.jpg'
+  const staticPortrait = /(^|\/)portrett\.jpg$/.test(portrait)
 
   return (
     <section className="hero" data-section="hero" data-parallax-root>
@@ -98,10 +100,10 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
         </ParallaxLayer>
         <ParallaxLayer speed={14} start="top top" className="hero-visual">
           <HeroVisual
-            textureSrc={s.image_url ?? '/portrett.jpg'}
-            depthSrc={s.image_url ? undefined : '/portrett-depth.webp'}
-            faceMesh={!s.image_url}
-            fallbackSrc={s.image_url ?? '/portrett.jpg'}
+            textureSrc={portrait}
+            depthSrc={staticPortrait ? '/portrett-depth.webp' : undefined}
+            faceMesh={staticPortrait}
+            fallbackSrc={portrait}
             alt={`Portrett av ${s.full_name}`}
           />
         </ParallaxLayer>
