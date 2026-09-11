@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, type Project } from '@/lib/types/app'
 import { createProject, updateProject, autosaveProject, deleteProject } from './actions'
+import { generateProjectCover } from './cover-actions'
 
 type Props = {
   project?: Project
@@ -19,6 +20,7 @@ export function ProjectForm({ project }: Props) {
       action={project ? updateProject.bind(null, project.id) : createProject}
       autosave={autosaveProject}
       onDelete={deleteProject}
+      generateCover={project ? (hint) => generateProjectCover(project.id, hint) : undefined}
       previewBase="/prosjekter"
       coverFolder="prosjekter"
       descriptionLabel="Kort beskrivelse"
