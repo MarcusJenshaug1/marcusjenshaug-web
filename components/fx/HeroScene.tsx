@@ -63,8 +63,8 @@ const fragmentShader = /* glsl */ `
 
     // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
     // flytter seg dit pekeren er.
-    float depth = texture2D(uDepth, uv).r;
-    uv += uLook * uParallax * (depth - 0.45);
+    float depth = smoothstep(0.12, 0.55, texture2D(uDepth, uv).r);
+    uv += uLook * uParallax * (depth - 0.5);
     uv = clamp(uv, vec2(0.002), vec2(0.998));
 
     float drift = snoise(uv * 2.4 + uTime * 0.12) * 0.006;
@@ -85,7 +85,7 @@ const fragmentShader = /* glsl */ `
 
 const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
-const PARALLAX_STRENGTH = 0.05
+const PARALLAX_STRENGTH = 0.03
 
 function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
   const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
