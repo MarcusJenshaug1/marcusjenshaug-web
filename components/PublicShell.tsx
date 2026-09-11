@@ -1,0 +1,23 @@
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
+import { ThemeProvider } from '@/components/motion/ThemeProvider'
+import { MotionRoot } from '@/components/motion/MotionRoot'
+import { getSiteSettings } from '@/lib/site-settings'
+
+export async function PublicShell({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings()
+
+  return (
+    <ThemeProvider>
+      <MotionRoot>
+        <Header
+          socialLinks={settings.social_links}
+          email={settings.email}
+          portraitSrc={settings.image_url ?? '/portrett.jpg'}
+        />
+        <main id="main">{children}</main>
+        <Footer settings={settings} />
+      </MotionRoot>
+    </ThemeProvider>
+  )
+}

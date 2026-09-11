@@ -32,14 +32,3 @@ export function OsloTerminalLine() {
     </>
   )
 }
-
-export function OsloTerminal() {
-  return (
-    <div className="term" style={{ marginTop: '1rem', fontSize: '.75rem' }}>
-      <div>
-        <span className="com"># lokal tid i Oslo</span>
-      </div>
-      <OsloTerminalLine />
-    </div>
-  )
-}

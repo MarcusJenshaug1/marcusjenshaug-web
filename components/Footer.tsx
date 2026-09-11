@@ -26,7 +26,7 @@ export function Footer({ settings }: Props) {
       </ParallaxLayer>
       <div className="statement-footer-grid container">
         <div>
-          <h4 className="mono">Innhold</h4>
+          <h3 className="mono">Innhold</h3>
           <ul>
             <li><TransitionLink href="/blogg">Blogg</TransitionLink></li>
             <li><TransitionLink href="/prosjekter">Prosjekter</TransitionLink></li>
@@ -37,7 +37,7 @@ export function Footer({ settings }: Props) {
           </ul>
         </div>
         <div>
-          <h4 className="mono">Koble til</h4>
+          <h3 className="mono">Koble til</h3>
           <ul>
             {settings.social_links.map((link) => (
               <li key={link.url}>
@@ -58,7 +58,7 @@ export function Footer({ settings }: Props) {
           </ul>
         </div>
         <div>
-          <h4 className="mono">Feeds</h4>
+          <h3 className="mono">Feeds</h3>
           <ul>
             <li><a href="/rss.xml">RSS</a></li>
             <li><a href="/feed.json">JSON Feed</a></li>

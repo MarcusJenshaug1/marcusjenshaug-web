@@ -1,0 +1,29 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/globals.css"
+        ],
+        "createdAt": "2026-09-11T14:12:34.957Z",
+        "reason": "Claude triage: L392 er en 2px blockquote-strek i prose, standard typografisk sitat, ikke et kort med aksentkant"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "bounce-arrow",
+        "createdAt": "2026-09-11T14:12:35.071Z",
+        "reason": "Claude triage: scroll-indikator-pil som bobber, bokstavelig og domene-riktig bevegelse fra opprinnelig design"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.7, 0, 0.2, 1.4)",
+        "createdAt": "2026-09-11T14:12:35.169Z",
+        "reason": "Claude triage: --ease-snap er et eksisterende design-token brukt kun for success-pop mikrofeedback i skjema"
+      }
+    ]
+  }
+}
