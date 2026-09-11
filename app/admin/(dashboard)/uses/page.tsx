@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiEdit3, FiArrowUp, FiArrowDown, FiExternalLink } from 'react-icons/fi'
 import { getAllUsesAdmin, groupByCategory } from '@/lib/uses'
-import { NewUsesForm } from './NewUsesForm'
-import { DeleteInlineForm } from './DeleteInlineForm'
+import { UsesForm } from './UsesForm'
+import { DeleteInlineForm } from '@/components/admin/DeleteInlineForm'
 import { reorderUsesItem } from './actions'
+import { deleteUsesItem } from './actions'
 
 export const metadata: Metadata = {
   title: 'Uses',
@@ -29,7 +30,7 @@ export default async function AdminUsesPage() {
         <h2 style={{ fontSize: '.75rem', textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '.875rem' }}>
           Ny oppføring
         </h2>
-        <NewUsesForm existingCategories={categories} />
+        <UsesForm existingCategories={categories} />
       </section>
 
       {categories.length === 0 ? (
@@ -73,7 +74,7 @@ export default async function AdminUsesPage() {
                           <Link href={`/admin/uses/${item.id}`} className="btn btn-sm">
                             <FiEdit3 /> Rediger
                           </Link>
-                          <DeleteInlineForm id={item.id} />
+                          <DeleteInlineForm action={deleteUsesItem.bind(null, item.id)} confirmText="Slette denne oppføringen?" />
                         </td>
                       </tr>
                     ))}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { FiMenu, FiEdit3, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiMenu, FiEdit3, FiEye, FiEyeOff, FiStar } from 'react-icons/fi'
 import { PROJECT_STATUS_LABELS, type ProjectStatus } from '@/lib/types/app'
 import { reorderProjects, togglePublish } from './actions'
 
@@ -163,7 +163,7 @@ function Row({ project: p, isOver, below, onDragStart, onDragOver, onDrop, onDra
       <span className="chip" style={{ flexShrink: 0 }}>{PROJECT_STATUS_LABELS[p.status]}</span>
       {p.featured && (
         <span className="chip chip-accent" style={{ flexShrink: 0 }} title="Vises på forsiden">
-          <span aria-hidden>★</span>
+          <FiStar aria-hidden size={12} />
           <span className="sr-only">Vises på forsiden</span>
         </span>
       )}

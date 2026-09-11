@@ -2,12 +2,16 @@
 
 import { useActionState, useRef, useEffect } from 'react'
 import { FiArrowRight } from 'react-icons/fi'
+import { FormField } from '@/components/ui/FormField'
+import { FormStatus } from '@/components/ui/FormStatus'
+import { SubmitButton } from '@/components/ui/SubmitButton'
+import { Textarea } from '@/components/ui/Textarea'
 import { createNowEntry, type NowFormState } from './actions'
 
 const initial: NowFormState = {}
 
 export function NewNowForm() {
-  const [state, action, pending] = useActionState(createNowEntry, initial)
+  const [state, action] = useActionState(createNowEntry, initial)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -16,30 +20,21 @@ export function NewNowForm() {
 
   return (
     <form ref={formRef} action={action}>
-      <textarea
-        name="content"
-        required
-        rows={4}
-        placeholder="Hva jobber du med akkurat nå? Markdown/MDX støttet."
-        style={{
-          width: '100%',
-          padding: '.75rem .875rem',
-          border: '1px solid var(--rule-strong)',
-          borderRadius: '6px',
-          background: 'var(--bg-elev)',
-          fontFamily: 'var(--ff-mono)',
-          fontSize: '.875rem',
-          lineHeight: 1.6,
-          resize: 'vertical',
-          marginBottom: '.75rem',
-        }}
-      />
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button type="submit" className="btn btn-primary" disabled={pending}>
-          {pending ? 'Publiserer …' : (<>Publiser <FiArrowRight /></>)}
-        </button>
-        {state.success && <span className="muted" style={{ fontSize: '.875rem' }}>✓ Publisert</span>}
-        {state.error && <span style={{ color: 'var(--accent)', fontSize: '.875rem' }}>{state.error}</span>}
+      <FormField label="Innhold" htmlFor="content">
+        <Textarea
+          id="content"
+          name="content"
+          mono
+          required
+          rows={4}
+          placeholder="Hva jobber du med akkurat nå? Markdown/MDX støttet."
+        />
+      </FormField>
+      <div className="flex items-center gap-4">
+        <SubmitButton pendingLabel="Publiserer …">
+          Publiser <FiArrowRight aria-hidden />
+        </SubmitButton>
+        <FormStatus success={state.success ? 'Publisert' : undefined} error={state.error} />
       </div>
     </form>
   )
