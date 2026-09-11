@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
@@ -15,6 +15,9 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform sampler2D uTexture;
+  uniform sampler2D uDepth;
+  uniform vec2 uLook;
+  uniform float uParallax;
   uniform float uTime;
   uniform float uVelocity;
   uniform vec2 uMouse;
@@ -58,6 +61,12 @@ const fragmentShader = /* glsl */ `
   void main() {
     vec2 uv = coverUv(vUv);
 
+    // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
+    // flytter seg dit pekeren er.
+    float depth = texture2D(uDepth, uv).r;
+    uv += uLook * uParallax * (depth - 0.45);
+    uv = clamp(uv, vec2(0.002), vec2(0.998));
+
     float drift = snoise(uv * 2.4 + uTime * 0.12) * 0.006;
     float dist = distance(vUv, uMouse);
     float ripple = smoothstep(0.45, 0.0, dist) * uVelocity;
@@ -74,11 +83,35 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-function PortraitPlane({ src }: { src: string }) {
-  const texture = useTexture(src)
-  const { viewport } = useThree()
+const LOOK_REACH = 0.45
+const LOOK_EASE = 0.06
+const PARALLAX_STRENGTH = 0.05
+
+function PortraitPlane({ src, depthSrc }: { src: string; depthSrc?: string }) {
+  const [texture, depthTexture] = useTexture([src, depthSrc ?? src])
+  const { viewport, gl } = useThree()
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
+  const targetLook = useRef(new THREE.Vector2(0, 0))
+
+  useEffect(() => {
+    const canvas = gl.domElement
+    const onMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      const cx = rect.left + rect.width / 2
+      const cy = rect.top + rect.height / 2
+      const nx = (e.clientX - cx) / (window.innerWidth * LOOK_REACH)
+      const ny = (cy - e.clientY) / (window.innerHeight * LOOK_REACH)
+      targetLook.current.set(THREE.MathUtils.clamp(nx, -1, 1), THREE.MathUtils.clamp(ny, -1, 1))
+    }
+    const onLeave = () => targetLook.current.set(0, 0)
+    window.addEventListener('pointermove', onMove, { passive: true })
+    document.documentElement.addEventListener('pointerleave', onLeave)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      document.documentElement.removeEventListener('pointerleave', onLeave)
+    }
+  }, [gl])
 
   const material = useMemo(() => {
     texture.colorSpace = THREE.SRGBColorSpace
@@ -88,6 +121,9 @@ function PortraitPlane({ src }: { src: string }) {
       fragmentShader,
       uniforms: {
         uTexture: { value: texture },
+        uDepth: { value: depthTexture },
+        uLook: { value: new THREE.Vector2(0, 0) },
+        uParallax: { value: depthSrc ? PARALLAX_STRENGTH : 0 },
         uTime: { value: 0 },
         uVelocity: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -95,13 +131,14 @@ function PortraitPlane({ src }: { src: string }) {
         uPlaneAspect: { value: 1 },
       },
     })
-  }, [texture])
+  }, [texture, depthTexture, depthSrc])
 
   useFrame((_, delta) => {
     const u = material.uniforms
     u.uTime.value += delta
     u.uPlaneAspect.value = viewport.width / viewport.height
     ;(u.uMouse.value as THREE.Vector2).lerp(targetMouse.current, 0.08)
+    ;(u.uLook.value as THREE.Vector2).lerp(targetLook.current, LOOK_EASE)
     targetVelocity.current *= 0.92
     u.uVelocity.value += (targetVelocity.current - u.uVelocity.value) * 0.1
   })
@@ -127,11 +164,12 @@ function PortraitPlane({ src }: { src: string }) {
 
 type HeroSceneProps = {
   src: string
+  depthSrc?: string
   paused?: boolean
   onContextLost?: () => void
 }
 
-export default function HeroScene({ src, paused = false, onContextLost }: HeroSceneProps) {
+export default function HeroScene({ src, depthSrc, paused = false, onContextLost }: HeroSceneProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -145,7 +183,7 @@ export default function HeroScene({ src, paused = false, onContextLost }: HeroSc
         })
       }}
     >
-      <PortraitPlane src={src} />
+      <PortraitPlane src={src} depthSrc={depthSrc} />
     </Canvas>
   )
 }
