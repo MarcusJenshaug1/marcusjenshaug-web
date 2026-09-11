@@ -1,10 +1,11 @@
 'use client'
 
-import { useActionState, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useActionState, useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from 'react'
 import Link from 'next/link'
-import { FiExternalLink, FiSave } from 'react-icons/fi'
+import { FiExternalLink, FiImage, FiSave } from 'react-icons/fi'
 import { slugify } from '@/lib/slug'
 import { useAutosave } from '@/lib/hooks/useAutosave'
+import { Button } from '@/components/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
 import { FormStatus } from '@/components/ui/FormStatus'
@@ -42,6 +43,7 @@ type Props = {
   contentPlaceholder?: string
   publishing?: ReactNode
   children?: ReactNode
+  generateCover?: (hint: string) => Promise<{ url: string; subject: string } | { error: string }>
 }
 
 const initial: EditorState = {}
@@ -59,9 +61,27 @@ export function EditorShell({
   contentPlaceholder,
   publishing,
   children,
+  generateCover,
 }: Props) {
   const isEdit = Boolean(record)
   const [state, formAction] = useActionState(action, initial)
+  const [coverHint, setCoverHint] = useState('')
+  const [coverStatus, setCoverStatus] = useState<{ error?: string; subject?: string }>({})
+  const [generating, startGenerating] = useTransition()
+
+  function handleGenerateCover() {
+    if (!generateCover) return
+    setCoverStatus({})
+    startGenerating(async () => {
+      const result = await generateCover(coverHint)
+      if ('error' in result) {
+        setCoverStatus({ error: result.error })
+        return
+      }
+      setCoverImage(result.url)
+      setCoverStatus({ subject: result.subject })
+    })
+  }
 
   const [title, setTitle] = useState(record?.title ?? '')
   const [slug, setSlug] = useState(record?.slug ?? '')
@@ -147,6 +167,31 @@ export function EditorShell({
                 folder={coverFolder}
               />
             </FormField>
+            {generateCover && (
+              <div className="mt-3 flex flex-col gap-2">
+                <FormField label="Motiv (valgfritt)" htmlFor="cover_hint" hint="Styrer AI-motivet, ellers utledes det fra tittel, beskrivelse og innhold">
+                  <Textarea
+                    id="cover_hint"
+                    rows={2}
+                    value={coverHint}
+                    onChange={(e) => setCoverHint(e.target.value)}
+                    placeholder="F.eks. «en kortstokk og to shotglass»"
+                    disabled={generating}
+                  />
+                </FormField>
+                <Button type="button" size="sm" onClick={handleGenerateCover} disabled={generating}>
+                  <FiImage aria-hidden /> {generating ? 'Genererer … (opptil ett minutt)' : 'Generer cover med AI'}
+                </Button>
+                {coverStatus.error && (
+                  <p role="alert" className="text-xs text-accent">{coverStatus.error}</p>
+                )}
+                {coverStatus.subject && (
+                  <p role="status" className="text-xs text-ink-3">
+                    Lagret. Motiv: {coverStatus.subject}
+                  </p>
+                )}
+              </div>
+            )}
           </section>
         </aside>
       </div>
