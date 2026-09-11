@@ -4,6 +4,7 @@ import { useActionState, useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { FiSave, FiExternalLink, FiTrash2 } from 'react-icons/fi'
 import { slugify } from '@/lib/slug'
+import { datetimeLocalToIso, toDatetimeLocal } from '@/lib/datetime'
 import { useAutosave } from '@/lib/hooks/useAutosave'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import type { Post } from '@/lib/types/app'
@@ -44,13 +45,6 @@ type Props = {
   post?: Post
 }
 
-function toDatetimeLocal(iso: string | null): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const offset = d.getTimezoneOffset() * 60000
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16)
-}
-
 export function PostForm({ post }: Props) {
   const isEdit = Boolean(post)
   const boundAction = isEdit ? updatePost.bind(null, post!.id) : createPost
@@ -60,17 +54,23 @@ export function PostForm({ post }: Props) {
   const [slug, setSlug] = useState(post?.slug ?? '')
   const [slugTouched, setSlugTouched] = useState(Boolean(post))
   const [coverImage, setCoverImage] = useState(post?.cover_image ?? '')
+  const [draft, setDraft] = useState(post?.draft ?? true)
+  const [publishedAt, setPublishedAt] = useState('')
 
   useEffect(() => {
     if (!slugTouched) setSlug(slugify(title))
   }, [title, slugTouched])
+
+  useEffect(() => {
+    setPublishedAt(toDatetimeLocal(post?.published_at))
+  }, [post?.published_at])
 
   const formRef = useRef<HTMLFormElement>(null)
   const autoSaveFn = useCallback(
     (fd: FormData) => (post ? autosavePost(post.id, fd) : Promise.resolve()),
     [post]
   )
-  const { dirty, savedAt, markDirty } = useAutosave(formRef, autoSaveFn)
+  const { dirty, savedAt, markDirty } = useAutosave(formRef, autoSaveFn, { enabled: isEdit && draft })
 
   return (
     <form ref={formRef} action={action} onChange={isEdit ? markDirty : undefined}>
@@ -131,7 +131,12 @@ export function PostForm({ post }: Props) {
               Publisering
             </h3>
             <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.875rem', marginBottom: '.75rem' }}>
-              <input type="checkbox" name="draft" defaultChecked={post?.draft ?? true} />
+              <input
+                type="checkbox"
+                name="draft"
+                checked={draft}
+                onChange={(e) => setDraft(e.target.checked)}
+              />
               Utkast (skjult for public)
             </label>
             <Field label="Publiseringstidspunkt" htmlFor="published_at" hint="Sett fremtidig dato for planlagt publisering">
@@ -139,9 +144,11 @@ export function PostForm({ post }: Props) {
                 id="published_at"
                 name="published_at"
                 type="datetime-local"
-                defaultValue={toDatetimeLocal(post?.published_at ?? null)}
+                value={publishedAt}
+                onChange={(e) => setPublishedAt(e.target.value)}
                 style={inputStyle}
               />
+              <input type="hidden" name="published_at_iso" value={datetimeLocalToIso(publishedAt)} />
             </Field>
           </section>
 

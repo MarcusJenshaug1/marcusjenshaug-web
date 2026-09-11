@@ -1,7 +1,6 @@
 import { getPublishedPosts } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+import { absoluteUrl, siteUrl } from '@/lib/site'
 
 export async function GET() {
   const [posts, settings] = await Promise.all([getPublishedPosts(), getSiteSettings()])
@@ -23,7 +22,7 @@ export async function GET() {
       date_published: p.published_at ?? p.created_at,
       date_modified: p.updated_at,
       tags: p.tags,
-      image: p.cover_image ? `${siteUrl}${p.cover_image}` : undefined,
+      image: absoluteUrl(p.cover_image),
     })),
   }
 

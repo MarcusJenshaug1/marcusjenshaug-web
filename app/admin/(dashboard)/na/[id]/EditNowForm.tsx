@@ -1,18 +1,13 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FiSave, FiTrash2 } from 'react-icons/fi'
 import type { NowEntry } from '@/lib/types/app'
+import { datetimeLocalToIso, toDatetimeLocal } from '@/lib/datetime'
 import { updateNowEntry, deleteNowEntry, type NowFormState } from '../actions'
 
 const initial: NowFormState = {}
-
-function toDatetimeLocal(iso: string): string {
-  const d = new Date(iso)
-  const offset = d.getTimezoneOffset() * 60000
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16)
-}
 
 type Props = {
   entry: NowEntry
@@ -20,6 +15,11 @@ type Props = {
 
 export function EditNowForm({ entry }: Props) {
   const [state, action, pending] = useActionState(updateNowEntry.bind(null, entry.id), initial)
+  const [publishedAt, setPublishedAt] = useState('')
+
+  useEffect(() => {
+    setPublishedAt(toDatetimeLocal(entry.published_at))
+  }, [entry.published_at])
 
   return (
     <form action={action}>
@@ -51,7 +51,8 @@ export function EditNowForm({ entry }: Props) {
           id="published_at"
           name="published_at"
           type="datetime-local"
-          defaultValue={toDatetimeLocal(entry.published_at)}
+          value={publishedAt}
+          onChange={(e) => setPublishedAt(e.target.value)}
           style={{
             padding: '.5625rem .75rem',
             border: '1px solid var(--rule-strong)',
@@ -59,6 +60,7 @@ export function EditNowForm({ entry }: Props) {
             background: 'var(--bg-elev)',
           }}
         />
+        <input type="hidden" name="published_at_iso" value={datetimeLocalToIso(publishedAt)} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--rule)' }}>

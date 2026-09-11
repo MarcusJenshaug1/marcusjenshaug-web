@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cleanEmDashes } from '@/lib/text'
 
@@ -17,18 +17,11 @@ export type NowFormState = {
   success?: boolean
 }
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    throw new Error('Ikke autorisert')
-  }
-}
-
 function parseForm(formData: FormData) {
+  const publishedAtIso = formData.get('published_at_iso')
   return nowSchema.safeParse({
     content: formData.get('content'),
-    published_at: formData.get('published_at') ?? '',
+    published_at: (typeof publishedAtIso === 'string' && publishedAtIso) || formData.get('published_at') || '',
   })
 }
 
@@ -94,7 +87,8 @@ export async function updateNowEntry(
 export async function deleteNowEntry(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  await admin.from('now_entries').delete().eq('id', id)
+  const { error } = await admin.from('now_entries').delete().eq('id', id)
+  if (error) throw new Error('Kunne ikke slette oppføringen: ' + error.message)
   revalidatePath('/na')
   revalidatePath('/admin/na')
   revalidatePath('/')

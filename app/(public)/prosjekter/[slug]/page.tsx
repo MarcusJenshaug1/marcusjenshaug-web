@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { FiExternalLink, FiGithub, FiArrowLeft, FiArrowRight } from 'react-icons/fi'
+import { FiExternalLink, FiGithub, FiArrowLeft, FiArrowRight, FiStar } from 'react-icons/fi'
 import { getProjectBySlug, getAdjacentProjects } from '@/lib/projects'
 import { PROJECT_STATUS_LABELS } from '@/lib/types/app'
+import { absoluteUrl, breadcrumbs, formatDate, jsonLd, siteUrl } from '@/lib/site'
 import { SafeMdx } from '@/components/SafeMdx'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { Reveal } from '@/components/motion/Reveal'
@@ -25,7 +26,6 @@ export async function generateMetadata({
   const project = await getProjectBySlug(slug, preview === '1')
   if (!project) return { title: 'Ikke funnet' }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
   const ogImage = `/api/og?title=${encodeURIComponent(project.title)}&type=${encodeURIComponent('Prosjekt')}`
 
   return {
@@ -50,7 +50,7 @@ export async function generateMetadata({
 }
 
 function formatMonth(date: string) {
-  return new Date(date).toLocaleDateString('nb-NO', { month: 'long', year: 'numeric' })
+  return formatDate(date, { month: 'long', year: 'numeric' })
 }
 
 export default async function ProjectDetailPage({
@@ -68,7 +68,6 @@ export default async function ProjectDetailPage({
   if (!project) notFound()
 
   const { prev, next } = await getAdjacentProjects(slug)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
   const creativeWorkSchema = {
     '@context': 'https://schema.org',
@@ -79,25 +78,20 @@ export default async function ProjectDetailPage({
     creator: { '@id': `${siteUrl}/#person` },
     dateCreated: project.started_at ?? undefined,
     dateModified: project.updated_at,
-    image: project.cover_image ? `${siteUrl}${project.cover_image}` : undefined,
+    image: absoluteUrl(project.cover_image),
     keywords: project.tech_stack.join(', ') || undefined,
   }
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Hjem', item: siteUrl },
-      { '@type': 'ListItem', position: 2, name: 'Prosjekter', item: `${siteUrl}/prosjekter` },
-      { '@type': 'ListItem', position: 3, name: project.title, item: `${siteUrl}/prosjekter/${project.slug}` },
-    ],
-  }
+  const breadcrumbSchema = breadcrumbs([
+    { name: 'Prosjekter', path: '/prosjekter' },
+    { name: project.title, path: `/prosjekter/${project.slug}` },
+  ])
 
   return (
     <article>
       <section className="project-hero px-5 pt-12 md:px-8 md:pt-16">
         <div className="container">
-          <nav className="breadcrumb mono">
+          <nav className="breadcrumb mono" aria-label="Brødsmuler">
             <TransitionLink href="/">hjem</TransitionLink> /{' '}
             <TransitionLink href="/prosjekter">prosjekter</TransitionLink> /{' '}
             <span>{project.slug}</span>
@@ -105,7 +99,7 @@ export default async function ProjectDetailPage({
 
           {isPreview && project.draft && (
             <div className="chip chip-accent" style={{ marginBottom: '1rem' }}>
-              ★ Utkast-forhåndsvisning
+              <FiStar aria-hidden /> Utkast-forhåndsvisning
             </div>
           )}
 
@@ -114,8 +108,13 @@ export default async function ProjectDetailPage({
             {project.role && <span>{project.role}</span>}
             {project.started_at && (
               <span>
-                {formatMonth(project.started_at)}
-                {project.ended_at && ` – ${formatMonth(project.ended_at)}`}
+                <time dateTime={project.started_at}>{formatMonth(project.started_at)}</time>
+                {project.ended_at && (
+                  <>
+                    {' – '}
+                    <time dateTime={project.ended_at}>{formatMonth(project.ended_at)}</time>
+                  </>
+                )}
               </span>
             )}
           </div>
@@ -219,8 +218,8 @@ export default async function ProjectDetailPage({
         </nav>
       )}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(creativeWorkSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(creativeWorkSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </article>
   )
 }

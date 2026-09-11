@@ -55,6 +55,7 @@ export function ProjectForm({ project }: Props) {
   const [slug, setSlug] = useState(project?.slug ?? '')
   const [slugTouched, setSlugTouched] = useState(Boolean(project))
   const [coverImage, setCoverImage] = useState(project?.cover_image ?? '')
+  const [draft, setDraft] = useState(project?.draft ?? true)
 
   useEffect(() => {
     if (!slugTouched) setSlug(slugify(title))
@@ -65,7 +66,7 @@ export function ProjectForm({ project }: Props) {
     (fd: FormData) => (project ? autosaveProject(project.id, fd) : Promise.resolve()),
     [project]
   )
-  const { dirty, savedAt, markDirty } = useAutosave(formRef, autoSaveFn)
+  const { dirty, savedAt, markDirty } = useAutosave(formRef, autoSaveFn, { enabled: isEdit && draft })
 
   return (
     <form ref={formRef} action={action} onChange={isEdit ? markDirty : undefined}>
@@ -126,7 +127,12 @@ export function ProjectForm({ project }: Props) {
               Publisering
             </h3>
             <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.875rem', marginBottom: '.5rem' }}>
-              <input type="checkbox" name="draft" defaultChecked={project?.draft ?? true} />
+              <input
+                type="checkbox"
+                name="draft"
+                checked={draft}
+                onChange={(e) => setDraft(e.target.checked)}
+              />
               Utkast (skjult for public)
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.875rem' }}>

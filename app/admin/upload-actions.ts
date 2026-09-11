@@ -1,9 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const BUCKET = 'media'
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']
 
 export type UploadUrlResult =
   | { ok: true; signedUrl: string; token: string; path: string; publicUrl: string }
@@ -13,14 +14,17 @@ export async function createUploadUrl(
   folder: string,
   filename: string
 ): Promise<UploadUrlResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+  try {
+    await requireAdmin()
+  } catch {
     return { ok: false, error: 'Ikke autorisert' }
   }
 
   const safeFolder = folder.replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'misc'
-  const ext = filename.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
+  const ext = filename.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? ''
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return { ok: false, error: `Filtypen støttes ikke. Bruk ${ALLOWED_EXTENSIONS.join(', ')}.` }
+  }
   const path = `${safeFolder}/${crypto.randomUUID()}.${ext}`
 
   const admin = createAdminClient()

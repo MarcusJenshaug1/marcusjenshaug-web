@@ -1,7 +1,6 @@
 import { getPublishedPosts } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+import { siteUrl } from '@/lib/site'
 
 function escapeXml(str: string): string {
   return str
@@ -12,6 +11,10 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;')
 }
 
+function cdata(html: string): string {
+  return `<![CDATA[${html.replace(/]]>/g, ']]]]><![CDATA[>')}]]>`
+}
+
 export async function GET() {
   const [posts, settings] = await Promise.all([getPublishedPosts(), getSiteSettings()])
 
@@ -20,13 +23,14 @@ export async function GET() {
       const link = `${siteUrl}/blogg/${p.slug}`
       const pubDate = p.published_at ? new Date(p.published_at).toUTCString() : new Date(p.created_at).toUTCString()
       const categories = p.tags.map((t) => `<category>${escapeXml(t)}</category>`).join('')
+      const html = `<p>${escapeXml(p.description)}</p><p><a href="${link}">Les hele innlegget på marcusjenshaug.no</a></p>`
       return `    <item>
       <title>${escapeXml(p.title)}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(p.description)}</description>
-      <content:encoded><![CDATA[${p.content}]]></content:encoded>
+      <content:encoded>${cdata(html)}</content:encoded>
       ${categories}
     </item>`
     })

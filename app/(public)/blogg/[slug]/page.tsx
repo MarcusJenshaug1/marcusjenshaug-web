@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { FiStar } from 'react-icons/fi'
 import { getPostBySlug } from '@/lib/posts'
 import { getSiteSettings } from '@/lib/site-settings'
 import { readingTime } from '@/lib/mdx'
+import { absoluteUrl, breadcrumbs, formatDate, jsonLd, siteUrl } from '@/lib/site'
 import { SafeMdx } from '@/components/SafeMdx'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { Reveal } from '@/components/motion/Reveal'
@@ -12,8 +14,6 @@ import { ReadingProgress } from '@/components/fx/ReadingProgress'
 
 type Params = { slug: string }
 type Search = { preview?: string }
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
 export async function generateMetadata({
   params,
@@ -53,13 +53,9 @@ export async function generateMetadata({
   }
 }
 
-function formatLong(iso: string | null) {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString('nb-NO', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
+function laterOf(a: string | null, b: string): string {
+  if (!a) return b
+  return new Date(a).getTime() > new Date(b).getTime() ? a : b
 }
 
 export default async function PostDetailPage({
@@ -97,28 +93,23 @@ export default async function PostDetailPage({
       url: siteUrl,
     },
     datePublished: post.published_at ?? undefined,
-    dateModified: post.updated_at,
-    image: post.cover_image ? `${siteUrl}${post.cover_image}` : ogImage,
+    dateModified: laterOf(post.published_at, post.updated_at),
+    image: absoluteUrl(post.cover_image) ?? ogImage,
     inLanguage: 'nb-NO',
     mainEntityOfPage: `${siteUrl}/blogg/${post.slug}`,
     keywords: post.tags.join(', ') || undefined,
   }
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Hjem', item: siteUrl },
-      { '@type': 'ListItem', position: 2, name: 'Blogg', item: `${siteUrl}/blogg` },
-      { '@type': 'ListItem', position: 3, name: post.title, item: `${siteUrl}/blogg/${post.slug}` },
-    ],
-  }
+  const breadcrumbSchema = breadcrumbs([
+    { name: 'Blogg', path: '/blogg' },
+    { name: post.title, path: `/blogg/${post.slug}` },
+  ])
 
   return (
     <article className="px-5 py-12 md:px-8 md:py-16">
       <ReadingProgress />
       <div className="container" style={{ maxWidth: '46rem' }}>
-        <nav className="breadcrumb mono">
+        <nav className="breadcrumb mono" aria-label="Brødsmuler">
           <TransitionLink href="/">hjem</TransitionLink> /{' '}
           <TransitionLink href="/blogg">blogg</TransitionLink> /{' '}
           <span>{post.slug}</span>
@@ -126,7 +117,7 @@ export default async function PostDetailPage({
 
         {isPreview && post.draft && (
           <div className="chip chip-accent" style={{ marginBottom: '1rem' }}>
-            ★ Utkast-forhåndsvisning
+            <FiStar aria-hidden /> Utkast-forhåndsvisning
           </div>
         )}
 
@@ -136,7 +127,9 @@ export default async function PostDetailPage({
               {t}
             </span>
           ))}
-          <span>{formatLong(post.published_at)}</span>
+          {post.published_at && (
+            <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+          )}
           <span>{readingTime(post.content)} min lesing</span>
         </div>
 
@@ -192,8 +185,8 @@ export default async function PostDetailPage({
         </div>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </article>
   )
 }

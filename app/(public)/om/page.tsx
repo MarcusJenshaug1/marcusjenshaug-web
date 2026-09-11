@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiArrowUpRight } from 'react-icons/fi'
+import { FiArrowUpRight, FiCircle } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
+import { STACK } from '@/lib/stack'
+import { absoluteUrl, breadcrumbs, jsonLd, siteUrl } from '@/lib/site'
 import { SafeMdx } from '@/components/SafeMdx'
 import { Reveal } from '@/components/motion/Reveal'
 
-const siteUrlForMeta = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 const ogImage = `/api/og?title=${encodeURIComponent('Om Marcus Jenshaug')}&type=${encodeURIComponent('Om')}`
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/om' },
   openGraph: {
     type: 'profile',
-    url: `${siteUrlForMeta}/om`,
+    url: `${siteUrl}/om`,
     title: 'Om Marcus Jenshaug',
     description: 'Fullstack-utvikler i Redi AS.',
     images: [{ url: ogImage, width: 1200, height: 630 }],
@@ -28,7 +29,6 @@ export const metadata: Metadata = {
 
 export default async function OmPage() {
   const s = await getSiteSettings()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
   const omTitle = s.headline?.trim() || 'Fullstack-utvikler'
   const bioShort = s.bio_short?.trim() || ''
@@ -44,7 +44,7 @@ export default async function OmPage() {
     name: s.full_name,
     alternateName: 'Makkos',
     url: siteUrl,
-    image: s.image_url ? `${siteUrl}${s.image_url}` : undefined,
+    image: absoluteUrl(s.image_url),
     jobTitle: s.headline,
     email: s.email ? `mailto:${s.email}` : undefined,
     nationality: 'Norwegian',
@@ -53,17 +53,11 @@ export default async function OmPage() {
       name: 'Redi AS',
       url: 'https://redi.as',
     },
-    sameAs: s.social_links.map((l) => l.url),
+    knowsAbout: STACK.map((item) => item.name),
+    sameAs: s.social_links.map((l) => l.url).filter((url) => !/(^|\/\/|\.)redi\.as(\/|$)/i.test(url)),
   }
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Hjem', item: siteUrl },
-      { '@type': 'ListItem', position: 2, name: 'Om', item: `${siteUrl}/om` },
-    ],
-  }
+  const breadcrumbSchema = breadcrumbs([{ name: 'Om', path: '/om' }])
 
   return (
     <section className="px-5 py-12 md:px-8 md:py-16">
@@ -76,6 +70,7 @@ export default async function OmPage() {
                 alt={s.full_name}
                 fill
                 sizes="(max-width: 768px) 100vw, 340px"
+                priority
                 style={{ objectFit: 'cover' }}
               />
             </div>
@@ -104,7 +99,8 @@ export default async function OmPage() {
             <div className="om-meta-row">
               <span>Status</span>
               <span style={{ color: s.available_for_work ? 'var(--ok)' : 'var(--ink-3)' }}>
-                ● {s.available_for_work ? (s.availability_note || 'Åpen for samtaler') : 'Opptatt'}
+                <FiCircle aria-hidden style={{ fontSize: '.6em', verticalAlign: 'middle', fill: 'currentColor' }} />{' '}
+                {s.available_for_work ? (s.availability_note || 'Åpen for samtaler') : 'Opptatt'}
               </span>
             </div>
           </div>
@@ -121,7 +117,7 @@ export default async function OmPage() {
         </aside>
         <div className="om-main">
           <div className="om-header">
-            <div className="eyebrow" style={{ marginBottom: '1rem' }}>OM · PERSON · @id=#person</div>
+            <div className="eyebrow" style={{ marginBottom: '1rem' }}>OM</div>
             <Reveal variant="lines">
               <h1 className="om-title">{omTitle}</h1>
             </Reveal>
@@ -146,7 +142,7 @@ export default async function OmPage() {
 
           {s.social_links.length > 0 && (
             <div className="om-elsewhere">
-              <div className="eyebrow" style={{ marginBottom: '.875rem' }}>Elsewhere · sameAs</div>
+              <div className="eyebrow" style={{ marginBottom: '.875rem' }}>Andre steder</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
                 {s.social_links.map((link) => (
                   <a
@@ -165,8 +161,8 @@ export default async function OmPage() {
         </div>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(personSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

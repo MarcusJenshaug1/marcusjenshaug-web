@@ -5,12 +5,13 @@ import type { UsesItem } from '@/lib/types/app'
 
 export const getUsesItems = cache(async (): Promise<UsesItem[]> => {
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('uses_items')
     .select('*')
     .order('category', { ascending: true })
     .order('order_index', { ascending: true })
     .order('name', { ascending: true })
+  if (error) throw error
   return (data ?? []) as UsesItem[]
 })
 
@@ -25,16 +26,19 @@ export function groupByCategory(items: UsesItem[]): Record<string, UsesItem[]> {
 
 export async function getAllUsesAdmin(): Promise<UsesItem[]> {
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error } = await admin
     .from('uses_items')
     .select('*')
     .order('category', { ascending: true })
     .order('order_index', { ascending: true })
+    .order('name', { ascending: true })
+  if (error) throw error
   return (data ?? []) as UsesItem[]
 }
 
 export async function getUsesItemByIdAdmin(id: string): Promise<UsesItem | null> {
   const admin = createAdminClient()
-  const { data } = await admin.from('uses_items').select('*').eq('id', id).maybeSingle()
+  const { data, error } = await admin.from('uses_items').select('*').eq('id', id).maybeSingle()
+  if (error) throw error
   return data as UsesItem | null
 }

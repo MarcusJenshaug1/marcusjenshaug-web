@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cleanEmDashes } from '@/lib/text'
 
@@ -18,14 +18,6 @@ const usesSchema = z.object({
 export type UsesFormState = {
   error?: string
   success?: boolean
-}
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    throw new Error('Ikke autorisert')
-  }
 }
 
 function parseForm(formData: FormData) {
@@ -97,21 +89,69 @@ export async function updateUsesItem(
 export async function deleteUsesItem(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  await admin.from('uses_items').delete().eq('id', id)
+  const { error } = await admin.from('uses_items').delete().eq('id', id)
+  if (error) throw new Error('Kunne ikke slette oppføringen: ' + error.message)
   revalidatePath('/uses')
   revalidatePath('/admin/uses')
   redirect('/admin/uses')
 }
 
+const reorderSchema = z.object({
+  id: z.string().uuid(),
+  delta: z.number().int().min(-1).max(1),
+})
+
 export async function reorderUsesItem(id: string, delta: number) {
   await requireAdmin()
+  const parsed = reorderSchema.safeParse({ id, delta })
+  if (!parsed.success) throw new Error('Ugyldig flytting')
+
   const admin = createAdminClient()
-  const { data: current } = await admin.from('uses_items').select('order_index').eq('id', id).maybeSingle()
-  if (!current) return
-  await admin
+  const { data: current, error: currentError } = await admin
     .from('uses_items')
-    .update({ order_index: current.order_index + delta, updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .select('category')
+    .eq('id', parsed.data.id)
+    .maybeSingle()
+  if (currentError) throw new Error('Kunne ikke flytte: ' + currentError.message)
+  if (!current) return
+
+  const { data: siblings, error: siblingsError } = await admin
+    .from('uses_items')
+    .select('id, order_index')
+    .eq('category', current.category)
+    .order('order_index', { ascending: true })
+    .order('name', { ascending: true })
+  if (siblingsError) throw new Error('Kunne ikke flytte: ' + siblingsError.message)
+
+  let ordered = siblings ?? []
+  const hasDuplicates = new Set(ordered.map((s) => s.order_index)).size !== ordered.length
+  if (hasDuplicates) {
+    ordered = ordered.map((s, i) => ({ ...s, order_index: i }))
+    const results = await Promise.all(
+      ordered.map((s) => admin.from('uses_items').update({ order_index: s.order_index }).eq('id', s.id))
+    )
+    const failed = results.find((r) => r.error)
+    if (failed?.error) throw new Error('Kunne ikke normalisere rekkefølge: ' + failed.error.message)
+  }
+
+  const index = ordered.findIndex((s) => s.id === parsed.data.id)
+  const neighbour = ordered[index + parsed.data.delta]
+  if (index === -1 || !neighbour) return
+
+  const now = new Date().toISOString()
+  const [a, b] = await Promise.all([
+    admin
+      .from('uses_items')
+      .update({ order_index: neighbour.order_index, updated_at: now })
+      .eq('id', parsed.data.id),
+    admin
+      .from('uses_items')
+      .update({ order_index: ordered[index].order_index, updated_at: now })
+      .eq('id', neighbour.id),
+  ])
+  const swapError = a.error ?? b.error
+  if (swapError) throw new Error('Kunne ikke flytte: ' + swapError.message)
+
   revalidatePath('/uses')
   revalidatePath('/admin/uses')
 }

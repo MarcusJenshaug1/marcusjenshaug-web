@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FiRss } from 'react-icons/fi'
 import { getPublishedPosts } from '@/lib/posts'
+import { breadcrumbs, formatDate, jsonLd } from '@/lib/site'
 import { LatestPosts } from '@/components/home/LatestPosts'
 import { Reveal } from '@/components/motion/Reveal'
 
@@ -10,12 +11,14 @@ export const metadata: Metadata = {
   alternates: { canonical: '/blogg' },
 }
 
+const breadcrumbSchema = breadcrumbs([{ name: 'Blogg', path: '/blogg' }])
+
 export default async function BloggPage() {
   const posts = await getPublishedPosts()
 
   const groups: Record<string, typeof posts> = {}
   for (const post of posts) {
-    const year = post.published_at ? String(new Date(post.published_at).getFullYear()) : '—'
+    const year = post.published_at ? formatDate(post.published_at, { year: 'numeric' }) : '—'
     if (!groups[year]) groups[year] = []
     groups[year].push(post)
   }
@@ -25,7 +28,7 @@ export default async function BloggPage() {
     <section className="px-5 py-12 md:px-8 md:py-16">
       <div className="container">
         <div className="page-head">
-          <div className="eyebrow">ARTICLE · ARKIV · {String(posts.length).padStart(2, '0')}</div>
+          <div className="eyebrow">BLOGG · ARKIV · {String(posts.length).padStart(2, '0')}</div>
           <Reveal variant="lines">
             <h1 className="display display-2 page-title">
               Notater og lengre stykker om koden jeg skriver
@@ -60,6 +63,7 @@ export default async function BloggPage() {
           ))
         )}
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

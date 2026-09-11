@@ -3,9 +3,8 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { slugify } from '@/lib/slug'
 import { cleanEmDashes } from '@/lib/text'
 import { PROJECT_STATUSES } from '@/lib/types/app'
 
@@ -31,14 +30,6 @@ const projectSchema = z.object({
 export type ProjectFormState = {
   error?: string
   success?: boolean
-}
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    throw new Error('Ikke autorisert')
-  }
 }
 
 function parseForm(formData: FormData) {
@@ -117,7 +108,7 @@ export async function createProject(
 
   revalidatePath('/prosjekter')
   revalidatePath('/')
-  redirect(`/admin/prosjekter/${data.id}?saved=1`)
+  redirect(`/admin/prosjekter/${data.id}`)
 }
 
 export async function updateProject(
@@ -159,7 +150,11 @@ export async function autosaveProject(id: string, formData: FormData): Promise<{
 export async function togglePublish(id: string, currentDraft: boolean) {
   await requireAdmin()
   const admin = createAdminClient()
-  await admin.from('projects').update({ draft: !currentDraft, updated_at: new Date().toISOString() }).eq('id', id)
+  const { error } = await admin
+    .from('projects')
+    .update({ draft: !currentDraft, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error('Kunne ikke endre synlighet: ' + error.message)
   revalidatePath('/prosjekter')
   revalidatePath('/admin/prosjekter')
   revalidatePath('/')
@@ -168,7 +163,8 @@ export async function togglePublish(id: string, currentDraft: boolean) {
 export async function deleteProject(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  await admin.from('projects').delete().eq('id', id)
+  const { error } = await admin.from('projects').delete().eq('id', id)
+  if (error) throw new Error('Kunne ikke slette prosjektet: ' + error.message)
   revalidatePath('/prosjekter')
   revalidatePath('/admin/prosjekter')
   revalidatePath('/')
@@ -197,8 +193,4 @@ export async function reorderProjects(
 
   const failed = results.find((r) => r.error)
   if (failed?.error) return { error: 'Kunne ikke lagre rekkefølge: ' + failed.error.message }
-}
-
-export async function suggestSlug(title: string): Promise<string> {
-  return slugify(title)
 }

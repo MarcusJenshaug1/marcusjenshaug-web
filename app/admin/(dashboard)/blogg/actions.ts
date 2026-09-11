@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cleanEmDashes } from '@/lib/text'
 
@@ -23,15 +23,8 @@ export type PostFormState = {
   success?: boolean
 }
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    throw new Error('Ikke autorisert')
-  }
-}
-
 function parseForm(formData: FormData) {
+  const publishedAtIso = formData.get('published_at_iso')
   return postSchema.safeParse({
     slug: formData.get('slug'),
     title: formData.get('title'),
@@ -39,7 +32,7 @@ function parseForm(formData: FormData) {
     content: formData.get('content'),
     cover_image: formData.get('cover_image') ?? '',
     tags: formData.get('tags') ?? '',
-    published_at: formData.get('published_at') ?? '',
+    published_at: (typeof publishedAtIso === 'string' && publishedAtIso) || formData.get('published_at') || '',
     draft: formData.get('draft') === 'on',
   })
 }
@@ -91,7 +84,7 @@ export async function createPost(
 
   revalidatePath('/blogg')
   revalidatePath('/')
-  redirect(`/admin/blogg/${data.id}?saved=1`)
+  redirect(`/admin/blogg/${data.id}`)
 }
 
 export async function updatePost(
@@ -142,7 +135,8 @@ export async function togglePublish(id: string, currentDraft: boolean) {
   if (currentDraft) {
     patch.published_at = new Date().toISOString()
   }
-  await admin.from('posts').update(patch).eq('id', id)
+  const { error } = await admin.from('posts').update(patch).eq('id', id)
+  if (error) throw new Error('Kunne ikke endre synlighet: ' + error.message)
   revalidatePath('/blogg')
   revalidatePath('/admin/blogg')
   revalidatePath('/')
@@ -151,7 +145,8 @@ export async function togglePublish(id: string, currentDraft: boolean) {
 export async function deletePost(id: string) {
   await requireAdmin()
   const admin = createAdminClient()
-  await admin.from('posts').delete().eq('id', id)
+  const { error } = await admin.from('posts').delete().eq('id', id)
+  if (error) throw new Error('Kunne ikke slette innlegget: ' + error.message)
   revalidatePath('/blogg')
   revalidatePath('/admin/blogg')
   revalidatePath('/')

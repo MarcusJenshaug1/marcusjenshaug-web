@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getNowEntries } from '@/lib/now'
+import { breadcrumbs, formatDate, jsonLd } from '@/lib/site'
 import { SafeMdx } from '@/components/SafeMdx'
 import { Reveal } from '@/components/motion/Reveal'
 import { OsloTerminalLine } from '@/components/OsloTerminal'
@@ -10,13 +11,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/na' },
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('nb-NO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
+const breadcrumbSchema = breadcrumbs([{ name: 'Nå', path: '/na' }])
+const dateFormat: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' }
 
 export default async function NaPage() {
   const entries = await getNowEntries()
@@ -61,7 +57,7 @@ export default async function NaPage() {
                 <div className="na-entry-head">
                   <span className="str">commit</span>{' '}
                   <time dateTime={e.published_at} className="na-entry-date">
-                    {formatDate(e.published_at)}
+                    {formatDate(e.published_at, dateFormat)}
                   </time>
                   {i === 0 && <span className="na-entry-badge">HEAD → nå</span>}
                 </div>
@@ -77,6 +73,7 @@ export default async function NaPage() {
           </div>
         </div>
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

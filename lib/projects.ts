@@ -5,23 +5,25 @@ import { PROJECT_STATUSES, type Project, type ProjectStatus } from '@/lib/types/
 
 export const getPublishedProjects = cache(async (): Promise<Project[]> => {
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('draft', false)
     .order('order_index', { ascending: true })
     .order('started_at', { ascending: false, nullsFirst: false })
+  if (error) throw error
   return (data ?? []) as Project[]
 })
 
 export const getFeaturedProjects = cache(async (): Promise<Project[]> => {
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('draft', false)
     .eq('featured', true)
     .order('order_index', { ascending: true })
+  if (error) throw error
   return (data ?? []) as Project[]
 })
 
@@ -31,33 +33,37 @@ export const getProjectBySlug = cache(async (slug: string, preview = false): Pro
     const { data: { user } } = await supabase.auth.getUser()
     if (user?.email === process.env.ADMIN_EMAIL) {
       const admin = createAdminClient()
-      const { data } = await admin.from('projects').select('*').eq('slug', slug).maybeSingle()
+      const { data, error } = await admin.from('projects').select('*').eq('slug', slug).maybeSingle()
+      if (error) throw error
       return data as Project | null
     }
   }
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('slug', slug)
     .eq('draft', false)
     .maybeSingle()
+  if (error) throw error
   return data as Project | null
 })
 
 export async function getAllProjectsAdmin(): Promise<Project[]> {
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error } = await admin
     .from('projects')
     .select('*')
     .order('order_index', { ascending: true })
     .order('created_at', { ascending: true })
+  if (error) throw error
   return (data ?? []) as Project[]
 }
 
 export async function getProjectByIdAdmin(id: string): Promise<Project | null> {
   const admin = createAdminClient()
-  const { data } = await admin.from('projects').select('*').eq('id', id).maybeSingle()
+  const { data, error } = await admin.from('projects').select('*').eq('id', id).maybeSingle()
+  if (error) throw error
   return data as Project | null
 }
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cleanEmDashes } from '@/lib/text'
 
@@ -35,9 +35,9 @@ export async function updateSettings(
   _prevState: SettingsState,
   formData: FormData
 ): Promise<SettingsState> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+  try {
+    await requireAdmin()
+  } catch {
     return { error: 'Ikke autorisert' }
   }
 
