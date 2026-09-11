@@ -98,7 +98,7 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
         </ParallaxLayer>
         <ParallaxLayer speed={14} start="top top" className="hero-visual">
           <HeroVisual
-            textureSrc="/portrett.jpg"
+            textureSrc={s.image_url ?? '/portrett.jpg'}
             fallbackSrc={s.image_url ?? '/portrett.jpg'}
             alt={`Portrett av ${s.full_name}`}
           />
@@ -106,7 +106,7 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
       </div>
       <div className="hero-foot container mono">
         <span className="hero-scroll">
-          <FiArrowDown className="scroll-arrow" aria-hidden /> SCROLL
+          <FiArrowDown className="scroll-arrow" aria-hidden /> RULL
         </span>
         <SectionCounter />
       </div>

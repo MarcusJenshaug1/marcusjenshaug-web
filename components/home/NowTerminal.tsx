@@ -1,5 +1,6 @@
 import { SafeMdx } from '@/components/SafeMdx'
 import { OsloTerminalLine } from '@/components/OsloTerminal'
+import { formatDate } from '@/lib/site'
 import type { NowEntry } from '@/lib/types/app'
 
 export function NowTerminal({ entry }: { entry: NowEntry | null }) {
@@ -12,13 +13,11 @@ export function NowTerminal({ entry }: { entry: NowEntry | null }) {
       <div>
         <span className="com">
           # sist oppdatert{' '}
-          {entry
-            ? new Date(entry.published_at).toLocaleDateString('nb-NO', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              })
-            : '—'}
+          {entry ? (
+            <time dateTime={entry.published_at}>{formatDate(entry.published_at, { day: '2-digit', month: 'short', year: 'numeric' })}</time>
+          ) : (
+            '—'
+          )}
         </span>
       </div>
       <div>

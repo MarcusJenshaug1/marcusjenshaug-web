@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FiMail, FiArrowUpRight } from 'react-icons/fi'
 import { getSiteSettings } from '@/lib/site-settings'
+import { breadcrumbs, jsonLd } from '@/lib/site'
 import { Reveal } from '@/components/motion/Reveal'
 import { ContactForm } from './ContactForm'
 
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
   description: 'Ta kontakt med Marcus Jenshaug.',
   alternates: { canonical: '/kontakt' },
 }
+
+const breadcrumbSchema = breadcrumbs([{ name: 'Kontakt', path: '/kontakt' }])
 
 export default async function KontaktPage() {
   const s = await getSiteSettings()
@@ -80,6 +83,7 @@ export default async function KontaktPage() {
           </div>
         </div>
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

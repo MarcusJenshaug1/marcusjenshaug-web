@@ -1,16 +1,14 @@
 import { FiClock, FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
+import { formatDate } from '@/lib/site'
 import { readingTime } from '@/lib/mdx'
 import type { Post } from '@/lib/types/app'
 
 function formatParts(date: string | null) {
   if (!date) return { day: '—', rest: '' }
-  const d = new Date(date)
   return {
-    day: String(d.getDate()).padStart(2, '0'),
-    rest: d
-      .toLocaleDateString('nb-NO', { month: 'short', year: 'numeric' })
-      .replace('.', ''),
+    day: formatDate(date, { day: '2-digit' }),
+    rest: formatDate(date, { month: 'short', year: 'numeric' }).replace('.', ''),
   }
 }
 
@@ -27,10 +25,10 @@ export function LatestPosts({ posts }: { posts: Post[] }) {
             data-cursor="view"
             data-cursor-label="Les"
           >
-            <span className="post-card-date">
+            <time className="post-card-date" dateTime={p.published_at ?? undefined}>
               <span className="post-card-day display tabular">{day}</span>
               <span className="post-card-rest mono">{rest}</span>
-            </span>
+            </time>
             <span className="post-card-main">
               <span className="post-card-title display display-4">{p.title}</span>
               <span className="post-card-desc">{p.description}</span>

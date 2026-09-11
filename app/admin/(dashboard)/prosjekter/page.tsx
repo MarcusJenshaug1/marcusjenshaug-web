@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiPlus } from 'react-icons/fi'
 import { getAllProjectsAdmin } from '@/lib/projects'
+import { formatDate } from '@/lib/site'
 import { SortableProjectList, type AdminProjectRow } from './SortableProjectList'
 
 export const metadata: Metadata = {
@@ -18,11 +19,7 @@ export default async function AdminProsjekterPage() {
     status: p.status,
     featured: p.featured,
     draft: p.draft,
-    updatedLabel: new Date(p.updated_at).toLocaleDateString('nb-NO', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }),
+    updatedLabel: formatDate(p.updated_at, { day: '2-digit', month: 'short', year: 'numeric' }),
   }))
 
   return (

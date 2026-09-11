@@ -6,6 +6,7 @@ import {
   PROJECT_STATUS_LABELS,
   type ProjectStatus,
 } from '@/lib/types/app'
+import { breadcrumbs, jsonLd } from '@/lib/site'
 import { FeaturedProjects } from '@/components/home/FeaturedProjects'
 import { Reveal } from '@/components/motion/Reveal'
 
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
   description: 'Portefølje og prosjekter av Marcus Jenshaug.',
   alternates: { canonical: '/prosjekter' },
 }
+
+const breadcrumbSchema = breadcrumbs([{ name: 'Prosjekter', path: '/prosjekter' }])
 
 function isValidStatus(v: string | undefined): v is ProjectStatus {
   return v !== undefined && (PROJECT_STATUSES as readonly string[]).includes(v)
@@ -44,7 +47,7 @@ export default async function ProsjekterPage({
     <section className="px-5 py-12 md:px-8 md:py-16">
       <div className="container">
         <div className="page-head">
-          <div className="eyebrow">CREATIVEWORK · ARKIV · {String(all.length).padStart(2, '0')}</div>
+          <div className="eyebrow">PROSJEKTER · ARKIV · {String(all.length).padStart(2, '0')}</div>
           <Reveal variant="lines">
             <h1 className="display display-2 page-title">
               Prosjekter, fra klientarbeid til sidesysler
@@ -93,6 +96,7 @@ export default async function ProsjekterPage({
           />
         )}
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

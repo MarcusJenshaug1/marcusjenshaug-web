@@ -106,7 +106,7 @@ export function Makkos({ spotifyUrl }: { spotifyUrl: string | null }) {
           </div>
         )}
         <p className="makkos-status mono" aria-live="polite">
-          {playing ? '▶ SPILLER NÅ — VISUALISERING AKTIV' : 'STANDBY'}
+          {playing ? (<><FiPlay aria-hidden /> SPILLER NÅ — VISUALISERING AKTIV</>) : 'VENTER'}
         </p>
       </div>
     </div>

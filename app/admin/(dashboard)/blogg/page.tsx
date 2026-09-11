@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiPlus, FiEdit3, FiEye, FiEyeOff } from 'react-icons/fi'
 import { getAllPostsAdmin } from '@/lib/posts'
+import { formatDate } from '@/lib/site'
 import { togglePublish } from './actions'
 
 export const metadata: Metadata = {
@@ -64,7 +65,7 @@ export default async function AdminBloggPage() {
                   <Td>
                     <span className="mono dim" style={{ fontSize: '.75rem' }}>
                       {p.published_at
-                        ? new Date(p.published_at).toLocaleDateString('nb-NO', { day: '2-digit', month: 'short', year: 'numeric' })
+                        ? formatDate(p.published_at, { day: '2-digit', month: 'short', year: 'numeric' })
                         : '—'}
                     </span>
                   </Td>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiEdit3 } from 'react-icons/fi'
 import { getAllNowAdmin } from '@/lib/now'
+import { formatDate } from '@/lib/site'
 import { NewNowForm } from './NewNowForm'
 import { DeleteInlineForm } from './DeleteInlineForm'
 
@@ -10,14 +11,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('nb-NO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+const dateTimeFormat: Intl.DateTimeFormatOptions = {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
 }
 
 export default async function AdminNaPage() {
@@ -52,7 +51,7 @@ export default async function AdminNaPage() {
             {entries.map((e) => (
               <div key={e.id} className="card" style={{ padding: '1rem 1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.5rem' }}>
-                  <span className="mono dim" style={{ fontSize: '.75rem' }}>{formatDate(e.published_at)}</span>
+                  <span className="mono dim" style={{ fontSize: '.75rem' }}>{formatDate(e.published_at, dateTimeFormat)}</span>
                   <div style={{ display: 'flex', gap: '.375rem' }}>
                     <Link href={`/admin/na/${e.id}`} className="btn btn-sm btn-ghost">
                       <FiEdit3 /> Rediger

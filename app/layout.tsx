@@ -4,6 +4,7 @@ import { JetBrains_Mono, Martian_Mono } from 'next/font/google'
 import { AdminShortcut } from '@/components/AdminShortcut'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { siteUrl, jsonLd } from '@/lib/site'
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -18,7 +19,6 @@ const martianMono = Martian_Mono({
   display: 'swap',
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+          dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema) }}
         />
       </body>
     </html>

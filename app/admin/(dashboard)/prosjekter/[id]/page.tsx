@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getProjectByIdAdmin } from '@/lib/projects'
+import { formatDate } from '@/lib/site'
 import { ProjectForm } from '../ProjectForm'
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
         <div>
           <h1 style={{ fontSize: '1.375rem' }}>{project.title}</h1>
           <p className="dim mono" style={{ fontSize: '.75rem', marginTop: '.25rem' }}>
-            {project.draft ? 'Utkast' : 'Publisert'} · sist endret {new Date(project.updated_at).toLocaleString('nb-NO')}
+            {project.draft ? 'Utkast' : 'Publisert'} · sist endret {formatDate(project.updated_at, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
       </header>

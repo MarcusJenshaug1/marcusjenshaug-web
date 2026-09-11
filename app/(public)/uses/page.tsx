@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { getUsesItems, groupByCategory } from '@/lib/uses'
+import { breadcrumbs, jsonLd } from '@/lib/site'
 import { Reveal } from '@/components/motion/Reveal'
 
 export const metadata: Metadata = {
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Verktøy, programvare og hardware Marcus Jenshaug bruker.',
   alternates: { canonical: '/uses' },
 }
+
+const breadcrumbSchema = breadcrumbs([{ name: 'Uses', path: '/uses' }])
 
 export default async function UsesPage() {
   const items = await getUsesItems()
@@ -88,6 +91,7 @@ export default async function UsesPage() {
           </div>
         )}
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
     </section>
   )
 }

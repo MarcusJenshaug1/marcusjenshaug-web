@@ -1,8 +1,7 @@
 import { getSiteSettings } from '@/lib/site-settings'
 import { getPublishedProjects } from '@/lib/projects'
 import { getPublishedPosts } from '@/lib/posts'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+import { siteUrl } from '@/lib/site'
 
 export async function GET() {
   const [settings, projects, posts] = await Promise.all([

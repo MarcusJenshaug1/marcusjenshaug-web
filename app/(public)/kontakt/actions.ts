@@ -2,17 +2,11 @@
 
 import { headers } from 'next/headers'
 import { Resend } from 'resend'
-import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const contactSchema = z.object({
-  name: z.string().min(1, 'Navn er påkrevd').max(200),
-  email: z.string().email('Ugyldig e-post'),
-  message: z.string().min(10, 'Meldingen må være minst 10 tegn').max(5000),
-  website: z.string().max(0, 'Fjern verdien i dette feltet').optional().default(''),
-})
+import { parseContact, type ContactFieldErrors } from './schema'
 
 export type ContactState = {
+  fieldErrors?: ContactFieldErrors
   error?: string
   success?: boolean
 }
@@ -24,18 +18,13 @@ export async function sendContactMessage(
   _prevState: ContactState,
   formData: FormData
 ): Promise<ContactState> {
-  const parsed = contactSchema.safeParse({
-    name: formData.get('name'),
-    email: formData.get('email'),
-    message: formData.get('message'),
-    website: formData.get('website') ?? '',
-  })
+  const { data, fieldErrors } = parseContact(formData)
 
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message }
+  if (!data) {
+    return { fieldErrors }
   }
 
-  if (parsed.data.website) {
+  if (data.website) {
     return { success: true }
   }
 
@@ -59,8 +48,6 @@ export async function sendContactMessage(
     return { error: 'For mange forespørsler. Prøv igjen om et minutt.' }
   }
 
-  await admin.from('rate_limits').insert({ bucket })
-
   if (!process.env.RESEND_API_KEY || !process.env.ADMIN_EMAIL) {
     return { error: 'E-posttjeneste ikke konfigurert.' }
   }
@@ -69,14 +56,16 @@ export async function sendContactMessage(
   const { error } = await resend.emails.send({
     from: 'Kontaktskjema <kontakt@marcusjenshaug.no>',
     to: process.env.ADMIN_EMAIL,
-    replyTo: parsed.data.email,
-    subject: `Ny melding fra ${parsed.data.name}`,
-    text: `Fra: ${parsed.data.name} <${parsed.data.email}>\n\n${parsed.data.message}`,
+    replyTo: data.email,
+    subject: `Ny melding fra ${data.name}`,
+    text: `Fra: ${data.name} <${data.email}>\n\n${data.message}`,
   })
 
   if (error) {
     return { error: 'Kunne ikke sende melding. Prøv igjen senere.' }
   }
+
+  await admin.from('rate_limits').insert({ bucket })
 
   return { success: true }
 }

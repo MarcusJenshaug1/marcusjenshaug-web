@@ -14,8 +14,8 @@ export function IntroOverlay({ name }: { name: string }) {
   useLayoutEffect(() => {
     if (prefersReducedMotion()) return
     try {
-      if (sessionStorage.getItem(STORAGE_KEY)) return
-      sessionStorage.setItem(STORAGE_KEY, '1')
+      if (localStorage.getItem(STORAGE_KEY)) return
+      localStorage.setItem(STORAGE_KEY, '1')
     } catch {
       return
     }
@@ -51,11 +51,11 @@ export function IntroOverlay({ name }: { name: string }) {
       .set(metaEl, { autoAlpha: 0 })
       .to(nameEl, {
         scrambleText: { text: name, chars: '01<>/\\_-[]{}#$%&', speed: 0.8 },
-        duration: 0.9,
+        duration: 0.6,
         ease: 'none',
       })
       .to(metaEl, { autoAlpha: 1, duration: 0.25 }, '-=0.2')
-      .add(finish, '+=0.5')
+      .add(finish, '+=0.3')
 
     const skip = () => finish()
     window.addEventListener('pointerdown', skip)

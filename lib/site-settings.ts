@@ -7,6 +7,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single()
 
   if (error || !data) {
+    if (error) console.error('Kunne ikke hente site_settings:', error)
     return {
       id: 1,
       full_name: 'Marcus Jenshaug',

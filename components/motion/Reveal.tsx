@@ -35,7 +35,12 @@ export function Reveal({ children, variant = 'lines', delay = 0, className }: Re
         return
       }
 
-      const split = SplitText.create(el, {
+      // Linjedeling må skje inne i selve elementet (h1, blockquote …), ellers
+      // skjærer SplitText opp elementet i én kopi per linje – og siden får
+      // flere <h1>.
+      const target =
+        variant === 'lines' && el.children.length === 1 ? el.firstElementChild ?? el : el
+      const split = SplitText.create(target, {
         type: variant,
         mask: variant === 'lines' ? 'lines' : undefined,
         aria: 'auto',
@@ -53,6 +58,10 @@ export function Reveal({ children, variant = 'lines', delay = 0, className }: Re
         scrollTrigger: { trigger: el, start: 'top 88%', once: true },
         onComplete: () => split.revert(),
       })
+
+      return () => {
+        split.revert()
+      }
     },
     { scope: ref, dependencies: [reduced, variant, delay] }
   )

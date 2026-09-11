@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPublishedProjects } from '@/lib/projects'
 import { getPublishedPosts } from '@/lib/posts'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://marcusjenshaug.no'
+import { siteUrl } from '@/lib/site'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()

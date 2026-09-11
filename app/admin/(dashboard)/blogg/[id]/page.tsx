@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPostByIdAdmin } from '@/lib/posts'
+import { formatDate } from '@/lib/site'
 import { PostForm } from '../PostForm'
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
         <div>
           <h1 style={{ fontSize: '1.375rem' }}>{post.title}</h1>
           <p className="dim mono" style={{ fontSize: '.75rem', marginTop: '.25rem' }}>
-            {post.draft ? 'Utkast' : 'Publisert'} · sist endret {new Date(post.updated_at).toLocaleString('nb-NO')}
+            {post.draft ? 'Utkast' : 'Publisert'} · sist endret {formatDate(post.updated_at, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
       </header>
