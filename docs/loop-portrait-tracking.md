@@ -89,11 +89,26 @@ Alt ligger i `scripts/portrait/` med egen `package.json` (`@huggingface/transfor
 
 `out/depth-raw.png` og `out/landmarks.json` er sjekket inn, så steg 4 kan kjøres uten modellene.
 
+## Verifisering (PR #21, 12. september 2026)
+
+Kjørt mot produksjon i wmux-nettleseren (synlig fane, 1264×625, dpr 1) med syntetiske `pointermove`-events og skjermbilder etter 1,5 s (lerp ferdig).
+
+| Sjekk | Resultat |
+|---|---|
+| `npm run lint`, `tsc --noEmit`, `npm run build` | Grønne |
+| Lerret får riktig størrelse ved første montering | 435×545 med én gang, ingen 300×150 |
+| Shader-feil i konsollen | Ingen (kun `THREE.Clock`-deprecation fra drei) |
+| Pekeren i fire hjørner | Hodet dreier tydelig den veien, nesen mer enn ørene, iris mot pekeren, øyelokk i ro |
+| Pekeren midt på ansiktet | Nøytral |
+| Pekeren forlater vinduet | Glir tilbake til nøytral |
+| Søm ved hals, skuldre, bakgrunn ved maks utslag | Ingen synlig |
+| Drift, ripple og RGB-forskyvning | Fungerer, også over hodemeshet (samme fragment-shader) |
+| Frametid under pekerbevegelse | 300 frames på 2,5 s (120 Hz), snitt 8,3 ms, maks 8,5 ms, 0 over 25 ms |
+| Touch og reduced motion | Verifisert i kode: `useIsCoarsePointer`/`useReducedMotion` gir `useScene = false`, scenen monteres ikke, `next/image` vises. Ikke emulert i nettleser. |
+
+Merk for testing: i en skjult fane (`document.visibilityState === 'hidden'`) fyrer verken ResizeObserver eller rAF, så scenen monteres først når fanen blir synlig. Det er ønsket oppførsel, men Chrome-automatisering i bakgrunnsfaner gir falske negativer.
+
 ## Gjenstår
 
-- Research-funn inn i dokumentet
-- Deformasjon i vertex-shaderen (i dag på CPU per frame)
-- Rotårsak for at R3F ikke måler beholderen ved første montering (i dag resize-events som workaround)
-- Genereringsskript inn i repoet
-- `npm run lint` uten interaktiv oppsett
-- Verifisering i nettleser: hjørner, nøytral, forlat vindu, søm, 60 fps, touch, reduced motion
+- React-feil #418 (hydreringsavvik) logges på forsiden også før denne runden. Ikke relatert til portrettet, men bør finnes og fikses separat.
+- Finjustering etter smak: `YAW_DEG`, `PITCH_DEG`, `RELIEF` i `HeadWarp.tsx`; `EYE_SHIFT` i `HeroScene.tsx`.
