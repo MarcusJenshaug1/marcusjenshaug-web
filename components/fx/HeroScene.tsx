@@ -23,6 +23,7 @@ const fragmentShader = /* glsl */ `
   uniform float uParallax;
   uniform float uFace;
   uniform sampler2D uEyeMask;
+  uniform sampler2D uHeadAlpha;
   uniform vec2 uIrisA;
   uniform vec2 uIrisB;
   uniform vec2 uEyeWidth;
@@ -141,11 +142,16 @@ const fragmentShader = /* glsl */ `
     float b = texture2D(uTexture, uv + offset - vec2(shift, 0.0)).b;
 
     vec3 color = vec3(r, g, b);
+    float alpha = 1.0;
     if (uFace > 0.5) {
+      // Hodet er et eget lag: myk alfa fra matten, så bakgrunnsplaten under
+      // står helt stille mens hodet dreier.
+      alpha = texture2D(uHeadAlpha, uvBase).r;
+      if (alpha < 0.004) discard;
       color *= relight(uvBase);
       color = mix(color, texture2D(uTexture, uvBase + offset).rgb, glint);
     }
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, alpha);
   }
 `
 
@@ -159,6 +165,8 @@ const COVER_FOCUS = new THREE.Vector2(0.5, 0.85)
 // Forskyvning av iris som andel av øyebredden (horisontalt, vertikalt)
 const EYE_SHIFT = new THREE.Vector2(0.12, 0.05)
 const EYE_MASK_SRC = '/portrett-eyes.png'
+const PLATE_SRC = '/portrett-plate.webp'
+const HEAD_ALPHA_SRC = '/portrett-head-alpha.png'
 
 function irisUv(eye: { iris: number[] }) {
   return new THREE.Vector2(eye.iris[0], 1 - eye.iris[1])
@@ -172,7 +180,13 @@ type PortraitPlaneProps = {
 }
 
 function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProps) {
-  const [texture, depthTexture, eyeMask] = useTexture([src, depthSrc ?? src, EYE_MASK_SRC])
+  const [texture, depthTexture, eyeMask, plate, headAlpha] = useTexture([
+    src,
+    depthSrc ?? src,
+    EYE_MASK_SRC,
+    face ? PLATE_SRC : src,
+    HEAD_ALPHA_SRC,
+  ])
   const { viewport, gl } = useThree()
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
@@ -224,12 +238,14 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
 
   const material = useMemo(() => {
     texture.colorSpace = THREE.SRGBColorSpace
+    plate.colorSpace = THREE.SRGBColorSpace
     const image = texture.image as { width: number; height: number }
     return new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
       uniforms: {
-        uTexture: { value: texture },
+        uTexture: { value: face ? plate : texture },
+        uHeadAlpha: { value: headAlpha },
         uDepth: { value: depthTexture },
         uLook: { value: new THREE.Vector2(0, 0) },
         uParallax: { value: depthSrc ? PARALLAX_STRENGTH : 0 },
@@ -251,7 +267,7 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
         uCoverFocus: { value: COVER_FOCUS },
       },
     })
-  }, [texture, depthTexture, eyeMask, depthSrc])
+  }, [texture, depthTexture, eyeMask, plate, headAlpha, depthSrc, face])
 
   useFrame((_, delta) => {
     const u = material.uniforms
@@ -290,7 +306,13 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
       </mesh>
       {face && (
         <group scale={[viewport.width, viewport.height, 1]}>
-          <HeadWarp fragmentShader={fragmentShader} uniforms={material.uniforms} cover={cover} />
+          <HeadWarp
+            fragmentShader={fragmentShader}
+            uniforms={material.uniforms}
+            cover={cover}
+            texture={texture}
+            headAlpha={headAlpha}
+          />
         </group>
       )}
     </>

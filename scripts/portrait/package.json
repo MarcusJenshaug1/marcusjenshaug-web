@@ -6,7 +6,9 @@
   "scripts": {
     "depth": "node depth.mjs",
     "serve": "node serve.mjs",
-    "grid": "node head-grid.mjs"
+    "grid": "node head-grid.mjs",
+    "matte": "node matte.mjs",
+    "plate": "node plate.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.7.0",
