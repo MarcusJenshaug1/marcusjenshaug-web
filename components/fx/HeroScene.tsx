@@ -110,7 +110,6 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-const LOOK_REACH = 0.45
 const LOOK_EASE = 0.06
 const SCROLL_REACH = 0.6
 const SCROLL_YAW = 0.35
@@ -163,12 +162,16 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
       return () => window.removeEventListener('scroll', onScroll)
     }
 
+    // Normaliser mot avstanden til skjermkanten på hver side av portrettet, så
+    // venstre kant gir -1 og høyre kant +1 uansett hvor portrettet står.
     const onMove = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect()
       const cx = rect.left + rect.width / 2
       const cy = rect.top + rect.height / 2
-      const nx = (e.clientX - cx) / (window.innerWidth * LOOK_REACH)
-      const ny = (cy - e.clientY) / (window.innerHeight * LOOK_REACH)
+      const dx = e.clientX - cx
+      const dy = cy - e.clientY
+      const nx = dx / Math.max(1, dx >= 0 ? window.innerWidth - cx : cx)
+      const ny = dy / Math.max(1, dy >= 0 ? cy : window.innerHeight - cy)
       targetLook.current.set(THREE.MathUtils.clamp(nx, -1, 1), THREE.MathUtils.clamp(ny, -1, 1))
     }
     const onLeave = () => targetLook.current.set(0, 0)
