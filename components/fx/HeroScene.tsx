@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import { HeadWarp } from '@/components/fx/HeadWarp'
+import { HeadWarp, type CoverMapping } from '@/components/fx/HeadWarp'
 import headGrid from '@/components/fx/face/head-grid.json'
 
 const vertexShader = /* glsl */ `
@@ -40,6 +40,7 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uMouse;
   uniform float uImageAspect;
   uniform float uPlaneAspect;
+  uniform vec2 uCoverFocus;
   varying vec2 vUv;
 
   // Simplex-stoy (Ashima / Ian McEwan)
@@ -69,10 +70,12 @@ const fragmentShader = /* glsl */ `
     return 130.0 * dot(m, g);
   }
 
+  // object-fit: cover med samme fokuspunkt som stillbildet (50 % 15 % fra toppen),
+  // så ansiktet beholdes når boksen er bredere enn bildet.
   vec2 coverUv(vec2 uv) {
     float ratio = uPlaneAspect / uImageAspect;
     vec2 scale = ratio > 1.0 ? vec2(1.0, 1.0 / ratio) : vec2(ratio, 1.0);
-    return (uv - 0.5) * scale + 0.5;
+    return uv * scale + uCoverFocus * (1.0 - scale);
   }
 
   void main() {
@@ -114,6 +117,8 @@ const SCROLL_YAW = 0.35
 
 export type LookInput = 'pointer' | 'scroll'
 const PARALLAX_STRENGTH = 0
+// Fokuspunkt for cover-beskjæring i uv (y oppover): 50 % / 15 % fra toppen
+const COVER_FOCUS = new THREE.Vector2(0.5, 0.85)
 // Forskyvning av iris som andel av øyebredden (horisontalt, vertikalt)
 const EYE_SHIFT = new THREE.Vector2(0.12, 0.05)
 const EYE_MASK_SRC = '/portrett-eyes.png'
@@ -137,9 +142,10 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
   const targetLook = useRef(new THREE.Vector2(0, 0))
 
   const image = texture.image as { width: number; height: number }
-  const coverScale = useMemo<[number, number]>(() => {
+  const cover = useMemo<CoverMapping>(() => {
     const ratio = viewport.width / viewport.height / (image.width / image.height)
-    return ratio > 1 ? [1, 1 / ratio] : [ratio, 1]
+    const scale: [number, number] = ratio > 1 ? [1, 1 / ratio] : [ratio, 1]
+    return { scale, offset: [COVER_FOCUS.x * (1 - scale[0]), COVER_FOCUS.y * (1 - scale[1])] }
   }, [viewport.width, viewport.height, image.width, image.height])
 
   useEffect(() => {
@@ -196,6 +202,7 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
         uImageAspect: { value: image.width / image.height },
         uPlaneAspect: { value: 1 },
+        uCoverFocus: { value: COVER_FOCUS },
       },
     })
   }, [texture, depthTexture, eyeMask, depthSrc])
@@ -229,7 +236,7 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
       </mesh>
       {face && (
         <group scale={[viewport.width, viewport.height, 1]}>
-          <HeadWarp fragmentShader={fragmentShader} uniforms={material.uniforms} scale={coverScale} />
+          <HeadWarp fragmentShader={fragmentShader} uniforms={material.uniforms} cover={cover} />
         </group>
       )}
     </>

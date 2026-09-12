@@ -38,15 +38,22 @@ const headVertexShader = /* glsl */ `
   }
 `
 
+// Cover-mapping fra bakgrunnsplanet: bilde-uv = plan-uv * scale + offset.
+// Meshet må bruke den samme, ellers ligger hodet feil når boksen har et
+// annet format enn bildet.
+export type CoverMapping = { scale: [number, number]; offset: [number, number] }
+
 type Props = {
   fragmentShader: string
   uniforms: Record<string, THREE.IUniform>
-  scale: [number, number]
+  cover: CoverMapping
 }
 
-export function HeadWarp({ fragmentShader, uniforms, scale }: Props) {
+export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
   const mesh = useMemo(() => {
-    const [sx, sy] = scale
+    const [sx, sy] = cover.scale
+    const [ox, oy] = cover.offset
+    const toPlane = (u: number, vUp: number): [number, number] => [(u - ox) / sx - 0.5, (vUp - oy) / sy - 0.5]
     const { cols, rows, region, relief, weight } = grid
     const n = cols * rows
     const position = new Float32Array(n * 3)
@@ -56,8 +63,9 @@ export function HeadWarp({ fragmentShader, uniforms, scale }: Props) {
         const k = j * cols + i
         const u = region.x0 + (i / (cols - 1)) * (region.x1 - region.x0)
         const v = region.y0 + (j / (rows - 1)) * (region.y1 - region.y0)
-        position[k * 3] = (u - 0.5) / sx
-        position[k * 3 + 1] = (0.5 - v) / sy
+        const [px, py] = toPlane(u, 1 - v)
+        position[k * 3] = px
+        position[k * 3 + 1] = py
         uv[k * 2] = u
         uv[k * 2 + 1] = 1 - v
       }
@@ -76,7 +84,8 @@ export function HeadWarp({ fragmentShader, uniforms, scale }: Props) {
     geometry.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array(weight), 1))
     geometry.setIndex(index)
 
-    const center = new THREE.Vector3((0.57 - 0.5) / sx, (0.5 - 0.4) / sy, -PIVOT_Z / sx)
+    const [cx, cy] = toPlane(0.57, 0.6)
+    const center = new THREE.Vector3(cx, cy, -PIVOT_Z / sx)
     const material = new THREE.ShaderMaterial({
       vertexShader: headVertexShader,
       fragmentShader,
@@ -92,7 +101,7 @@ export function HeadWarp({ fragmentShader, uniforms, scale }: Props) {
     const m = new THREE.Mesh(geometry, material)
     m.position.z = 0.001
     return m
-  }, [scale, fragmentShader, uniforms])
+  }, [cover, fragmentShader, uniforms])
 
   return <primitive object={mesh} />
 }
