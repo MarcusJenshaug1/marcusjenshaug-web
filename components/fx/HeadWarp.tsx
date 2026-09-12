@@ -67,9 +67,11 @@ type Props = {
   fragmentShader: string
   uniforms: Record<string, THREE.IUniform>
   cover: CoverMapping
+  texture: THREE.Texture
+  headAlpha: THREE.Texture
 }
 
-export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
+export function HeadWarp({ fragmentShader, uniforms, cover, texture, headAlpha }: Props) {
   const mesh = useMemo(() => {
     const [sx, sy] = cover.scale
     const [ox, oy] = cover.offset
@@ -109,8 +111,11 @@ export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
     const material = new THREE.ShaderMaterial({
       vertexShader: headVertexShader,
       fragmentShader,
+      transparent: true,
       uniforms: {
         ...uniforms,
+        uTexture: { value: texture },
+        uHeadAlpha: { value: headAlpha },
         uFace: { value: 1 },
         uAngles: { value: new THREE.Vector2(THREE.MathUtils.degToRad(YAW_DEG), THREE.MathUtils.degToRad(PITCH_DEG)) },
         uPivot: { value: new THREE.Vector3(cx, cy, HEAD_Z / sx) },
@@ -123,7 +128,7 @@ export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
     const m = new THREE.Mesh(geometry, material)
     m.position.z = 0.001
     return m
-  }, [cover, fragmentShader, uniforms])
+  }, [cover, fragmentShader, uniforms, texture, headAlpha])
 
   return <primitive object={mesh} />
 }

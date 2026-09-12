@@ -21,7 +21,8 @@ const COLS = 40
 const ROWS = 52
 const REGION = { x0: 0.27, x1: 0.87, y0: 0.02, y1: 0.8 }
 const ELLIPSE = { cx: 0.57, cy: 0.4, rx: 0.27, ryTop: 0.38, ryBottom: 0.26 }
-const INNER = 0.6
+const NECK_FADE_START = 0.58
+const NECK_FADE_END = 0.66
 // Bakgrunnen i dybdekartet ligger på 0,02–0,10, hodet på 0,28–0,49 (skuldrene er nærmest og
 // tar toppen av skalaen). Masken skal være 1 over hele hodet, så terskelen må ligge under
 // hodets laveste verdi.
@@ -70,11 +71,15 @@ for (let j = 0; j < ROWS; j++) {
     const k = j * COLS + i
     const u = REGION.x0 + (i / (COLS - 1)) * (REGION.x1 - REGION.x0)
     const v = REGION.y0 + (j / (ROWS - 1)) * (REGION.y1 - REGION.y0)
+    // Hodet er et eget lag med alfa (plate.mjs), så vekten trenger ikke låse silhuetten
+    // mot bakgrunnen lenger. Den fader bare ut over halsen mot kragen, der hodelagets
+    // alfa også fader ut, og holder seg innenfor ellipsen som sikkerhetsnett.
     const ex = (u - ELLIPSE.cx) / ELLIPSE.rx
     const ey = (v - ELLIPSE.cy) / (v < ELLIPSE.cy ? ELLIPSE.ryTop : ELLIPSE.ryBottom)
-    const ellipse = smooth((1 - Math.hypot(ex, ey)) / (1 - INNER))
+    const ellipse = smooth((1.15 - Math.hypot(ex, ey)) / 0.35)
+    const neck = 1 - smooth((v - NECK_FADE_START) / (NECK_FADE_END - NECK_FADE_START))
     const head = smooth((raw[k] - HEAD_THRESHOLD) / HEAD_SOFTNESS)
-    weight.push(+(ellipse * head).toFixed(3))
+    weight.push(+(ellipse * neck).toFixed(3))
     if (ellipse * head > 0.5) {
       headMin = Math.min(headMin, raw[k])
       headMax = Math.max(headMax, raw[k])

@@ -79,7 +79,16 @@ Fire parallelle agenter, sammendrag med kilder.
 - **Silhuett:** størst gevinst er to lag: inpaintet bakgrunnsplate + hodemesh med myk alfa fra matting (BEN2/RMBG via transformers.js `background-removal`, evt. ViTMatte for hår). Ikke gjort ennå. Kilder: [3D Photo Inpainting](https://shihmengli.github.io/3D-Photo-Inpainting/), [transformers.js PR #1216](https://github.com/huggingface/transformers.js/pull/1216), [ViTMatte](https://huggingface.co/Xenova/vitmatte-base-composition-1k).
 - **Referanser:** [Codrops Stacy](https://tympanus.net/codrops/2019/10/14/how-to-create-an-interactive-3d-character-with-three-js/), [PrivacyPuppet](https://github.com/privacypuppet/privacypuppet), [Cassie Evans «lil' me»](https://www.cassie.codes/posts/making-a-lil-me-part-1/). Det som skiller «wow» fra gimmick: idle-drift, øyne før hode, lys som følger rotasjonen, lagvis parallakse. Live2D/Rive er ikke verdt det for et foto. Blikket bør følge over hele siden, også over tekst og knapper.
 
-Implementert fra runde 2 (PR #28): tidsbasert lagdelt blikkmodell (`components/fx/gaze.ts`), roll/sideforflytning/nakke-følging i vertex-shaderen, relighting og catchlight i fragment-shaderen, øyelokk-følging, landemerke-relieff i rutenettet. Ikke gjort: to-lags bakgrunnsplate.
+Implementert fra runde 2 (PR #28): tidsbasert lagdelt blikkmodell (`components/fx/gaze.ts`), roll/sideforflytning/nakke-følging i vertex-shaderen, relighting og catchlight i fragment-shaderen, øyelokk-følging, landemerke-relieff i rutenettet.
+
+### To lag (PR #29)
+
+Hodet er nå et eget lag over en bakgrunnsplate, så bakgrunnen står helt stille bak silhuetten når hodet dreier, uten strekk.
+
+- `scripts/portrait/matte.mjs`: personmatte med `briaai/RMBG-1.4` via transformers.js `background-removal` (myk alfa, hår inkludert) → `out/matte.png`.
+- `scripts/portrait/plate.mjs`: `public/portrett-head-alpha.png` = matte × fade over halsen (0,58–0,66) × halsvindu under haken (skuldre og jakke er aldri med i hodelaget). `public/portrett-plate.webp` = fotoet der hodet er fylt inn med normalisert konvolusjon fra ren bakgrunn (kilde = utenfor personen) i 1/8 oppløsning, så én blur når inn til midten. Fyllingen går litt utenfor silhuetten (så hårstrå ikke blir stående som kontur) men bare over halsen, så komposittet i ro er piksel-identisk med fotoet.
+- Runtime: bakgrunnsplanet viser platen, hodemeshet viser originalen med `uHeadAlpha` som alfa (`transparent: true`, `discard` under 0,004). Rutenettvekten låser ikke lenger silhuetten mot bakgrunnen; den fader bare over halsen mot kragen.
+- Lærdom fra sharp: 1-kanals råbilder kommer tilbake som 3 kanaler etter `blur()` om man ikke ber om `toColourspace('b-w')`, og RGBA premultipliseres, så RGB og vekt må blurres hver for seg.
 
 ## Valgt løsning
 
@@ -97,6 +106,8 @@ Alt ligger i `scripts/portrait/` med egen `package.json` (`@huggingface/transfor
 2. `node depth.mjs` → `out/depth-raw.png` (Depth Anything V2 base, ca. 1–5 s på CPU).
 3. `node serve.mjs` og åpne `http://localhost:8123/landmarks.html` → `out/landmarks.json` (478 punkter). Modellfilen `face_landmarker.task` lastes ned fra Googles CDN til `out/` første gang (gitignorert).
 4. `node head-grid.mjs` → `components/fx/face/head-grid.json` (relieff, vekt, iris, øyebredde) og `public/portrett-eyes.png` (øyemaske, 1/4 oppløsning).
+5. `node matte.mjs` → `out/matte.png` (personmatte, RMBG-1.4).
+6. `node plate.mjs` → `public/portrett-head-alpha.png` og `public/portrett-plate.webp`.
 
 `out/depth-raw.png` og `out/landmarks.json` er sjekket inn, så steg 4 kan kjøres uten modellene.
 
