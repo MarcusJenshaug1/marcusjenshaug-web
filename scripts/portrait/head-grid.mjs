@@ -81,8 +81,33 @@ for (let j = 0; j < ROWS; j++) {
     }
   }
 }
-for (let k = 0; k < COLS * ROWS; k++) {
-  relief.push(+Math.min(1, Math.max(0, (raw[k] - headMin) / (headMax - headMin))).toFixed(3))
+// Dybdekartet gir hodets store form, men flater ut nese og kinn. Landemerkenes z
+// (MediaPipe: mindre = nærmere, samme skala som x) blandes inn innenfor ansiktet
+// med en gaussisk kjerne rundt hvert punkt.
+const lmZ = lm.points.slice(0, 468).map((p) => -p[2])
+const zMin = Math.min(...lmZ)
+const zMax = Math.max(...lmZ)
+const SIGMA = 0.035
+for (let j = 0; j < ROWS; j++) {
+  for (let i = 0; i < COLS; i++) {
+    const k = j * COLS + i
+    const u = REGION.x0 + (i / (COLS - 1)) * (REGION.x1 - REGION.x0)
+    const v = REGION.y0 + (j / (ROWS - 1)) * (REGION.y1 - REGION.y0)
+    let wSum = 0
+    let zSum = 0
+    for (let p = 0; p < 468; p++) {
+      const [x, y] = lm.points[p]
+      const d2 = (x - u) ** 2 + (y - v) ** 2
+      if (d2 > 9 * SIGMA * SIGMA) continue
+      const w = Math.exp(-d2 / (2 * SIGMA * SIGMA))
+      wSum += w
+      zSum += w * (lmZ[p] - zMin) / (zMax - zMin)
+    }
+    const depthRelief = Math.min(1, Math.max(0, (raw[k] - headMin) / (headMax - headMin)))
+    const faceW = smooth(Math.min(1, wSum / 6))
+    const face = wSum > 0 ? 0.4 * depthRelief + 0.6 * (zSum / wSum) : depthRelief
+    relief.push(+(depthRelief * (1 - faceW) + face * faceW).toFixed(3))
+  }
 }
 
 const eyes = EYES.map((eye) => {
