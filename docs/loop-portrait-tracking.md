@@ -74,7 +74,7 @@ Fire parallelle agenter, sammendrag med kilder.
 ## Valgt løsning
 
 - **Dybde:** Depth Anything V2 base via transformers.js, normalisert innenfor hodemasken, blurret én rutenettcelle, samplet til 40×52.
-- **Mesh:** rutenett over hode og hals. Vekt = ellipse × dybdemaske (terskel 0,3, myk kant). Rotasjonen skjer i vertex-shaderen (`components/fx/HeadWarp.tsx`): vertex løftes til `HEAD_Z + relieff·RELIEF`, roteres om pivot bak hodet med `uLook·uAngles`, og blandes mot basisposisjonen med vekten. uv er fast.
+- **Mesh:** rutenett over hode og hals. Vekt = ellipse × dybdemaske (terskel 0,14 med 0,10 myk kant; bakgrunnen ligger på 0,02–0,10 og hodet på 0,28–0,49 fordi skuldrene tar toppen av skalaen. En terskel på 0,3 ga nesten null vekt på venstre halvdel av ansiktet, «bare høyre side funker»). Rotasjonen skjer i vertex-shaderen (`components/fx/HeadWarp.tsx`): vertex løftes til `HEAD_Z + relieff·RELIEF`, roteres om pivot bak hodet med `uLook·uAngles`, og blandes mot basisposisjonen med vekten. uv er fast.
 - **Øyne:** polygon-maske (`public/portrett-eyes.png`) × radial vekt fra iris-senter, forskyvning 0,12/0,05 × øyebredde, i fragment-shaderen (`uFace`-grenen i `HeroScene.tsx`).
 - **Bevegelse:** én `pointermove`-lytter, mål i ref, lerp 0,06 i `useFrame`. `pointerleave` på `<html>` → mål (0, 0).
 - **Ingen bakgrunnsparallakse og ingen tilt** (forkastet).

@@ -22,7 +22,11 @@ const ROWS = 52
 const REGION = { x0: 0.27, x1: 0.87, y0: 0.02, y1: 0.8 }
 const ELLIPSE = { cx: 0.57, cy: 0.4, rx: 0.27, ryTop: 0.38, ryBottom: 0.26 }
 const INNER = 0.6
-const HEAD_THRESHOLD = 0.3
+// Bakgrunnen i dybdekartet ligger på 0,02–0,10, hodet på 0,28–0,49 (skuldrene er nærmest og
+// tar toppen av skalaen). Masken skal være 1 over hele hodet, så terskelen må ligge under
+// hodets laveste verdi.
+const HEAD_THRESHOLD = 0.14
+const HEAD_SOFTNESS = 0.1
 
 // MediaPipe Face Mesh: øyelokk-konturer og iris (468/473 = senter, 469–472/474–477 = ring)
 const EYES = [
@@ -69,7 +73,7 @@ for (let j = 0; j < ROWS; j++) {
     const ex = (u - ELLIPSE.cx) / ELLIPSE.rx
     const ey = (v - ELLIPSE.cy) / (v < ELLIPSE.cy ? ELLIPSE.ryTop : ELLIPSE.ryBottom)
     const ellipse = smooth((1 - Math.hypot(ex, ey)) / (1 - INNER))
-    const head = smooth((raw[k] - HEAD_THRESHOLD) / 0.15)
+    const head = smooth((raw[k] - HEAD_THRESHOLD) / HEAD_SOFTNESS)
     weight.push(+(ellipse * head).toFixed(3))
     if (ellipse * head > 0.5) {
       headMin = Math.min(headMin, raw[k])
