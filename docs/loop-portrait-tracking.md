@@ -112,5 +112,5 @@ Merk for testing: i en skjult fane (`document.visibilityState === 'hidden'`) fyr
 
 ## Gjenstår
 
-- React-feil #418 (hydreringsavvik) logges på forsiden også før denne runden. Ikke relatert til portrettet, men bør finnes og fikses separat.
+- React-feil #418 (hydreringsavvik): reprodusert i dev-modus mot ekte data. Diffen viste `<body cz-shortcut-listen="true">`, et attributt ColorZilla-utvidelsen i Chrome setter før React hydrerer. Ikke en feil i koden. `<body suppressHydrationWarning>` er lagt til slik Next anbefaler for utvidelser som endrer DOM-en. Elementer som utvidelser (f.eks. Claude in Chrome) legger inn før hydrering kan fortsatt gi #418 i prod; det er utenfor kodens kontroll.
 - Finjustering etter smak: `YAW_DEG`, `PITCH_DEG`, `RELIEF` i `HeadWarp.tsx`; `EYE_SHIFT` i `HeroScene.tsx`.
