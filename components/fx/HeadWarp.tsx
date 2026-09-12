@@ -4,43 +4,63 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import grid from '@/components/fx/face/head-grid.json'
 
-const YAW_DEG = 10
-const PITCH_DEG = 6
-const PIVOT_Z = 0.1
+export const YAW_DEG = 10
+export const PITCH_DEG = 6
+const ROLL_PER_YAW = -0.15
+const SHIFT_PER_YAW = 0.015
 const HEAD_Z = 0.1
 const RELIEF = 0.08
+const HEAD_CENTER = { u: 0.57, v: 0.4 }
+const NECK_BASE_V = 0.62
 
-// Rotasjonen skjer i vertex-shaderen: hvert vertex har relieff (aRelief, 0–1 fra
-// dybdekartet) og vekt (aWeight, 1 i hodet, 0 ved kanten). Vertexet løftes til
-// z = HEAD_Z + relieff·RELIEF, roteres om et pivot bak hodet og blandes tilbake
-// mot basisposisjonen med vekten, så kantene ligger fast. uv følger basis.
+// Rotasjonen skjer i vertex-shaderen. Hodet (uLook) og halsen (uNeck, forsinket
+// og svakere) får hver sine vinkler, blandet med hvor på hodet vertexet sitter:
+// over haken følger det hodet, ned mot kragen følger det halsen. Yaw og roll
+// roterer om hodets senter, pitch om nakkebasen. Ved yaw flytter hodet seg
+// også litt sideveis, som et ekte hode. Vekten (aWeight) låser kantene.
 const headVertexShader = /* glsl */ `
   attribute float aRelief;
   attribute float aWeight;
   uniform vec2 uLook;
+  uniform vec2 uNeck;
   uniform vec2 uAngles;
   uniform vec3 uPivot;
+  uniform float uPivotPitchY;
   uniform float uHeadZ;
   uniform float uRelief;
+  uniform float uShift;
   varying vec2 vUv;
+
+  vec3 turn(vec3 p, vec2 look) {
+    float yaw = look.x * uAngles.x;
+    float pitch = look.y * uAngles.y;
+    float roll = yaw * ${ROLL_PER_YAW.toFixed(2)};
+    float cy = cos(yaw), sy = sin(yaw);
+    float cp = cos(pitch), sp = sin(pitch);
+    float cr = cos(roll), sr = sin(roll);
+    vec3 q = p - uPivot;
+    q = vec3(q.x * cy + q.z * sy, q.y, -q.x * sy + q.z * cy);
+    q = vec3(q.x * cr - q.y * sr, q.x * sr + q.y * cr, q.z);
+    q += uPivot;
+    q.y -= uPivotPitchY;
+    q = vec3(q.x, q.y * cp + q.z * sp, -q.y * sp + q.z * cp);
+    q.y += uPivotPitchY;
+    q.x += look.x * uShift;
+    return q;
+  }
 
   void main() {
     vUv = uv;
-    float yaw = uLook.x * uAngles.x;
-    float pitch = uLook.y * uAngles.y;
-    vec3 p = vec3(position.xy, uHeadZ + aRelief * uRelief) - uPivot;
-    float cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch);
-    vec3 r = vec3(p.x * cy + p.z * sy, p.y, -p.x * sy + p.z * cy);
-    r = vec3(r.x, r.y * cp + r.z * sp, -r.y * sp + r.z * cp);
-    vec2 moved = (r + uPivot).xy;
+    vec3 p = vec3(position.xy, uHeadZ + aRelief * uRelief);
+    float headness = 1.0 - smoothstep(0.50, 0.62, 1.0 - uv.y);
+    vec3 head = turn(p, uLook);
+    vec3 neck = turn(p, uNeck);
+    vec2 moved = mix(neck.xy, head.xy, headness);
     vec3 warped = vec3(mix(position.xy, moved, aWeight), 0.0);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(warped, 1.0);
   }
 `
 
-// Cover-mapping fra bakgrunnsplanet: bilde-uv = plan-uv * scale + offset.
-// Meshet må bruke den samme, ellers ligger hodet feil når boksen har et
-// annet format enn bildet.
 export type CoverMapping = { scale: [number, number]; offset: [number, number] }
 
 type Props = {
@@ -84,8 +104,8 @@ export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
     geometry.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array(weight), 1))
     geometry.setIndex(index)
 
-    const [cx, cy] = toPlane(0.57, 0.6)
-    const center = new THREE.Vector3(cx, cy, -PIVOT_Z / sx)
+    const [cx, cy] = toPlane(HEAD_CENTER.u, 1 - HEAD_CENTER.v)
+    const [, neckY] = toPlane(HEAD_CENTER.u, 1 - NECK_BASE_V)
     const material = new THREE.ShaderMaterial({
       vertexShader: headVertexShader,
       fragmentShader,
@@ -93,9 +113,11 @@ export function HeadWarp({ fragmentShader, uniforms, cover }: Props) {
         ...uniforms,
         uFace: { value: 1 },
         uAngles: { value: new THREE.Vector2(THREE.MathUtils.degToRad(YAW_DEG), THREE.MathUtils.degToRad(PITCH_DEG)) },
-        uPivot: { value: center },
+        uPivot: { value: new THREE.Vector3(cx, cy, HEAD_Z / sx) },
+        uPivotPitchY: { value: neckY },
         uHeadZ: { value: HEAD_Z / sx },
         uRelief: { value: RELIEF / sx },
+        uShift: { value: SHIFT_PER_YAW / sx },
       },
     })
     const m = new THREE.Mesh(geometry, material)

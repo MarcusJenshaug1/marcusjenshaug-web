@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import { HeadWarp, type CoverMapping } from '@/components/fx/HeadWarp'
+import { HeadWarp, PITCH_DEG, YAW_DEG, type CoverMapping } from '@/components/fx/HeadWarp'
+import { Gaze } from '@/components/fx/gaze'
 import headGrid from '@/components/fx/face/head-grid.json'
 
 const vertexShader = /* glsl */ `
@@ -26,14 +27,39 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uIrisB;
   uniform vec2 uEyeWidth;
   uniform vec2 uEyeShift;
+  uniform vec2 uGaze;
+  uniform vec2 uHeadRot;
+  uniform vec2 uTexel;
 
   // Flytter bildet inne i øyeåpningen (maske fra landemerke-polygonene) mot
-  // blikkretningen. Vekten er størst ved iris-senteret og null ved øyelokkene,
-  // så iris følger pekeren mens lokkene står stille.
-  vec2 eyeShift(vec2 uv, vec2 iris, float width, float mask) {
+  // blikkretningen (uGaze = øynenes blikk relativt til hodet). Vekten er størst
+  // ved iris-senteret og null ved øyelokkene. Øvre øyelokk følger vertikalt
+  // blikk litt: båndet rett over åpningen forskyves ned/opp med halv styrke.
+  vec2 eyeShift(vec2 uv, vec2 iris, float width, float mask, float gain) {
     float r = length((uv - iris) / width);
     float w = mask * smoothstep(0.55, 0.15, r);
-    return uLook * uEyeShift * width * w;
+    float eyeH = width * 0.4;
+    float lid = texture2D(uEyeMask, uv - vec2(0.0, eyeH * 0.2)).r * (1.0 - mask);
+    lid *= smoothstep(0.9, 0.5, r);
+    vec2 shift = uGaze * uEyeShift * width * w * gain;
+    shift.y += uGaze.y * eyeH * 0.5 * lid * gain;
+    return shift;
+  }
+
+  // Normal fra dybdegradienten, rotert med hodet, mot et fast lys. Nøytral
+  // stilling gir faktor 1, så bare rotasjonen endrer lyset.
+  float relight(vec2 uv) {
+    float dx = texture2D(uDepth, uv + vec2(uTexel.x, 0.0)).r - texture2D(uDepth, uv - vec2(uTexel.x, 0.0)).r;
+    float dy = texture2D(uDepth, uv + vec2(0.0, uTexel.y)).r - texture2D(uDepth, uv - vec2(0.0, uTexel.y)).r;
+    vec3 n = normalize(vec3(-dx * 6.0, -dy * 6.0, 1.0));
+    float cy = cos(uHeadRot.x), sy = sin(uHeadRot.x);
+    float cp = cos(uHeadRot.y), sp = sin(uHeadRot.y);
+    vec3 r = vec3(n.x * cy + n.z * sy, n.y, -n.x * sy + n.z * cy);
+    r = vec3(r.x, r.y * cp + r.z * sp, -r.y * sp + r.z * cp);
+    vec3 light = normalize(vec3(0.35, 0.5, 0.8));
+    float before = 0.88 + 0.25 * max(dot(n, light), 0.0);
+    float after = 0.88 + 0.25 * max(dot(r, light), 0.0);
+    return after / before;
   }
   uniform float uTime;
   uniform float uVelocity;
@@ -83,9 +109,17 @@ const fragmentShader = /* glsl */ `
     // så det hopper over cover-mapping og dybdeparallakse.
     vec2 uv = uFace > 0.5 ? vUv : coverUv(vUv);
 
+    vec2 uvBase = uv;
+    float glint = 0.0;
     if (uFace > 0.5) {
       float mask = texture2D(uEyeMask, uv).r;
-      uv -= eyeShift(uv, uIrisA, uEyeWidth.x, mask) + eyeShift(uv, uIrisB, uEyeWidth.y, mask);
+      uv -= eyeShift(uv, uIrisA, uEyeWidth.x, mask, 1.0) + eyeShift(uv, uIrisB, uEyeWidth.y, mask, 0.92);
+      // Catchlight: det lyseste i iris er refleksen fra lyset, og den skal stå
+      // stille når iris flytter seg. Legges tilbake fra det uforskjøvne bildet.
+      float lum = dot(texture2D(uTexture, uvBase).rgb, vec3(0.299, 0.587, 0.114));
+      float irisA = 1.0 - smoothstep(uEyeWidth.x * 0.18, uEyeWidth.x * 0.22, distance(uvBase, uIrisA));
+      float irisB = 1.0 - smoothstep(uEyeWidth.y * 0.18, uEyeWidth.y * 0.22, distance(uvBase, uIrisB));
+      glint = max(irisA, irisB) * mask * smoothstep(0.55, 0.75, lum);
     } else {
       // Dybdekart: nære piksler flytter seg mot musa, fjerne fra – som om kameraet
       // flytter seg dit pekeren er.
@@ -106,11 +140,15 @@ const fragmentShader = /* glsl */ `
     float g = texture2D(uTexture, uv + offset).g;
     float b = texture2D(uTexture, uv + offset - vec2(shift, 0.0)).b;
 
-    gl_FragColor = vec4(r, g, b, 1.0);
+    vec3 color = vec3(r, g, b);
+    if (uFace > 0.5) {
+      color *= relight(uvBase);
+      color = mix(color, texture2D(uTexture, uvBase + offset).rgb, glint);
+    }
+    gl_FragColor = vec4(color, 1.0);
   }
 `
 
-const LOOK_EASE = 0.06
 const SCROLL_REACH = 0.6
 const SCROLL_YAW = 0.35
 
@@ -139,6 +177,7 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
   const targetMouse = useRef(new THREE.Vector2(0.5, 0.5))
   const targetVelocity = useRef(0)
   const targetLook = useRef(new THREE.Vector2(0, 0))
+  const gazeRef = useRef(new Gaze())
 
   const image = texture.image as { width: number; height: number }
   const cover = useMemo<CoverMapping>(() => {
@@ -200,6 +239,10 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
         uIrisB: { value: irisUv(headGrid.eyes[1]) },
         uEyeWidth: { value: new THREE.Vector2(headGrid.eyes[0].width, headGrid.eyes[1].width) },
         uEyeShift: { value: EYE_SHIFT },
+        uGaze: { value: new THREE.Vector2(0, 0) },
+        uNeck: { value: new THREE.Vector2(0, 0) },
+        uHeadRot: { value: new THREE.Vector2(0, 0) },
+        uTexel: { value: new THREE.Vector2(1 / image.width, 1 / image.height) },
         uTime: { value: 0 },
         uVelocity: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -215,7 +258,15 @@ function PortraitPlane({ src, depthSrc, face = false, input }: PortraitPlaneProp
     u.uTime.value += Math.min(delta, 0.1)
     u.uPlaneAspect.value = viewport.width / viewport.height
     ;(u.uMouse.value as THREE.Vector2).lerp(targetMouse.current, 0.08)
-    ;(u.uLook.value as THREE.Vector2).lerp(targetLook.current, LOOK_EASE)
+    const gaze = gazeRef.current
+    gaze.update(delta, targetLook.current)
+    ;(u.uLook.value as THREE.Vector2).copy(gaze.head)
+    ;(u.uNeck.value as THREE.Vector2).copy(gaze.neck)
+    ;(u.uGaze.value as THREE.Vector2).copy(gaze.eyesLocal)
+    ;(u.uHeadRot.value as THREE.Vector2).set(
+      gaze.head.x * THREE.MathUtils.degToRad(YAW_DEG),
+      gaze.head.y * THREE.MathUtils.degToRad(PITCH_DEG)
+    )
     targetVelocity.current *= 0.92
     u.uVelocity.value += (targetVelocity.current - u.uVelocity.value) * 0.1
   })
