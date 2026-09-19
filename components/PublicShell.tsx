@@ -3,7 +3,7 @@ import { Footer } from '@/components/Footer'
 import { LocaleBanner } from '@/components/LocaleBanner'
 import { ThemeProvider } from '@/components/motion/ThemeProvider'
 import { MotionRoot } from '@/components/motion/MotionRoot'
-import { getSiteSettings } from '@/lib/site-settings'
+import { getSiteSettings, localizeSettings } from '@/lib/site-settings'
 import { getTranslator, type Locale } from '@/lib/i18n'
 
 type Props = {
@@ -12,7 +12,8 @@ type Props = {
 }
 
 export async function PublicShell({ locale, children }: Props) {
-  const [settings, t] = await Promise.all([getSiteSettings(), getTranslator(locale)])
+  const [rawSettings, t] = await Promise.all([getSiteSettings(), getTranslator(locale)])
+  const settings = localizeSettings(rawSettings, locale)
 
   return (
     <ThemeProvider>

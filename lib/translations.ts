@@ -59,6 +59,8 @@ function merge<T extends { id: string }>(row: T, locale: Locale, t: ContentTrans
     const value = t[key]
     if (value && key in row) out[key] = value
   }
+  // uses_items har «name» der oversettelsen lagrer «title».
+  if (t.title && 'name' in row && !('title' in row)) out.name = t.title
   return { ...(out as T), locale, sourceSlug, localized: true, machineTranslated: t.machine_translated }
 }
 

@@ -143,6 +143,8 @@ export const DICTIONARY = {
     'uses.category.software': 'Programvare',
     'uses.category.dev': 'Utvikling',
     'uses.category.desk': 'Skrivebord',
+    'uses.category.services': 'Tjenester',
+    'uses.category.everyday': 'Hverdag',
 
     'about.title': 'Om',
     'about.eyebrow': 'Om',
@@ -422,6 +424,8 @@ export const DICTIONARY = {
     'uses.category.software': 'Software',
     'uses.category.dev': 'Development',
     'uses.category.desk': 'Desk',
+    'uses.category.services': 'Services',
+    'uses.category.everyday': 'Everyday',
 
     'about.title': 'About',
     'about.eyebrow': 'About',

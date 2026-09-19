@@ -60,7 +60,7 @@ export default async function NowPage({ params }: Props) {
             <span className="now-terminal-dot" aria-hidden />
             <span className="now-terminal-title">marcus@redi — ~/na — git log</span>
           </div>
-          <OsloTerminalLine />
+          <OsloTerminalLine locale={locale} />
           <div>
             <span className="prompt">marcus@redi</span> <span className="str">~/na</span> $ git
             log --reverse=false

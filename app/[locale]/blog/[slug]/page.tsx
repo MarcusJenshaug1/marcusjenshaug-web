@@ -8,6 +8,7 @@ import { localizeOne, resolveSourceSlug, type LocalizedPost } from '@/lib/transl
 import { readingTime } from '@/lib/mdx'
 import { absoluteUrl, alternatesFor, breadcrumbs, formatDate, jsonLd, langTag, ogImageUrl, siteUrl } from '@/lib/site'
 import { OG_LOCALE, getTranslator, isLocale, localePath, type Locale } from '@/lib/i18n'
+import { platformLabel, tagLabel } from '@/lib/i18n/labels'
 import { SafeMdx } from '@/components/SafeMdx'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { Reveal } from '@/components/motion/Reveal'
@@ -143,7 +144,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
         <div className="article-meta mono">
           {post.tags.map((tag) => (
             <span key={tag} className="article-meta-tag">
-              {tag}
+              {tagLabel(tag, locale)}
             </span>
           ))}
           {post.published_at && (
@@ -201,7 +202,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
                 <span key={l.url}>
                   {i > 0 && ' · '}
                   <a href={l.url} target="_blank" rel="me noopener noreferrer" className="link" style={{ textTransform: 'capitalize' }}>
-                    {l.platform}
+                    {platformLabel(l.platform, locale)}
                   </a>
                 </span>
               ))}
