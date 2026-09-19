@@ -82,7 +82,7 @@ export function FeaturedProjects({ locale, projects }: Props) {
           onPointerEnter={() => engage(i)}
           onFocus={(e) => engage(i, e.currentTarget)}
         >
-          <span className="project-row-index mono">00{i + 1}</span>
+          <span className="project-row-index mono">{String(i + 1).padStart(3, '0')}</span>
           <span className="project-row-main">
             <span className="project-row-title display display-3">{p.title}</span>
             <span className="project-row-desc">{p.description}</span>

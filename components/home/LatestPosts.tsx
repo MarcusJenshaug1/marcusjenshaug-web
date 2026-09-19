@@ -3,6 +3,7 @@ import { TransitionLink } from '@/components/motion/TransitionLink'
 import { readingTime } from '@/lib/mdx'
 import { localePath, type Locale } from '@/lib/i18n/config'
 import { intlLocale, type Translator } from '@/lib/i18n/client'
+import { tagLabel } from '@/lib/i18n/labels'
 import type { Post } from '@/lib/types/app'
 
 function formatParts(date: string | null, locale: Locale) {
@@ -47,7 +48,7 @@ export function LatestPosts({ locale, t, posts }: Props) {
               <span className="post-card-meta mono">
                 {p.tags.slice(0, 2).map((tag) => (
                   <span key={tag} className="post-card-tag">
-                    {tag}
+                    {tagLabel(tag, locale)}
                   </span>
                 ))}
                 <span className="post-card-tag">

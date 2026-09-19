@@ -2,6 +2,7 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import { localePath, type Locale, type RouteKey } from '@/lib/i18n/config'
+import { platformLabel } from '@/lib/i18n/labels'
 import type { Translator } from '@/lib/i18n/client'
 import type { SiteSettings } from '@/lib/types/app'
 
@@ -54,7 +55,7 @@ export function Footer({ locale, t, settings }: Props) {
                   rel="me noopener noreferrer"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '.25rem' }}
                 >
-                  <span style={{ textTransform: 'capitalize' }}>{link.platform}</span>
+                  <span style={{ textTransform: 'capitalize' }}>{platformLabel(link.platform, locale)}</span>
                   <FiArrowUpRight style={{ fontSize: '.7em', opacity: 0.6 }} aria-hidden />
                 </a>
               </li>

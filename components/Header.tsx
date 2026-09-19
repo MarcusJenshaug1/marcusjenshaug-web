@@ -22,6 +22,7 @@ import {
   type RouteKey,
 } from '@/lib/i18n/config'
 import { useTranslator } from '@/lib/i18n/client'
+import { platformLabel } from '@/lib/i18n/labels'
 
 const NAV_KEYS = Object.keys(ROUTES) as RouteKey[]
 
@@ -239,7 +240,7 @@ export function Header({ locale, socialLinks = [], email, portraitSrc, alternate
           <div className="nav-overlay-socials">
             {socialLinks.map((l) => (
               <a key={l.url} href={l.url} target="_blank" rel="me noopener noreferrer">
-                {l.platform} <FiArrowUpRight aria-hidden />
+                {platformLabel(l.platform, locale)} <FiArrowUpRight aria-hidden />
               </a>
             ))}
           </div>

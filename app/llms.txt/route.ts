@@ -3,15 +3,15 @@ import { getSiteSettings, localizeSettings } from '@/lib/site-settings'
 import { getPublishedProjects } from '@/lib/projects'
 import { getPublishedPosts } from '@/lib/posts'
 import { localizeMany } from '@/lib/translations'
-import { SOURCE_LOCALE, getTranslator, isLocale, localePath, type RouteKey } from '@/lib/i18n'
+import { DEFAULT_LOCALE, SOURCE_LOCALE, getTranslator, isLocale, localePath, type RouteKey } from '@/lib/i18n'
 import { siteUrl } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 
-// Norsk som standard, ?lang=en gir engelsk oversikt.
+// Engelsk som standard (AI-crawlere er globale), ?lang=nb gir norsk.
 export async function GET(request: NextRequest) {
   const lang = request.nextUrl.searchParams.get('lang')
-  const locale = isLocale(lang) ? lang : SOURCE_LOCALE
+  const locale = isLocale(lang) ? lang : DEFAULT_LOCALE
   const [t, rawSettings, rawProjects, rawPosts] = await Promise.all([
     getTranslator(locale),
     getSiteSettings(),

@@ -7,6 +7,7 @@ import { getSiteSettings, localizeSettings } from '@/lib/site-settings'
 import { STACK_NAMES } from '@/lib/stack'
 import { absoluteUrl, alternatesFor, breadcrumbs, jsonLd, ogImageUrl, siteUrl } from '@/lib/site'
 import { OG_LOCALE, getTranslator, isLocale, localePath } from '@/lib/i18n'
+import { platformLabel } from '@/lib/i18n/labels'
 import { SafeMdx } from '@/components/SafeMdx'
 import { Reveal } from '@/components/motion/Reveal'
 
@@ -168,7 +169,7 @@ export default async function AboutPage({ params }: Props) {
                     rel="me noopener noreferrer"
                     className="filter-chip mono"
                   >
-                    <FiArrowUpRight style={{ fontSize: '.85em' }} aria-hidden /> {link.platform}
+                    <FiArrowUpRight style={{ fontSize: '.85em' }} aria-hidden /> {platformLabel(link.platform, locale)}
                   </a>
                 ))}
               </div>

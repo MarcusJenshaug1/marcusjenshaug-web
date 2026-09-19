@@ -4,7 +4,7 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { getUsesItems, groupByCategory } from '@/lib/uses'
 import { localizeMany } from '@/lib/translations'
 import { alternatesFor, breadcrumbs, jsonLd } from '@/lib/site'
-import { OG_LOCALE, getTranslator, isLocale, localePath, type Translator } from '@/lib/i18n'
+import { OG_LOCALE, getTranslator, isLocale, localePath, type DictionaryKey, type Translator } from '@/lib/i18n'
 import { Reveal } from '@/components/motion/Reveal'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -21,12 +21,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const KNOWN_CATEGORIES = ['hardware', 'software', 'dev', 'desk'] as const
+// Kategoriene i admin er norske («Maskinvare», «Utvikling» …). Kjente navn
+// oversettes via ordboken; ukjente vises som de er.
+const CATEGORY_KEYS: Record<string, DictionaryKey> = {
+  maskinvare: 'uses.category.hardware',
+  hardware: 'uses.category.hardware',
+  programvare: 'uses.category.software',
+  software: 'uses.category.software',
+  tjenester: 'uses.category.services',
+  utvikling: 'uses.category.dev',
+  dev: 'uses.category.dev',
+  hverdag: 'uses.category.everyday',
+  skrivebord: 'uses.category.desk',
+  desk: 'uses.category.desk',
+}
 
-// Kjente kategorier oversettes; egne kategorier fra admin vises som de er.
 function categoryLabel(t: Translator, category: string): string {
-  const known = KNOWN_CATEGORIES.find((c) => c === category.toLowerCase())
-  return known ? t(`uses.category.${known}`) : category
+  const key = CATEGORY_KEYS[category.toLowerCase()]
+  return key ? t(key) : category
 }
 
 export default async function UsesPage({ params }: Props) {
