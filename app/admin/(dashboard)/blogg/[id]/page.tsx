@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPostByIdAdmin } from '@/lib/posts'
+import { getTranslationAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
 import { PostForm } from '../PostForm'
 
@@ -14,6 +15,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const post = await getPostByIdAdmin(id)
   if (!post) notFound()
+  const translation = await getTranslationAdmin('posts', post.id, 'en')
 
   return (
     <div>
@@ -28,7 +30,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
           </p>
         </div>
       </header>
-      <PostForm post={post} />
+      <PostForm post={post} translation={translation} />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FiEdit3, FiBriefcase, FiClock, FiTool, FiSettings, FiLogOut } from 'react-icons/fi'
+import { FiEdit3, FiBriefcase, FiClock, FiTool, FiSettings, FiGlobe, FiLogOut } from 'react-icons/fi'
 import { logout } from '@/app/admin/actions'
 
 const items = [
@@ -8,6 +8,7 @@ const items = [
   { href: '/admin/prosjekter', label: 'Prosjekter', Icon: FiBriefcase },
   { href: '/admin/na', label: 'Nå', Icon: FiClock },
   { href: '/admin/uses', label: 'Uses', Icon: FiTool },
+  { href: '/admin/oversettelser', label: 'Oversettelser', Icon: FiGlobe },
 ]
 
 export function AdminNav() {

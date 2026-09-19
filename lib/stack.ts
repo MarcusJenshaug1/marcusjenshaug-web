@@ -1,20 +1,40 @@
-export type StackItem = {
+import type { DictionaryKey, Translator } from '@/lib/i18n'
+
+type StackCategory = 'language' | 'framework' | 'tool' | 'infra'
+
+type StackEntry = {
   name: string
-  category: 'språk' | 'rammeverk' | 'verktøy' | 'infra'
-  note?: string
+  category: StackCategory
+  note: DictionaryKey
 }
 
-export const STACK: StackItem[] = [
-  { name: 'TypeScript', category: 'språk', note: 'Strict, alltid' },
-  { name: 'Next.js', category: 'rammeverk', note: 'App Router, server-first' },
-  { name: 'React', category: 'rammeverk', note: 'Server components som default' },
-  { name: 'Tailwind CSS', category: 'rammeverk', note: 'v4 med semantiske tokens' },
-  { name: 'Supabase', category: 'infra', note: 'Postgres, Auth og Storage' },
-  { name: 'PostgreSQL', category: 'infra', note: 'RLS og pg_cron' },
-  { name: 'Node.js', category: 'språk', note: 'Runtime for det meste' },
-  { name: 'Vercel', category: 'infra', note: 'Edge og ISR' },
-  { name: 'Azure', category: 'infra', note: 'Skydrift i jobbsammenheng' },
-  { name: 'Docker', category: 'verktøy', note: 'Selvhosting og dev-miljø' },
-  { name: 'Git', category: 'verktøy', note: 'Conventional Commits' },
-  { name: 'MDX', category: 'verktøy', note: 'Innhold som kode' },
+export type StackItem = {
+  name: string
+  category: string
+  note: string
+}
+
+const STACK_ENTRIES: StackEntry[] = [
+  { name: 'TypeScript', category: 'language', note: 'stack.note.typescript' },
+  { name: 'Next.js', category: 'framework', note: 'stack.note.nextjs' },
+  { name: 'React', category: 'framework', note: 'stack.note.react' },
+  { name: 'Tailwind CSS', category: 'framework', note: 'stack.note.tailwind' },
+  { name: 'Supabase', category: 'infra', note: 'stack.note.supabase' },
+  { name: 'PostgreSQL', category: 'infra', note: 'stack.note.postgresql' },
+  { name: 'Node.js', category: 'language', note: 'stack.note.nodejs' },
+  { name: 'Vercel', category: 'infra', note: 'stack.note.vercel' },
+  { name: 'Azure', category: 'infra', note: 'stack.note.azure' },
+  { name: 'Docker', category: 'tool', note: 'stack.note.docker' },
+  { name: 'Git', category: 'tool', note: 'stack.note.git' },
+  { name: 'MDX', category: 'tool', note: 'stack.note.mdx' },
 ]
+
+export const STACK_NAMES = STACK_ENTRIES.map((item) => item.name)
+
+export function getStack(t: Translator): StackItem[] {
+  return STACK_ENTRIES.map((item) => ({
+    name: item.name,
+    category: t(`stack.category.${item.category}`),
+    note: t(item.note),
+  }))
+}

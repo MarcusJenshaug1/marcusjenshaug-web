@@ -59,8 +59,15 @@ Kritisk: `SUPABASE_SERVICE_ROLE_KEY` skal ALDRI være `NEXT_PUBLIC_*`, og skal a
 
 ## Ikke-mål
 
-Seksjon 12 i kravspekken er hard. Ikke bygg kommentarer, søk, nyhetsbrev, i18n, flerbrukers admin, eller WYSIWYG-editor i V1.
+Seksjon 12 i kravspekken er hard. Ikke bygg kommentarer, søk, nyhetsbrev, flerbrukers admin, eller WYSIWYG-editor i V1.
+
+Unntak besluttet 19. september 2026: flerspråk (nb/en) er bygget. Norsk er kildespråk i hovedtabellene, engelsk ligger i `content_translations` med egen slug, UI-tekster i `lib/i18n/dictionaries.ts` overstyrt av `ui_strings`. URL-er er `/nb/...` og `/en/...`; middleware velger språk fra cookie, deretter land (NO/SE/DK → nb), ellers en.
 
 ## Når du er i tvil
 
 Still spørsmål. Ikke anta.
+
+## Porter (faste, se ~/.claude/skills/dev-ports)
+
+N=32, blokk 3320-3329. Next 3320.
+Port opptatt = gjenglemt prosess, ikke bytt port. Standardportene 3000/5173/6006/54321 skal ikke brukes.

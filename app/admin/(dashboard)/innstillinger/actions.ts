@@ -25,6 +25,11 @@ const settingsSchema = z.object({
   cv_url: z.string().url().or(z.literal('')),
   image_url: z.string(),
   social_links: z.array(socialLinkSchema),
+  headline_en: z.string().optional().default(''),
+  bio_short_en: z.string().optional().default(''),
+  bio_long_en: z.string().optional().default(''),
+  location_en: z.string().optional().default(''),
+  availability_note_en: z.string().optional().default(''),
 })
 
 export type SettingsState = {
@@ -64,6 +69,11 @@ export async function updateSettings(
     cv_url: formData.get('cv_url')?.toString() || '',
     image_url: formData.get('image_url')?.toString() || '/portrett.jpg',
     social_links: socialLinks,
+    headline_en: formData.get('headline_en')?.toString() ?? '',
+    bio_short_en: formData.get('bio_short_en')?.toString() ?? '',
+    bio_long_en: formData.get('bio_long_en')?.toString() ?? '',
+    location_en: formData.get('location_en')?.toString() ?? '',
+    availability_note_en: formData.get('availability_note_en')?.toString() ?? '',
   })
 
   if (!parsed.success) {
@@ -78,6 +88,8 @@ export async function updateSettings(
       cv_url: parsed.data.cv_url || null,
       availability_note: parsed.data.availability_note || null,
       location: parsed.data.location || null,
+      location_en: parsed.data.location_en || null,
+      availability_note_en: parsed.data.availability_note_en || null,
       updated_at: new Date().toISOString(),
     }))
     .eq('id', 1)

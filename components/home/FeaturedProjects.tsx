@@ -7,7 +7,9 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { useIsCoarsePointer } from '@/lib/motion/useIsCoarsePointer'
-import { PROJECT_STATUS_LABELS, type ProjectStatus } from '@/lib/types/app'
+import type { ProjectStatus } from '@/lib/types/app'
+import { localePath, type Locale } from '@/lib/i18n/config'
+import { useTranslator } from '@/lib/i18n/client'
 import type { PreviewItem } from '@/components/fx/HoverPreview'
 
 const HoverPreview = dynamic(
@@ -26,7 +28,13 @@ export type ProjectRowData = {
   started_at: string | null
 }
 
-export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
+type Props = {
+  locale: Locale
+  projects: ProjectRowData[]
+}
+
+export function FeaturedProjects({ locale, projects }: Props) {
+  const t = useTranslator(locale)
   const [active, setActive] = useState<number | null>(null)
   const [engaged, setEngaged] = useState(false)
   const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null)
@@ -67,10 +75,10 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
       {projects.map((p, i) => (
         <TransitionLink
           key={p.id}
-          href={`/prosjekter/${p.slug}`}
+          href={localePath(locale, 'projects', p.slug)}
           className="project-row-xl"
           data-cursor="view"
-          data-cursor-label="Åpne"
+          data-cursor-label={t('projects.open')}
           onPointerEnter={() => engage(i)}
           onFocus={(e) => engage(i, e.currentTarget)}
         >
@@ -91,7 +99,7 @@ export function FeaturedProjects({ projects }: { projects: ProjectRowData[] }) {
             </span>
           )}
           <span className="project-row-meta mono">
-            <span className="project-row-status">{PROJECT_STATUS_LABELS[p.status]}</span>
+            <span className="project-row-status">{t(`status.${p.status}`)}</span>
             <span>{p.started_at ? new Date(p.started_at).getFullYear() : ''}</span>
             <FiArrowUpRight aria-hidden className="project-row-arrow" />
           </span>

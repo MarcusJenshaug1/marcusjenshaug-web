@@ -1,45 +1,12 @@
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { JetBrains_Mono, Martian_Mono } from 'next/font/google'
-import { AdminShortcut } from '@/components/AdminShortcut'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-import { siteUrl, jsonLd } from '@/lib/site'
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-})
-
-const martianMono = Martian_Mono({
-  subsets: ['latin'],
-  variable: '--font-martian-mono',
-  display: 'swap',
-})
-
+import { siteUrl } from '@/lib/site'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: 'Marcus Jenshaug',
     template: '%s · Marcus Jenshaug',
-  },
-  description: 'Fullstack-utvikler i Redi AS. Bygger verktøy for eiendomsmarkedet.',
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    locale: 'nb_NO',
-    url: siteUrl,
-    siteName: 'Marcus Jenshaug',
-    images: [
-      {
-        url: `/api/og?title=${encodeURIComponent('Marcus Jenshaug')}`,
-        width: 1200,
-        height: 630,
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -48,37 +15,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  url: siteUrl,
-  name: 'Marcus Jenshaug',
-  inLanguage: 'nb-NO',
-  author: { '@id': `${siteUrl}/#person` },
-}
-
+// <html>/<body> rendres av app/[locale]/layout.tsx og app/admin/layout.tsx,
+// slik at lang kan følge språket.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html
-      lang="nb"
-      className={`${GeistSans.variable} ${jetbrainsMono.variable} ${martianMono.variable}`}
-      suppressHydrationWarning
-    >
-      <body suppressHydrationWarning>
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-ink focus:text-bg-elev focus:px-3 focus:py-2 focus:rounded-md"
-        >
-          Hopp til hovedinnhold
-        </a>
-        {children}
-        <AdminShortcut />
-        <Analytics />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema) }}
-        />
-      </body>
-    </html>
-  )
+  return children
 }

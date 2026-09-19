@@ -1,6 +1,9 @@
+import type { NextRequest } from 'next/server'
 import { getPublishedPosts } from '@/lib/posts'
-import { getSiteSettings } from '@/lib/site-settings'
-import { siteUrl } from '@/lib/site'
+import { getSiteSettings, localizeSettings } from '@/lib/site-settings'
+import { localizeMany } from '@/lib/translations'
+import { SOURCE_LOCALE, getTranslator, isLocale, localePath } from '@/lib/i18n'
+import { langTag, siteUrl } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,15 +20,21 @@ function cdata(html: string): string {
   return `<![CDATA[${html.replace(/]]>/g, ']]]]><![CDATA[>')}]]>`
 }
 
-export async function GET() {
-  const [posts, settings] = await Promise.all([getPublishedPosts(), getSiteSettings()])
+// Norsk som standard, ?lang=en gir engelsk feed.
+export async function GET(request: NextRequest) {
+  const lang = request.nextUrl.searchParams.get('lang')
+  const locale = isLocale(lang) ? lang : SOURCE_LOCALE
+  const [t, rawPosts, rawSettings] = await Promise.all([getTranslator(locale), getPublishedPosts(), getSiteSettings()])
+  const posts = await localizeMany('posts', rawPosts, locale)
+  const settings = localizeSettings(rawSettings, locale)
+  const selfUrl = `${siteUrl}/rss.xml${locale === SOURCE_LOCALE ? '' : `?lang=${locale}`}`
 
   const items = posts
     .map((p) => {
-      const link = `${siteUrl}/blogg/${p.slug}`
+      const link = `${siteUrl}${localePath(locale, 'blog', p.slug)}`
       const pubDate = p.published_at ? new Date(p.published_at).toUTCString() : new Date(p.created_at).toUTCString()
-      const categories = p.tags.map((t) => `<category>${escapeXml(t)}</category>`).join('')
-      const html = `<p>${escapeXml(p.description)}</p><p><a href="${link}">Les hele innlegget på marcusjenshaug.no</a></p>`
+      const categories = p.tags.map((tag) => `<category>${escapeXml(tag)}</category>`).join('')
+      const html = `<p>${escapeXml(p.description)}</p><p><a href="${link}">${escapeXml(t('feed.readMore'))}</a></p>`
       return `    <item>
       <title>${escapeXml(p.title)}</title>
       <link>${link}</link>
@@ -42,10 +51,10 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(settings.full_name || 'Marcus Jenshaug')}</title>
-    <link>${siteUrl}</link>
-    <description>${escapeXml(settings.bio_short || 'Fullstack-utvikler i Redi AS.')}</description>
-    <language>nb-NO</language>
-    <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <link>${siteUrl}${localePath(locale, 'home')}</link>
+    <description>${escapeXml(settings.bio_short || t('meta.siteDescription'))}</description>
+    <language>${langTag(locale)}</language>
+    <atom:link href="${selfUrl}" rel="self" type="application/rss+xml" />
 ${items}
   </channel>
 </rss>`

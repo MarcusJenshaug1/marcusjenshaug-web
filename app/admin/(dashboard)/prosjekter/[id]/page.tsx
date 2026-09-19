@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getProjectByIdAdmin } from '@/lib/projects'
+import { getTranslationAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
 import { ProjectForm } from '../ProjectForm'
 
@@ -16,6 +17,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
   const { id } = await params
   const project = await getProjectByIdAdmin(id)
   if (!project) notFound()
+  const translation = await getTranslationAdmin('projects', project.id, 'en')
 
   return (
     <div>
@@ -30,7 +32,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
           </p>
         </div>
       </header>
-      <ProjectForm project={project} />
+      <ProjectForm project={project} translation={translation} />
     </div>
   )
 }

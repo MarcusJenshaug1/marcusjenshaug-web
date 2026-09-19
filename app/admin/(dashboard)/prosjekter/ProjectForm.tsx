@@ -5,18 +5,21 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, type Project } from '@/lib/types/app'
+import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, type ContentTranslation, type Project } from '@/lib/types/app'
 import { createProject, updateProject, autosaveProject, deleteProject } from './actions'
 import { generateProjectCover } from './cover-actions'
 
 type Props = {
   project?: Project
+  translation?: ContentTranslation | null
 }
 
-export function ProjectForm({ project }: Props) {
+export function ProjectForm({ project, translation }: Props) {
   return (
     <EditorShell
+      entity="projects"
       record={project}
+      translation={translation}
       action={project ? updateProject.bind(null, project.id) : createProject}
       autosave={autosaveProject}
       onDelete={deleteProject}

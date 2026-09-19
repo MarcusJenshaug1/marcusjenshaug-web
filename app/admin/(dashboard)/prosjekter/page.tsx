@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiPlus } from 'react-icons/fi'
 import { getAllProjectsAdmin } from '@/lib/projects'
+import { getTranslationsAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
+import { translationStatus } from '@/components/admin/TranslationBadge'
 import { SortableProjectList, type AdminProjectRow } from './SortableProjectList'
 
 export const metadata: Metadata = {
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminProsjekterPage() {
-  const projects = await getAllProjectsAdmin()
+  const [projects, translations] = await Promise.all([getAllProjectsAdmin(), getTranslationsAdmin('projects', 'en')])
   const rows: AdminProjectRow[] = projects.map((p) => ({
     id: p.id,
     slug: p.slug,
@@ -19,6 +21,7 @@ export default async function AdminProsjekterPage() {
     status: p.status,
     featured: p.featured,
     draft: p.draft,
+    translation: translationStatus(translations.get(p.id)),
     updatedLabel: formatDate(p.updated_at, { day: '2-digit', month: 'short', year: 'numeric' }),
   }))
 

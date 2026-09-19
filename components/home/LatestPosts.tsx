@@ -1,29 +1,41 @@
 import { FiClock, FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
-import { formatDate } from '@/lib/site'
 import { readingTime } from '@/lib/mdx'
+import { localePath, type Locale } from '@/lib/i18n/config'
+import { intlLocale, type Translator } from '@/lib/i18n/client'
 import type { Post } from '@/lib/types/app'
 
-function formatParts(date: string | null) {
+function formatParts(date: string | null, locale: Locale) {
   if (!date) return { day: '—', rest: '' }
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return { day: '—', rest: '' }
+  const tag = intlLocale(locale)
   return {
-    day: formatDate(date, { day: '2-digit' }),
-    rest: formatDate(date, { month: 'short', year: 'numeric' }).replace('.', ''),
+    day: d.toLocaleDateString(tag, { day: '2-digit', timeZone: 'Europe/Oslo' }),
+    rest: d
+      .toLocaleDateString(tag, { month: 'short', year: 'numeric', timeZone: 'Europe/Oslo' })
+      .replace('.', ''),
   }
 }
 
-export function LatestPosts({ posts }: { posts: Post[] }) {
+type Props = {
+  locale: Locale
+  t: Translator
+  posts: Post[]
+}
+
+export function LatestPosts({ locale, t, posts }: Props) {
   return (
     <div className="post-list-xl">
       {posts.map((p) => {
-        const { day, rest } = formatParts(p.published_at)
+        const { day, rest } = formatParts(p.published_at, locale)
         return (
           <TransitionLink
             key={p.id}
-            href={`/blogg/${p.slug}`}
+            href={localePath(locale, 'blog', p.slug)}
             className="post-card-xl"
             data-cursor="view"
-            data-cursor-label="Les"
+            data-cursor-label={t('blog.read')}
           >
             <time className="post-card-date" dateTime={p.published_at ?? undefined}>
               <span className="post-card-day display tabular">{day}</span>
@@ -33,13 +45,13 @@ export function LatestPosts({ posts }: { posts: Post[] }) {
               <span className="post-card-title display display-4">{p.title}</span>
               <span className="post-card-desc">{p.description}</span>
               <span className="post-card-meta mono">
-                {p.tags.slice(0, 2).map((t) => (
-                  <span key={t} className="post-card-tag">
-                    {t}
+                {p.tags.slice(0, 2).map((tag) => (
+                  <span key={tag} className="post-card-tag">
+                    {tag}
                   </span>
                 ))}
                 <span className="post-card-tag">
-                  <FiClock aria-hidden /> {readingTime(p.content)} min
+                  <FiClock aria-hidden /> {t('blog.minutes', { minutes: readingTime(p.content) })}
                 </span>
               </span>
             </span>

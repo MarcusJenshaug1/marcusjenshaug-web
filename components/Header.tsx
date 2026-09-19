@@ -3,33 +3,44 @@
 import { TransitionLink as Link } from '@/components/motion/TransitionLink'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { OsloClock } from '@/components/OsloClock'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { SoundToggle } from '@/components/SoundToggle'
+import { LocaleSwitch } from '@/components/LocaleSwitch'
 import { useLenis } from '@/components/motion/LenisProvider'
 import { gsap, useGSAP } from '@/lib/motion/gsap'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { GSAP_EASE_INOUT, GSAP_EASE_OUT } from '@/lib/motion/easings'
+import {
+  ROUTES,
+  isLocale,
+  localePath,
+  routeKeyFromSegment,
+  type Locale,
+  type RouteKey,
+} from '@/lib/i18n/config'
+import { useTranslator } from '@/lib/i18n/client'
 
-const nav = [
-  { href: '/', label: 'Hjem', desc: 'Forsiden — hero, prosjekter og det siste' },
-  { href: '/prosjekter', label: 'Prosjekter', desc: 'Portefølje fra klientarbeid til sidesysler' },
-  { href: '/blogg', label: 'Blogg', desc: 'Notater og lengre stykker om koden jeg skriver' },
-  { href: '/na', label: 'Nå', desc: 'Hva jeg jobber med akkurat nå' },
-  { href: '/uses', label: 'Uses', desc: 'Verktøy, programvare og hardware jeg bruker' },
-  { href: '/om', label: 'Om', desc: 'Fullstack-utvikler i Redi AS' },
-  { href: '/kontakt', label: 'Kontakt', desc: 'Kortest vei til en samtale' },
-]
+const NAV_KEYS = Object.keys(ROUTES) as RouteKey[]
+
+// Rutenøkkel for gjeldende side, uansett språk i URL-en (/nb/blogg og /en/blog gir begge 'blog').
+function currentRouteKey(pathname: string): RouteKey | null {
+  const [first = '', second = ''] = pathname.split('/').filter(Boolean)
+  return isLocale(first) ? routeKeyFromSegment(second) : routeKeyFromSegment(first)
+}
 
 type HeaderProps = {
+  locale: Locale
   socialLinks?: { platform: string; url: string }[]
   email?: string
   portraitSrc?: string
+  alternatePath?: string
 }
 
-export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
+export function Header({ locale, socialLinks = [], email, portraitSrc, alternatePath }: HeaderProps) {
+  const t = useTranslator(locale)
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [activeIdx, setActiveIdx] = useState(0)
@@ -41,8 +52,18 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
   const descRef = useRef<HTMLSpanElement>(null)
   const wasOpen = useRef(false)
 
-  const isActive = (href: string) =>
-    href === '/' ? pathname === '/' : pathname.startsWith(href)
+  const nav = useMemo(
+    () =>
+      NAV_KEYS.map((key) => ({
+        key,
+        href: localePath(locale, key),
+        label: t(`nav.${key}`),
+        desc: t(`nav.${key}.desc`),
+      })),
+    [locale, t]
+  )
+
+  const currentKey = currentRouteKey(pathname)
 
   useEffect(() => {
     setOpen(false)
@@ -50,11 +71,9 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
 
   useEffect(() => {
     if (!open) return
-    const current = nav.findIndex((n) =>
-      n.href === '/' ? pathname === '/' : pathname.startsWith(n.href)
-    )
+    const current = nav.findIndex((n) => n.key === currentKey)
     setActiveIdx(current === -1 ? 0 : current)
-  }, [open, pathname])
+  }, [open, nav, currentKey])
 
   useEffect(() => {
     const el = descRef.current
@@ -72,7 +91,7 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
     return () => {
       tween.kill()
     }
-  }, [activeIdx, open, reduced])
+  }, [activeIdx, open, reduced, nav])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -146,15 +165,16 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
   return (
     <>
       <header className="nav-bar">
-        <Link href="/" className="nav-brand mono" aria-label="Til forsiden">
+        <Link href={localePath(locale, 'home')} className="nav-brand mono" aria-label={t('nav.toFront')}>
           MJ<span aria-hidden>/</span>
         </Link>
         <div className="nav-right">
           <span className="nav-clock mono" suppressHydrationWarning>
-            OSLO <OsloClock />
+            OSLO <OsloClock locale={locale} />
           </span>
-          <SoundToggle />
-          <ThemeToggle />
+          <LocaleSwitch locale={locale} alternatePath={alternatePath} />
+          <SoundToggle locale={locale} />
+          <ThemeToggle locale={locale} />
           <button
             ref={triggerRef}
             type="button"
@@ -163,7 +183,7 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
             aria-expanded={open}
             aria-controls="nav-overlay"
           >
-            {open ? 'LUKK' : 'MENY'}
+            {(open ? t('nav.close') : t('nav.menu')).toUpperCase()}
           </button>
         </div>
       </header>
@@ -174,15 +194,15 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
         className="nav-overlay"
         role="dialog"
         aria-modal="true"
-        aria-label="Meny"
+        aria-label={t('nav.menu')}
         inert={!open}
       >
         <div className="nav-overlay-inner">
-          <nav className="nav-overlay-list" aria-label="Hovedmeny">
+          <nav className="nav-overlay-list" aria-label={t('nav.mainMenu')}>
             {nav.map((n, i) => {
-              const active = isActive(n.href)
+              const active = n.key === currentKey
               return (
-                <div key={n.href} className="nav-overlay-item">
+                <div key={n.key} className="nav-overlay-item">
                   <Link
                     ref={i === 0 ? firstLinkRef : undefined}
                     href={n.href}
@@ -200,7 +220,7 @@ export function Header({ socialLinks = [], email, portraitSrc }: HeaderProps) {
             })}
           </nav>
           <div className="nav-overlay-preview" aria-hidden>
-            {portraitSrc && nav[activeIdx]?.href === '/om' ? (
+            {portraitSrc && nav[activeIdx]?.key === 'about' ? (
               <div className="nav-overlay-preview-img">
                 <Image src={portraitSrc} alt="" fill sizes="40vw" style={{ objectFit: 'cover' }} />
               </div>

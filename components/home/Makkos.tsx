@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiPlay, FiExternalLink } from 'react-icons/fi'
 import { Visualizer } from '@/components/fx/Visualizer'
 import { spotifyUrlToUri } from '@/lib/makkos'
+import type { Locale } from '@/lib/i18n/config'
+import { useTranslator } from '@/lib/i18n/client'
 
 type SpotifyController = {
   destroy: () => void
@@ -28,7 +30,13 @@ declare global {
   }
 }
 
-export function Makkos({ spotifyUrl }: { spotifyUrl: string | null }) {
+type Props = {
+  locale: Locale
+  spotifyUrl: string | null
+}
+
+export function Makkos({ locale, spotifyUrl }: Props) {
+  const t = useTranslator(locale)
   const [activated, setActivated] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [positionMs, setPositionMs] = useState(0)
@@ -79,14 +87,11 @@ export function Makkos({ spotifyUrl }: { spotifyUrl: string | null }) {
         </span>
       </div>
       <div className="makkos-body">
-        <p className="makkos-text">
-          Når jeg ikke bygger programvare, lager jeg musikk som Makkos. Samme
-          byggetrang, annet medium.
-        </p>
+        <p className="makkos-text">{t('makkos.text')}</p>
         <div className="makkos-actions">
           {uri && !activated && (
             <button type="button" className="btn-xl btn-xl-solid mono" onClick={activate} data-cursor="play">
-              <FiPlay aria-hidden /> Spill av
+              <FiPlay aria-hidden /> {t('makkos.play')}
             </button>
           )}
           {spotifyUrl && (
@@ -96,7 +101,7 @@ export function Makkos({ spotifyUrl }: { spotifyUrl: string | null }) {
               rel="me noopener noreferrer"
               className="btn-xl mono"
             >
-              Åpne i Spotify <FiExternalLink aria-hidden />
+              {t('makkos.openSpotify')} <FiExternalLink aria-hidden />
             </a>
           )}
         </div>
@@ -106,7 +111,13 @@ export function Makkos({ spotifyUrl }: { spotifyUrl: string | null }) {
           </div>
         )}
         <p className="makkos-status mono" aria-live="polite">
-          {playing ? (<><FiPlay aria-hidden /> SPILLER NÅ — VISUALISERING AKTIV</>) : 'VENTER'}
+          {playing ? (
+            <>
+              <FiPlay aria-hidden /> {t('makkos.playing').toUpperCase()}
+            </>
+          ) : (
+            t('makkos.idle').toUpperCase()
+          )}
         </p>
       </div>
     </div>

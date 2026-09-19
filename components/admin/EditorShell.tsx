@@ -13,7 +13,10 @@ import { ImageUploader } from '@/components/ui/ImageUploader'
 import { Input } from '@/components/ui/Input'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { Textarea } from '@/components/ui/Textarea'
+import type { ContentEntity, ContentTranslation } from '@/lib/types/app'
 import { DeleteButton } from './DeleteInlineForm'
+import { LocaleTabs, type EditorLocale } from './LocaleTabs'
+import { TranslationPanel, type TranslationField } from './TranslationPanel'
 
 export type EditorState = {
   error?: string
@@ -31,7 +34,9 @@ export type EditorRecord = {
 }
 
 type Props = {
+  entity: ContentEntity
   record?: EditorRecord
+  translation?: ContentTranslation | null
   action: (state: EditorState, formData: FormData) => Promise<EditorState>
   autosave: (id: string, formData: FormData) => Promise<{ error?: string } | void>
   onDelete: (id: string) => Promise<void>
@@ -49,7 +54,9 @@ type Props = {
 const initial: EditorState = {}
 
 export function EditorShell({
+  entity,
   record,
+  translation = null,
   action,
   autosave,
   onDelete,
@@ -64,6 +71,7 @@ export function EditorShell({
   generateCover,
 }: Props) {
   const isEdit = Boolean(record)
+  const [locale, setLocale] = useState<EditorLocale>('nb')
   const [state, formAction] = useActionState(action, initial)
   const [coverHint, setCoverHint] = useState('')
   const [coverStatus, setCoverStatus] = useState<{ error?: string; subject?: string }>({})
@@ -100,131 +108,165 @@ export function EditorShell({
   )
   const { dirty, savedAt, markDirty } = useAutosave(formRef, save, { enabled: isEdit && draft })
 
+  const translationFields: TranslationField[] =
+    entity === 'projects' ? ['title', 'slug', 'description', 'role', 'content'] : ['title', 'slug', 'description', 'content']
+
   return (
-    <form ref={formRef} action={formAction} onChange={isEdit ? markDirty : undefined}>
-      <div className="grid grid-cols-[2fr_1fr] gap-8">
-        <div>
-          <FormField label="Tittel" htmlFor="title">
-            <Input id="title" name="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
-          </FormField>
+    <div>
+      {record && (
+        <LocaleTabs
+          value={locale}
+          onChange={setLocale}
+          enBadge={!translation ? 'mangler' : translation.machine_translated ? 'maskin' : undefined}
+        />
+      )}
 
-          <FormField label="Slug" htmlFor="slug" hint="Kun små bokstaver, tall og bindestrek">
-            <Input
-              id="slug"
-              name="slug"
-              mono
-              required
-              value={slug}
-              onChange={(e) => {
-                setSlugTouched(true)
-                setSlug(e.target.value)
-              }}
-            />
-          </FormField>
-
-          <FormField label={descriptionLabel} htmlFor="description" hint={descriptionHint}>
-            <Textarea id="description" name="description" required rows={2} defaultValue={record?.description ?? ''} />
-          </FormField>
-
-          <FormField label="Innhold (MDX)" htmlFor="content">
-            <Textarea
-              id="content"
-              name="content"
-              mono
-              required
-              rows={contentRows}
-              defaultValue={record?.content ?? ''}
-              placeholder={contentPlaceholder}
-            />
-          </FormField>
+      {record && (
+        <div role="tabpanel" id="panel-en" aria-labelledby="tab-en" hidden={locale !== 'en'}>
+          <TranslationPanel
+            entity={entity}
+            entityId={record.id}
+            translation={translation}
+            fields={translationFields}
+            labels={{ description: descriptionLabel }}
+            contentRows={contentRows}
+          />
         </div>
+      )}
 
-        <aside className="flex flex-col gap-6">
-          <section>
-            <h3 className="text-xs uppercase tracking-[0.12em] text-ink-3 font-medium mb-3.5">Publisering</h3>
-            <Checkbox
-              name="draft"
-              label="Utkast (skjult for public)"
-              checked={draft}
-              onChange={(e) => setDraft(e.target.checked)}
-              className="mb-3"
-            />
-            {publishing}
-          </section>
+      <form
+        ref={formRef}
+        action={formAction}
+        onChange={isEdit ? markDirty : undefined}
+        role={record ? 'tabpanel' : undefined}
+        id={record ? 'panel-nb' : undefined}
+        aria-labelledby={record ? 'tab-nb' : undefined}
+        hidden={locale !== 'nb'}
+      >
+        <div className="grid grid-cols-[2fr_1fr] gap-8">
+          <div>
+            <FormField label="Tittel" htmlFor="title">
+              <Input id="title" name="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+            </FormField>
 
-          {children}
-
-          <section>
-            <FormField label="Cover-bilde" htmlFor="cover_image">
-              <ImageUploader
-                id="cover_image"
-                name="cover_image"
-                value={coverImage}
-                onChange={(v) => {
-                  setCoverImage(v)
-                  markDirty()
+            <FormField label="Slug" htmlFor="slug" hint="Kun små bokstaver, tall og bindestrek">
+              <Input
+                id="slug"
+                name="slug"
+                mono
+                required
+                value={slug}
+                onChange={(e) => {
+                  setSlugTouched(true)
+                  setSlug(e.target.value)
                 }}
-                folder={coverFolder}
               />
             </FormField>
-            {generateCover && (
-              <div className="mt-3 flex flex-col gap-2">
-                <FormField label="Motiv (valgfritt)" htmlFor="cover_hint" hint="Styrer AI-motivet, ellers utledes det fra tittel, beskrivelse og innhold">
-                  <Textarea
-                    id="cover_hint"
-                    rows={2}
-                    value={coverHint}
-                    onChange={(e) => setCoverHint(e.target.value)}
-                    placeholder="F.eks. «en kortstokk og to shotglass»"
-                    disabled={generating}
-                  />
-                </FormField>
-                <Button type="button" size="sm" onClick={handleGenerateCover} disabled={generating}>
-                  <FiImage aria-hidden /> {generating ? 'Genererer … (opptil ett minutt)' : 'Generer cover med AI'}
-                </Button>
-                {coverStatus.error && (
-                  <p role="alert" className="text-xs text-accent">{coverStatus.error}</p>
-                )}
-                {coverStatus.subject && (
-                  <p role="status" className="text-xs text-ink-3">
-                    Lagret. Motiv: {coverStatus.subject}
-                  </p>
-                )}
-              </div>
-            )}
-          </section>
-        </aside>
-      </div>
 
-      <div className="flex items-center gap-4 mt-8 pt-6 border-t border-rule">
-        <SubmitButton pendingLabel="Lagrer …">
-          <FiSave aria-hidden /> Lagre
-        </SubmitButton>
-        {record && (
-          <>
-            <Link
-              href={`${previewBase}/${record.slug}${record.draft ? '?preview=1' : ''}`}
-              target="_blank"
-              className="btn btn-sm"
-            >
-              <FiExternalLink aria-hidden /> Forhåndsvis
-            </Link>
-            <DeleteButton
-              action={onDelete.bind(null, record.id)}
-              confirmText={`Slette «${record.title}»? Dette kan ikke angres.`}
-              label="Slett"
-            />
-          </>
-        )}
-        <FormStatus success={state.success ? 'Lagret' : undefined} error={state.error} className="ml-auto">
-          {isEdit && dirty && <span className="dim mono text-xs">ulagrede endringer</span>}
-          {isEdit && !dirty && savedAt && (
-            <span className="dim mono text-xs">
-              autolagret {savedAt.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}
-            </span>
+            <FormField label={descriptionLabel} htmlFor="description" hint={descriptionHint}>
+              <Textarea id="description" name="description" required rows={2} defaultValue={record?.description ?? ''} />
+            </FormField>
+
+            <FormField label="Innhold (MDX)" htmlFor="content">
+              <Textarea
+                id="content"
+                name="content"
+                mono
+                required
+                rows={contentRows}
+                defaultValue={record?.content ?? ''}
+                placeholder={contentPlaceholder}
+              />
+            </FormField>
+          </div>
+
+          <aside className="flex flex-col gap-6">
+            <section>
+              <h3 className="text-xs uppercase tracking-[0.12em] text-ink-3 font-medium mb-3.5">Publisering</h3>
+              <Checkbox
+                name="draft"
+                label="Utkast (skjult for public)"
+                checked={draft}
+                onChange={(e) => setDraft(e.target.checked)}
+                className="mb-3"
+              />
+              {publishing}
+            </section>
+
+            {children}
+
+            <section>
+              <FormField label="Cover-bilde" htmlFor="cover_image">
+                <ImageUploader
+                  id="cover_image"
+                  name="cover_image"
+                  value={coverImage}
+                  onChange={(v) => {
+                    setCoverImage(v)
+                    markDirty()
+                  }}
+                  folder={coverFolder}
+                />
+              </FormField>
+              {generateCover && (
+                <div className="mt-3 flex flex-col gap-2">
+                  <FormField label="Motiv (valgfritt)" htmlFor="cover_hint" hint="Styrer AI-motivet, ellers utledes det fra tittel, beskrivelse og innhold">
+                    <Textarea
+                      id="cover_hint"
+                      rows={2}
+                      value={coverHint}
+                      onChange={(e) => setCoverHint(e.target.value)}
+                      placeholder="F.eks. «en kortstokk og to shotglass»"
+                      disabled={generating}
+                    />
+                  </FormField>
+                  <Button type="button" size="sm" onClick={handleGenerateCover} disabled={generating}>
+                    <FiImage aria-hidden /> {generating ? 'Genererer … (opptil ett minutt)' : 'Generer cover med AI'}
+                  </Button>
+                  {coverStatus.error && (
+                    <p role="alert" className="text-xs text-accent">{coverStatus.error}</p>
+                  )}
+                  {coverStatus.subject && (
+                    <p role="status" className="text-xs text-ink-3">
+                      Lagret. Motiv: {coverStatus.subject}
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          </aside>
+        </div>
+
+        <div className="flex items-center gap-4 mt-8 pt-6 border-t border-rule">
+          <SubmitButton pendingLabel="Lagrer …">
+            <FiSave aria-hidden /> Lagre
+          </SubmitButton>
+          {record && (
+            <>
+              <Link
+                href={`${previewBase}/${record.slug}${record.draft ? '?preview=1' : ''}`}
+                target="_blank"
+                className="btn btn-sm"
+              >
+                <FiExternalLink aria-hidden /> Forhåndsvis
+              </Link>
+              <DeleteButton
+                action={onDelete.bind(null, record.id)}
+                confirmText={`Slette «${record.title}»? Dette kan ikke angres.`}
+                label="Slett"
+              />
+            </>
           )}
-        </FormStatus>
-      </div>
-    </form>
+          <FormStatus success={state.success ? 'Lagret' : undefined} error={state.error} className="ml-auto">
+            {isEdit && dirty && <span className="dim mono text-xs">ulagrede endringer</span>}
+            {isEdit && !dirty && savedAt && (
+              <span className="dim mono text-xs">
+                autolagret {savedAt.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </FormStatus>
+        </div>
+      </form>
+    </div>
   )
 }

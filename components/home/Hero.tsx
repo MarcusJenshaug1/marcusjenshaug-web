@@ -8,18 +8,31 @@ import { MeshGlow } from '@/components/fx/MeshGlow'
 import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
 import { RoleRotator } from '@/components/home/RoleRotator'
 import { SectionCounter } from '@/components/home/SectionCounter'
+import { localePath, type Locale } from '@/lib/i18n/config'
+import type { Translator } from '@/lib/i18n/client'
 import type { SiteSettings } from '@/lib/types/app'
 
 function socialByPlatform(links: { platform: string; url: string }[], name: string) {
   return links.find((l) => l.platform.toLowerCase() === name)
 }
 
-export function Hero({ settings: s }: { settings: SiteSettings }) {
+type Props = {
+  locale: Locale
+  t: Translator
+  settings: SiteSettings
+}
+
+export function Hero({ locale, t, settings: s }: Props) {
   const github = socialByPlatform(s.social_links, 'github')
   const linkedin = socialByPlatform(s.social_links, 'linkedin')
   const available = s.available_for_work
   const nameLines = s.full_name.split(' ')
-  const roles = [s.headline || 'Fullstack-utvikler', 'Produktbygger', 'Selvhoster', 'Makkos']
+  const roles = [
+    s.headline || t('hero.role.fallback'),
+    t('hero.role.builder'),
+    t('hero.role.selfhoster'),
+    'Makkos',
+  ]
   const portrait = s.image_url || '/portrett.jpg'
   const staticPortrait = /(^|\/)portrett\.jpg$/.test(portrait)
 
@@ -32,11 +45,9 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
         <ParallaxLayer speed={-5} start="top top" className="hero-content">
           <div className="eyebrow hero-eyebrow">
             {available && <span className="status-dot hero-status-dot" />}
-            {available
-              ? s.availability_note || 'Tilgjengelig for samtaler'
-              : 'Ikke tilgjengelig akkurat nå'}
+            {available ? s.availability_note || t('hero.available') : t('hero.unavailable')}
             {' · OSLO '}
-            <OsloClock />
+            <OsloClock locale={locale} />
           </div>
           <Reveal variant="chars">
             <h1 className="hero-name display display-1">
@@ -54,20 +65,17 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
             <RoleRotator roles={roles} />
           </div>
           <Reveal variant="fade" delay={0.3}>
-            <p className="hero-bio">
-              {s.bio_short ||
-                'Notater, prosjekter og verktøy fra arbeidet mitt som fullstack-utvikler.'}
-            </p>
+            <p className="hero-bio">{s.bio_short || t('hero.bioFallback')}</p>
           </Reveal>
           <div className="hero-ctas">
             <Magnetic>
-              <TransitionLink href="/prosjekter" className="btn-xl btn-xl-solid mono">
-                Se prosjekter <FiArrowRight aria-hidden />
+              <TransitionLink href={localePath(locale, 'projects')} className="btn-xl btn-xl-solid mono">
+                {t('hero.seeProjects')} <FiArrowRight aria-hidden />
               </TransitionLink>
             </Magnetic>
             <Magnetic>
-              <TransitionLink href="/kontakt" className="btn-xl mono">
-                Ta kontakt
+              <TransitionLink href={localePath(locale, 'contact')} className="btn-xl mono">
+                {t('hero.contact')}
               </TransitionLink>
             </Magnetic>
             {s.cv_url && (
@@ -78,7 +86,7 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <FiDownload aria-hidden /> CV
+                  <FiDownload aria-hidden /> {t('hero.cv')}
                 </a>
               </Magnetic>
             )}
@@ -104,13 +112,13 @@ export function Hero({ settings: s }: { settings: SiteSettings }) {
             depthSrc={staticPortrait ? '/portrett-depth.webp' : undefined}
             faceMesh={staticPortrait}
             fallbackSrc={portrait}
-            alt={`Portrett av ${s.full_name}`}
+            alt={t('hero.portraitAlt', { name: s.full_name })}
           />
         </ParallaxLayer>
       </div>
       <div className="hero-foot container mono">
         <span className="hero-scroll">
-          <FiArrowDown className="scroll-arrow" aria-hidden /> RULL
+          <FiArrowDown className="scroll-arrow" aria-hidden /> {t('hero.scroll').toUpperCase()}
         </span>
         <SectionCounter />
       </div>

@@ -1,12 +1,16 @@
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
+import { OG_LOCALE, SOURCE_LOCALE, isLocale } from '@/lib/i18n/config'
 
 export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
+  const lang = searchParams.get('lang')
+  const locale = isLocale(lang) ? lang : SOURCE_LOCALE
   const title = (searchParams.get('title') ?? 'Marcus Jenshaug').slice(0, 120)
   const type = (searchParams.get('type') ?? '').slice(0, 30)
+  const langLabel = OG_LOCALE[locale].replace('_', '-')
 
   return new ImageResponse(
     (
@@ -56,7 +60,7 @@ export async function GET(request: NextRequest) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '20px', color: '#6b6356', fontFamily: 'monospace' }}>
           <span>marcusjenshaug.no</span>
-          <span>nb-NO</span>
+          <span>{langLabel}</span>
         </div>
       </div>
     ),
