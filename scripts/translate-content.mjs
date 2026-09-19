@@ -288,3 +288,12 @@ for (const target of targets) {
 
 console.log(`\nFerdig: ${totals.ok} oversatt, ${totals.skipped} hoppet over, ${totals.failed} feilet${DRY ? ' (ingenting skrevet)' : ''}`)
 process.exit(totals.failed > 0 ? 1 : 0)
+
+if (!DRY && process.env.REVALIDATE_SECRET && process.env.NEXT_PUBLIC_SITE_URL) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.REVALIDATE_SECRET}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+  console.log(res.ok ? 'cache invalidert' : `cache: HTTP ${res.status}`)
+}
