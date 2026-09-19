@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiEdit3 } from 'react-icons/fi'
 import { getAllNowAdmin } from '@/lib/now'
+import { getTranslationsAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
+import { TranslationBadge, translationStatus } from '@/components/admin/TranslationBadge'
 import { NewNowForm } from './NewNowForm'
 import { DeleteInlineForm } from '@/components/admin/DeleteInlineForm'
 import { deleteNowEntry } from './actions'
@@ -21,7 +23,7 @@ const dateTimeFormat: Intl.DateTimeFormatOptions = {
 }
 
 export default async function AdminNaPage() {
-  const entries = await getAllNowAdmin()
+  const [entries, translations] = await Promise.all([getAllNowAdmin(), getTranslationsAdmin('now_entries', 'en')])
 
   return (
     <div>
@@ -52,7 +54,10 @@ export default async function AdminNaPage() {
             {entries.map((e) => (
               <div key={e.id} className="card" style={{ padding: '1rem 1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.5rem' }}>
-                  <span className="mono dim" style={{ fontSize: '.75rem' }}>{formatDate(e.published_at, dateTimeFormat)}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                    <span className="mono dim" style={{ fontSize: '.75rem' }}>{formatDate(e.published_at, dateTimeFormat)}</span>
+                    <TranslationBadge status={translationStatus(translations.get(e.id))} />
+                  </span>
                   <div style={{ display: 'flex', gap: '.375rem' }}>
                     <Link href={`/admin/na/${e.id}`} className="btn btn-sm btn-ghost">
                       <FiEdit3 /> Rediger

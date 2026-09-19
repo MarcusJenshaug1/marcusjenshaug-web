@@ -1,15 +1,23 @@
+import type { DictionaryKey, Translator } from '@/lib/i18n'
+
+export type StatValue = 'derived:projects' | 'derived:in-production' | 'derived:posts' | 'derived:uses' | number
+
 export type Stat = {
   label: string
-  value: 'derived:projects' | 'derived:in-production' | 'derived:posts' | 'derived:uses' | number
+  value: StatValue
   suffix?: string
 }
 
-export const STATS: Stat[] = [
-  { label: 'Prosjekter i porteføljen', value: 'derived:projects' },
-  { label: 'Produkter i drift', value: 'derived:in-production' },
-  { label: 'Publiserte notater', value: 'derived:posts' },
-  { label: 'Verktøy i daglig bruk', value: 'derived:uses' },
+const STAT_ENTRIES: Array<{ label: DictionaryKey; value: StatValue; suffix?: string }> = [
+  { label: 'stats.projects', value: 'derived:projects' },
+  { label: 'stats.inProduction', value: 'derived:in-production' },
+  { label: 'stats.posts', value: 'derived:posts' },
+  { label: 'stats.uses', value: 'derived:uses' },
 ]
+
+export function getStats(t: Translator): Stat[] {
+  return STAT_ENTRIES.map((stat) => ({ ...stat, label: t(stat.label) }))
+}
 
 export type Quote = {
   quote: string

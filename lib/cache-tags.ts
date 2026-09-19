@@ -6,6 +6,8 @@ export const TAGS = {
   now: 'now',
   uses: 'uses',
   settings: 'settings',
+  ui: 'ui',
+  translations: 'translations',
 } as const
 
 export function postTag(slug: string) {

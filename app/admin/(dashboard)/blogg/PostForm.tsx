@@ -5,14 +5,15 @@ import { datetimeLocalToIso, toDatetimeLocal } from '@/lib/datetime'
 import { EditorShell } from '@/components/admin/EditorShell'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
-import type { Post } from '@/lib/types/app'
+import type { ContentTranslation, Post } from '@/lib/types/app'
 import { createPost, updatePost, autosavePost, deletePost } from './actions'
 
 type Props = {
   post?: Post
+  translation?: ContentTranslation | null
 }
 
-export function PostForm({ post }: Props) {
+export function PostForm({ post, translation }: Props) {
   const [publishedAt, setPublishedAt] = useState('')
 
   useEffect(() => {
@@ -21,7 +22,9 @@ export function PostForm({ post }: Props) {
 
   return (
     <EditorShell
+      entity="posts"
       record={post}
+      translation={translation}
       action={post ? updatePost.bind(null, post.id) : createPost}
       autosave={autosavePost}
       onDelete={deletePost}

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3320",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "set-admin-password": "node --env-file=.env.local scripts/set-admin-password.mjs"
+    "set-admin-password": "node --env-file=.env.local scripts/set-admin-password.mjs",
+    "translate-content": "node --env-file=.env.local scripts/translate-content.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

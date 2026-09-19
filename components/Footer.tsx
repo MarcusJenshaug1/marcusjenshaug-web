@@ -1,43 +1,50 @@
 import { FiArrowUpRight } from 'react-icons/fi'
 import { TransitionLink } from '@/components/motion/TransitionLink'
 import { ParallaxLayer } from '@/components/fx/ParallaxLayer'
+import { localePath, type Locale, type RouteKey } from '@/lib/i18n/config'
+import type { Translator } from '@/lib/i18n/client'
 import type { SiteSettings } from '@/lib/types/app'
 
 type Props = {
+  locale: Locale
+  t: Translator
   settings: SiteSettings
 }
 
-export function Footer({ settings }: Props) {
+const CONTENT_LINKS: RouteKey[] = ['blog', 'projects', 'now', 'uses', 'about', 'contact']
+
+export function Footer({ locale, t, settings }: Props) {
   const year = new Date().getFullYear()
 
   return (
     <footer className="statement-footer" data-parallax-root>
       <ParallaxLayer speed={-7} className="statement-footer-name-wrap container">
-        <TransitionLink href="/" className="statement-footer-name display" aria-label="Til forsiden">
+        <TransitionLink
+          href={localePath(locale, 'home')}
+          className="statement-footer-name display"
+          aria-label={t('nav.toFront')}
+        >
           {settings.full_name.split(' ').map((line) => (
             <span key={line} className="statement-footer-name-line">
               {line}
             </span>
           ))}
         </TransitionLink>
-        <p className="statement-footer-bio">
-          {settings.bio_short || 'Fullstack-utvikler i Redi AS.'}
-        </p>
+        <p className="statement-footer-bio">{settings.bio_short || t('hero.bioFallback')}</p>
       </ParallaxLayer>
       <div className="statement-footer-grid container">
         <div>
-          <h3 className="mono">Innhold</h3>
+          <h3 className="mono">{t('footer.content')}</h3>
           <ul>
-            <li><TransitionLink href="/blogg">Blogg</TransitionLink></li>
-            <li><TransitionLink href="/prosjekter">Prosjekter</TransitionLink></li>
-            <li><TransitionLink href="/na">Nå</TransitionLink></li>
-            <li><TransitionLink href="/uses">Uses</TransitionLink></li>
-            <li><TransitionLink href="/om">Om</TransitionLink></li>
-            <li><TransitionLink href="/kontakt">Kontakt</TransitionLink></li>
+            {CONTENT_LINKS.map((key) => (
+              <li key={key}>
+                <TransitionLink href={localePath(locale, key)}>{t(`nav.${key}`)}</TransitionLink>
+              </li>
+            ))}
           </ul>
         </div>
         <div>
-          <h3 className="mono">Koble til</h3>
+          <h3 className="mono">{t('footer.connect')}</h3>
           <ul>
             {settings.social_links.map((link) => (
               <li key={link.url}>
@@ -58,18 +65,18 @@ export function Footer({ settings }: Props) {
           </ul>
         </div>
         <div>
-          <h3 className="mono">Feeds</h3>
+          <h3 className="mono">{t('footer.feeds')}</h3>
           <ul>
             <li><a href="/rss.xml">RSS</a></li>
             <li><a href="/feed.json">JSON Feed</a></li>
             <li><a href="/llms.txt">llms.txt</a></li>
-            <li><a href="/sitemap.xml">Sitemap</a></li>
+            <li><a href="/sitemap.xml">{t('footer.sitemap')}</a></li>
           </ul>
         </div>
       </div>
       <div className="statement-footer-meta container mono">
         <span>© {year} {settings.full_name}</span>
-        <span>Bygget med Next.js · Hostet på Vercel</span>
+        <span>{t('footer.builtWith')}</span>
       </div>
     </footer>
   )

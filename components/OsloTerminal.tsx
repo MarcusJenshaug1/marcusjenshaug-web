@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { Locale } from '@/lib/i18n/config'
+import { intlLocale } from '@/lib/i18n/client'
 
-function formatOslo(d: Date) {
-  return d.toLocaleString('nb-NO', {
+function formatOslo(d: Date, locale: Locale) {
+  return d.toLocaleString(intlLocale(locale), {
     weekday: 'long',
     hour: '2-digit',
     minute: '2-digit',
@@ -11,13 +13,14 @@ function formatOslo(d: Date) {
   })
 }
 
-export function OsloTerminalLine() {
-  const [value, setValue] = useState(() => formatOslo(new Date()))
+export function OsloTerminalLine({ locale = 'nb' }: { locale?: Locale }) {
+  const [value, setValue] = useState(() => formatOslo(new Date(), locale))
 
   useEffect(() => {
-    const t = setInterval(() => setValue(formatOslo(new Date())), 30000)
+    setValue(formatOslo(new Date(), locale))
+    const t = setInterval(() => setValue(formatOslo(new Date(), locale)), 30000)
     return () => clearInterval(t)
-  }, [])
+  }, [locale])
 
   return (
     <>

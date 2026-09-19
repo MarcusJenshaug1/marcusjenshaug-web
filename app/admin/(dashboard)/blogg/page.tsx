@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiPlus, FiEdit3, FiEye, FiEyeOff } from 'react-icons/fi'
 import { getAllPostsAdmin } from '@/lib/posts'
+import { getTranslationsAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
+import { TranslationBadge, translationStatus } from '@/components/admin/TranslationBadge'
 import { togglePublish } from './actions'
 
 export const metadata: Metadata = {
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminBloggPage() {
-  const posts = await getAllPostsAdmin()
+  const [posts, translations] = await Promise.all([getAllPostsAdmin(), getTranslationsAdmin('posts', 'en')])
 
   return (
     <div>
@@ -39,6 +41,7 @@ export default async function AdminBloggPage() {
                 <Th>Tittel</Th>
                 <Th>Tags</Th>
                 <Th>Synlighet</Th>
+                <Th>EN</Th>
                 <Th>Publisert</Th>
                 <Th style={{ width: '1%', whiteSpace: 'nowrap' }}>&nbsp;</Th>
               </tr>
@@ -61,6 +64,9 @@ export default async function AdminBloggPage() {
                         {p.draft ? <><FiEyeOff /> Utkast</> : <><FiEye /> Publisert</>}
                       </button>
                     </form>
+                  </Td>
+                  <Td>
+                    <TranslationBadge status={translationStatus(translations.get(p.id))} />
                   </Td>
                   <Td>
                     <span className="mono dim" style={{ fontSize: '.75rem' }}>

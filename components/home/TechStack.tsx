@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Marquee } from '@/components/fx/Marquee'
+import type { Locale } from '@/lib/i18n/config'
+import { useTranslator, type Translator } from '@/lib/i18n/client'
 
 export type TechStackEntry = {
   name: string
@@ -10,9 +12,9 @@ export type TechStackEntry = {
   projectCount: number
 }
 
-function ItemDetail({ item }: { item: TechStackEntry | null }) {
+function ItemDetail({ item, t }: { item: TechStackEntry | null; t: Translator }) {
   if (!item) {
-    return <span className="tech-detail-hint">Hold over et verktøy for detaljer</span>
+    return <span className="tech-detail-hint">{t('stack.hint')}</span>
   }
   return (
     <>
@@ -21,14 +23,23 @@ function ItemDetail({ item }: { item: TechStackEntry | null }) {
       {item.note}
       {item.projectCount > 0 && (
         <span className="tech-detail-count">
-          {' · '}brukt i {item.projectCount} {item.projectCount === 1 ? 'prosjekt' : 'prosjekter'}
+          {' · '}
+          {item.projectCount === 1
+            ? t('stack.usedIn.one')
+            : t('stack.usedIn.other', { count: item.projectCount })}
         </span>
       )}
     </>
   )
 }
 
-export function TechStack({ items }: { items: TechStackEntry[] }) {
+type Props = {
+  locale: Locale
+  items: TechStackEntry[]
+}
+
+export function TechStack({ locale, items }: Props) {
+  const t = useTranslator(locale)
   const [hovered, setHovered] = useState<TechStackEntry | null>(null)
 
   const half = Math.ceil(items.length / 2)
@@ -53,7 +64,7 @@ export function TechStack({ items }: { items: TechStackEntry[] }) {
         </Marquee>
       ))}
       <div className="tech-detail mono" aria-live="polite">
-        <ItemDetail item={hovered} />
+        <ItemDetail item={hovered} t={t} />
       </div>
     </div>
   )

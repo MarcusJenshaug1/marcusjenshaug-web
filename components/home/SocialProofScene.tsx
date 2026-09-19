@@ -6,10 +6,13 @@ import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { useIsCoarsePointer } from '@/lib/motion/useIsCoarsePointer'
 import { SocialProof, type ResolvedStat } from '@/components/home/SocialProof'
 import type { Quote } from '@/lib/social-proof'
+import type { Locale } from '@/lib/i18n/config'
+import { useTranslator } from '@/lib/i18n/client'
 
-type Props = { stats: ResolvedStat[]; quotes: Quote[] }
+type Props = { locale: Locale; stats: ResolvedStat[]; quotes: Quote[] }
 
-function PinnedScene({ stats, quotes }: Props) {
+function PinnedScene({ locale, stats, quotes }: Props) {
+  const t = useTranslator(locale)
   const sceneRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -72,8 +75,8 @@ function PinnedScene({ stats, quotes }: Props) {
     <div ref={sceneRef} className="proof-scene">
       <div ref={trackRef} className="proof-track">
         <div className="proof-panel proof-panel-intro">
-          <span className="eyebrow">Rull →</span>
-          <p className="proof-intro-text mono">Tallene bak arbeidet</p>
+          <span className="eyebrow">{t('proof.scrollHint')}</span>
+          <p className="proof-intro-text mono">{t('proof.intro')}</p>
         </div>
         {stats.map((stat, i) => (
           <div key={stat.label} className="proof-panel">
@@ -103,7 +106,7 @@ function PinnedScene({ stats, quotes }: Props) {
   )
 }
 
-export function SocialProofScene({ stats, quotes }: Props) {
+export function SocialProofScene({ locale, stats, quotes }: Props) {
   const reduced = useReducedMotion()
   const coarse = useIsCoarsePointer()
   const [enabled, setEnabled] = useState(false)
@@ -118,5 +121,5 @@ export function SocialProofScene({ stats, quotes }: Props) {
         <SocialProof stats={stats} quotes={quotes} />
       </div>
     )
-  return <PinnedScene stats={stats} quotes={quotes} />
+  return <PinnedScene locale={locale} stats={stats} quotes={quotes} />
 }

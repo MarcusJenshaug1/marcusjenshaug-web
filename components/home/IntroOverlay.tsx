@@ -3,10 +3,18 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from '@/lib/motion/gsap'
 import { prefersReducedMotion } from '@/lib/motion/useReducedMotion'
+import type { Locale } from '@/lib/i18n/config'
+import { useTranslator } from '@/lib/i18n/client'
 
 const STORAGE_KEY = 'mj-intro'
 
-export function IntroOverlay({ name }: { name: string }) {
+type Props = {
+  locale: Locale
+  name: string
+}
+
+export function IntroOverlay({ locale, name }: Props) {
+  const t = useTranslator(locale)
   const [show, setShow] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const done = useRef(false)
@@ -77,7 +85,9 @@ export function IntroOverlay({ name }: { name: string }) {
   return (
     <div ref={ref} className="intro-overlay" aria-hidden>
       <div className="intro-name display display-2"> </div>
-      <div className="intro-meta mono">PORTEFØLJE · OSLO · {new Date().getFullYear()}</div>
+      <div className="intro-meta mono">
+        {t('intro.meta').toUpperCase()} · {new Date().getFullYear()}
+      </div>
     </div>
   )
 }

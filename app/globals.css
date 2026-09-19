@@ -290,6 +290,51 @@ main#main { padding-top: 4rem; }
   .nav-overlay { padding: 5rem 1rem 1.5rem; }
 }
 
+/* Språkvelger i nav: NO | EN, samme tone som klokka */
+.locale-switch {
+  display: inline-flex; align-items: center; gap: .375rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+}
+.locale-switch a { color: var(--ink-4); transition: color .15s; }
+.locale-switch a:hover { color: var(--ink); }
+.locale-switch [aria-current] { color: var(--ink); }
+.locale-switch-sep { color: var(--rule-strong); }
+
+/* Språkbanner under headeren: skyver innholdet ned, ingen reservert plass */
+.locale-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem;
+  margin-top: 4rem;
+  padding: .5rem 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg-sunken);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.locale-banner + main#main { padding-top: 0; }
+.locale-banner a,
+.locale-banner button {
+  color: var(--ink);
+  background: none; border: 0; padding: 0;
+  font: inherit; letter-spacing: inherit;
+  text-decoration: underline; text-underline-offset: .2em;
+  cursor: pointer;
+  transition: color .15s;
+}
+.locale-banner a:hover,
+.locale-banner button:hover { color: var(--accent); }
+.locale-banner .locale-banner-close {
+  margin-left: auto;
+  display: inline-flex; align-items: center;
+  text-decoration: none;
+  color: var(--ink-3);
+}
+@media (max-width: 640px) {
+  .locale-banner { padding: .5rem 1rem; }
+}
+
 /* Kbd */
 kbd {
   font-family: var(--ff-mono);

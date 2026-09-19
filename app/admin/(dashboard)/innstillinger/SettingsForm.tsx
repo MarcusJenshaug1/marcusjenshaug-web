@@ -1,7 +1,7 @@
 'use client'
 
-import { useActionState, useState } from 'react'
-import { FiPlus, FiX } from 'react-icons/fi'
+import { useActionState, useState, useTransition } from 'react'
+import { FiPlus, FiX, FiZap } from 'react-icons/fi'
 import { Button } from '@/components/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
@@ -11,6 +11,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { Textarea } from '@/components/ui/Textarea'
 import type { SiteSettings, SocialLink } from '@/lib/types/app'
 import { updateSettings, type SettingsState } from './actions'
+import { aiTranslateSettings, type SettingsTranslation } from '../translations-actions'
 
 const initial: SettingsState = {}
 
@@ -21,6 +22,29 @@ type Props = {
 export function SettingsForm({ settings }: Props) {
   const [state, action] = useActionState(updateSettings, initial)
   const [links, setLinks] = useState<SocialLink[]>(settings.social_links)
+  const [en, setEn] = useState<SettingsTranslation>({
+    headline_en: settings.headline_en,
+    bio_short_en: settings.bio_short_en,
+    bio_long_en: settings.bio_long_en,
+    location_en: settings.location_en ?? '',
+    availability_note_en: settings.availability_note_en ?? '',
+  })
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [translating, startTranslating] = useTransition()
+
+  const setEnField = (field: keyof SettingsTranslation, value: string) => setEn((v) => ({ ...v, [field]: value }))
+
+  function handleAiTranslate() {
+    setAiError(null)
+    startTranslating(async () => {
+      const result = await aiTranslateSettings()
+      if ('error' in result) {
+        setAiError(result.error)
+        return
+      }
+      setEn(result.fields)
+    })
+  }
 
   const addLink = () => setLinks([...links, { platform: '', url: '' }])
   const removeLink = (i: number) => setLinks(links.filter((_, idx) => idx !== i))
@@ -107,8 +131,41 @@ export function SettingsForm({ settings }: Props) {
         </div>
       </fieldset>
 
+      <section className="mb-5 mt-8 pt-6 border-t border-rule">
+        <h2 className="text-xs uppercase tracking-[0.12em] text-ink-3 font-medium mb-3">English</h2>
+        <div className="flex flex-wrap items-center gap-3 mb-5">
+          <Button type="button" size="sm" onClick={handleAiTranslate} disabled={translating}>
+            <FiZap aria-hidden /> {translating ? 'Oversetter …' : 'Oversett med AI'}
+          </Button>
+          {aiError && <p role="alert" className="text-xs text-accent">{aiError}</p>}
+          <p className="text-xs text-ink-4 basis-full">
+            Fyller feltene under fra de norske tekstene. Ingenting lagres før du trykker Lagre.
+          </p>
+        </div>
+
+        <FormField label="Headline (engelsk)" htmlFor="headline_en">
+          <Input id="headline_en" name="headline_en" value={en.headline_en} onChange={(e) => setEnField('headline_en', e.target.value)} disabled={translating} />
+        </FormField>
+
+        <FormField label="Kort bio (engelsk)" htmlFor="bio_short_en">
+          <Textarea id="bio_short_en" name="bio_short_en" rows={3} value={en.bio_short_en} onChange={(e) => setEnField('bio_short_en', e.target.value)} disabled={translating} />
+        </FormField>
+
+        <FormField label="Lang bio (engelsk, MDX)" htmlFor="bio_long_en">
+          <Textarea id="bio_long_en" name="bio_long_en" mono rows={10} value={en.bio_long_en} onChange={(e) => setEnField('bio_long_en', e.target.value)} disabled={translating} />
+        </FormField>
+
+        <FormField label="Lokasjon (engelsk)" htmlFor="location_en">
+          <Input id="location_en" name="location_en" value={en.location_en} onChange={(e) => setEnField('location_en', e.target.value)} disabled={translating} />
+        </FormField>
+
+        <FormField label="Tilgjengelighetsnotat (engelsk)" htmlFor="availability_note_en">
+          <Input id="availability_note_en" name="availability_note_en" value={en.availability_note_en} onChange={(e) => setEnField('availability_note_en', e.target.value)} disabled={translating} />
+        </FormField>
+      </section>
+
       <div className="flex items-center gap-4 mt-8">
-        <SubmitButton pendingLabel="Lagrer …">Lagre</SubmitButton>
+        <SubmitButton pendingLabel="Lagrer …" disabled={translating}>Lagre</SubmitButton>
         <FormStatus success={state.success ? 'Lagret' : undefined} error={state.error} />
       </div>
     </form>

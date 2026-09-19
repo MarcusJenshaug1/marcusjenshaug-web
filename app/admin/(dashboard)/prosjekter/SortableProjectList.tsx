@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { FiMenu, FiEdit3, FiEye, FiEyeOff, FiStar } from 'react-icons/fi'
 import { PROJECT_STATUS_LABELS, type ProjectStatus } from '@/lib/types/app'
+import { TranslationBadge, type TranslationStatus } from '@/components/admin/TranslationBadge'
 import { reorderProjects, togglePublish } from './actions'
 
 export type AdminProjectRow = {
@@ -13,6 +14,7 @@ export type AdminProjectRow = {
   status: ProjectStatus
   featured: boolean
   draft: boolean
+  translation: TranslationStatus
   updatedLabel: string
 }
 
@@ -167,6 +169,10 @@ function Row({ project: p, isOver, below, onDragStart, onDragOver, onDrop, onDra
           <span className="sr-only">Vises på forsiden</span>
         </span>
       )}
+
+      <span style={{ flexShrink: 0 }}>
+        <TranslationBadge status={p.translation} />
+      </span>
 
       <span className="mono dim sortable-date" style={{ fontSize: '.75rem' }}>{p.updatedLabel}</span>
 

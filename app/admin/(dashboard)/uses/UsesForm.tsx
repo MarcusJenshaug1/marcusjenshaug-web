@@ -3,8 +3,10 @@
 import { useActionState, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { FiPlus, FiSave } from 'react-icons/fi'
-import type { UsesItem } from '@/lib/types/app'
+import type { ContentTranslation, UsesItem } from '@/lib/types/app'
 import { DeleteButton } from '@/components/admin/DeleteInlineForm'
+import { LocaleTabs, type EditorLocale } from '@/components/admin/LocaleTabs'
+import { TranslationPanel } from '@/components/admin/TranslationPanel'
 import { FormField } from '@/components/ui/FormField'
 import { FormStatus } from '@/components/ui/FormStatus'
 import { Input } from '@/components/ui/Input'
@@ -16,19 +18,28 @@ const initial: UsesFormState = {}
 type Props = {
   item?: UsesItem
   existingCategories: string[]
+  translation?: ContentTranslation | null
 }
 
-export function UsesForm({ item, existingCategories }: Props) {
+export function UsesForm({ item, existingCategories, translation = null }: Props) {
   const [state, action] = useActionState(item ? updateUsesItem.bind(null, item.id) : createUsesItem, initial)
   const formRef = useRef<HTMLFormElement>(null)
   const [category, setCategory] = useState(item?.category ?? existingCategories[0] ?? '')
+  const [locale, setLocale] = useState<EditorLocale>('nb')
 
   useEffect(() => {
     if (!item && state.success) formRef.current?.reset()
   }, [item, state.success])
 
-  return (
-    <form ref={formRef} action={action}>
+  const form = (
+    <form
+      ref={formRef}
+      action={action}
+      role={item ? 'tabpanel' : undefined}
+      id={item ? 'panel-nb' : undefined}
+      aria-labelledby={item ? 'tab-nb' : undefined}
+      hidden={item ? locale !== 'nb' : undefined}
+    >
       <div className="grid grid-cols-[1fr_2fr] gap-4">
         <FormField label="Kategori" htmlFor="category">
           <Input
@@ -80,5 +91,27 @@ export function UsesForm({ item, existingCategories }: Props) {
         </div>
       )}
     </form>
+  )
+
+  if (!item) return form
+
+  return (
+    <div>
+      <LocaleTabs
+        value={locale}
+        onChange={setLocale}
+        enBadge={!translation ? 'mangler' : translation.machine_translated ? 'maskin' : undefined}
+      />
+      <div role="tabpanel" id="panel-en" aria-labelledby="tab-en" hidden={locale !== 'en'}>
+        <TranslationPanel
+          entity="uses_items"
+          entityId={item.id}
+          translation={translation}
+          fields={['title', 'description']}
+          labels={{ title: 'Navn', description: 'Beskrivelse' }}
+        />
+      </div>
+      {form}
+    </div>
   )
 }

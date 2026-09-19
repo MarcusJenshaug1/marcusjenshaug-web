@@ -16,6 +16,11 @@ export type SiteSettings = {
   availability_note: string | null
   cv_url: string | null
   image_url: string | null
+  headline_en: string
+  bio_short_en: string
+  bio_long_en: string
+  location_en: string | null
+  availability_note_en: string | null
   social_links: SocialLink[]
   updated_at: string
 }
@@ -86,6 +91,30 @@ export type UsesItem = {
   updated_at: string
 }
 
+export type ContentEntity = 'posts' | 'projects' | 'now_entries' | 'uses_items'
+
+export type ContentTranslation = {
+  id: string
+  entity: ContentEntity
+  entity_id: string
+  locale: 'en'
+  slug: string | null
+  title: string | null
+  description: string | null
+  content: string | null
+  role: string | null
+  machine_translated: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type UiString = {
+  key: string
+  locale: 'nb' | 'en'
+  value: string
+  updated_at: string
+}
+
 export type RateLimit = {
   id: string
   bucket: string
@@ -108,6 +137,8 @@ export type AppDatabase = {
       now_entries: TableDef<NowEntry>
       uses_items: TableDef<UsesItem>
       rate_limits: TableDef<RateLimit>
+      content_translations: TableDef<ContentTranslation>
+      ui_strings: TableDef<UiString>
     }
     Views: Record<string, never>
     Functions: Record<string, never>

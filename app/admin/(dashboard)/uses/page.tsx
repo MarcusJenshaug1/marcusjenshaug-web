@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FiEdit3, FiArrowUp, FiArrowDown, FiExternalLink } from 'react-icons/fi'
 import { getAllUsesAdmin, groupByCategory } from '@/lib/uses'
+import { getTranslationsAdmin } from '@/lib/translations'
+import { TranslationBadge, translationStatus } from '@/components/admin/TranslationBadge'
 import { UsesForm } from './UsesForm'
 import { DeleteInlineForm } from '@/components/admin/DeleteInlineForm'
 import { reorderUsesItem } from './actions'
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminUsesPage() {
-  const items = await getAllUsesAdmin()
+  const [items, translations] = await Promise.all([getAllUsesAdmin(), getTranslationsAdmin('uses_items', 'en')])
   const groups = groupByCategory(items)
   const categories = Object.keys(groups)
 
@@ -64,6 +66,9 @@ export default async function AdminUsesPage() {
                           {item.description && (
                             <div className="muted" style={{ fontSize: '.8125rem', marginTop: '.125rem' }}>{item.description}</div>
                           )}
+                        </td>
+                        <td style={{ padding: '.625rem .875rem', width: '1%', whiteSpace: 'nowrap' }}>
+                          <TranslationBadge status={translationStatus(translations.get(item.id))} />
                         </td>
                         <td style={{ padding: '.625rem .875rem', width: '1%', whiteSpace: 'nowrap' }}>
                           {item.url && (
