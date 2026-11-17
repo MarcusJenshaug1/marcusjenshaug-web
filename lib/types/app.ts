@@ -78,6 +78,7 @@ export type NowEntry = {
   content: string
   published_at: string
   created_at: string
+  draft: boolean
 }
 
 export type UsesItem = {

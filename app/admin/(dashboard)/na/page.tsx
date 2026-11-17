@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { FiEdit3 } from 'react-icons/fi'
+import { FiEdit3, FiEye, FiEyeOff } from 'react-icons/fi'
 import { getAllNowAdmin } from '@/lib/now'
 import { getTranslationsAdmin } from '@/lib/translations'
 import { formatDate } from '@/lib/site'
 import { TranslationBadge, translationStatus } from '@/components/admin/TranslationBadge'
 import { NewNowForm } from './NewNowForm'
 import { DeleteInlineForm } from '@/components/admin/DeleteInlineForm'
-import { deleteNowEntry } from './actions'
+import { deleteNowEntry, toggleNowPublish } from './actions'
 
 export const metadata: Metadata = {
   title: 'Nå',
@@ -30,7 +30,7 @@ export default async function AdminNaPage() {
       <header style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--rule)' }}>
         <h1 style={{ fontSize: '1.375rem' }}>Nå</h1>
         <p className="muted" style={{ fontSize: '.875rem', marginTop: '.25rem' }}>
-          {entries.length} oppføringer · publiseres direkte, ingen utkast
+          {entries.length} oppføringer · {entries.filter((e) => e.draft).length} utkast
         </p>
       </header>
 
@@ -59,6 +59,11 @@ export default async function AdminNaPage() {
                     <TranslationBadge status={translationStatus(translations.get(e.id))} />
                   </span>
                   <div style={{ display: 'flex', gap: '.375rem' }}>
+                    <form action={toggleNowPublish.bind(null, e.id, e.draft)} style={{ display: 'inline' }}>
+                      <button type="submit" className="btn btn-sm btn-ghost" title={e.draft ? 'Publiser' : 'Avpubliser'}>
+                        {e.draft ? <><FiEyeOff /> Utkast</> : <><FiEye /> Publisert</>}
+                      </button>
+                    </form>
                     <Link href={`/admin/na/${e.id}`} className="btn btn-sm btn-ghost">
                       <FiEdit3 /> Rediger
                     </Link>
