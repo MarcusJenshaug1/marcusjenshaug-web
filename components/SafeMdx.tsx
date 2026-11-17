@@ -2,6 +2,11 @@ import { compileMDX } from 'next-mdx-remote/rsc'
 import { mdxOptions } from '@/lib/mdx'
 import { makeTranslator } from '@/lib/i18n/client'
 import type { Locale } from '@/lib/i18n/config'
+import { Diagram } from '@/components/mdx/Diagram'
+import { Flytskjema } from '@/components/mdx/Flytskjema'
+
+// Komponentene et innlegg kan bruke direkte i MDX-en.
+const mdxComponents = { Diagram, Flytskjema }
 
 type Props = {
   source: string
@@ -13,6 +18,7 @@ export async function SafeMdx({ source, locale = 'nb' }: Props) {
     const { content } = await compileMDX({
       source,
       options: mdxOptions,
+      components: mdxComponents,
     })
     return <>{content}</>
   } catch (error) {
