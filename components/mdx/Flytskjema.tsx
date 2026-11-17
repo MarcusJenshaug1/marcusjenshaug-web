@@ -22,6 +22,13 @@ type Props = {
  * som fortjener en. Lest ovenfra og ned på mobil, uten vannrett rulling.
  */
 export function Flytskjema({ tittel, trinn, enden }: Props) {
+  // Et innlegg skal aldri kunne velte siden. SafeMdx fanger feil under
+  // kompilering, men ikke under rendering, så manglende props håndteres her.
+  if (!Array.isArray(trinn) || trinn.length === 0 || !enden?.navn) {
+    console.error('Flytskjema: mangler trinn eller enden', { trinn, enden })
+    return null
+  }
+
   return (
     <figure className="my-8 not-prose">
       {tittel && (

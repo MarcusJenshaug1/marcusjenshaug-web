@@ -13,7 +13,7 @@ type Props = {
 // i ferd med å bli synlig. Fram til da står kilden som forhåndsformatert tekst,
 // slik at den som leser uten JavaScript fortsatt får med seg innholdet.
 export function Diagram({ children, tekst }: Props) {
-  const kilde = typeof children === 'string' ? children.trim() : ''
+  const kilde = typeof children === 'string' ? children.trim() : String(children ?? '').trim()
   const id = useId().replace(/:/g, '')
   const boks = useRef<HTMLDivElement>(null)
   const [svg, setSvg] = useState('')
