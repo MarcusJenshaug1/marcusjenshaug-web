@@ -8,6 +8,7 @@ import { datetimeLocalToIso, toDatetimeLocal } from '@/lib/datetime'
 import { DeleteButton } from '@/components/admin/DeleteInlineForm'
 import { LocaleTabs, type EditorLocale } from '@/components/admin/LocaleTabs'
 import { TranslationPanel } from '@/components/admin/TranslationPanel'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
 import { FormStatus } from '@/components/ui/FormStatus'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +26,7 @@ type Props = {
 export function EditNowForm({ entry, translation = null }: Props) {
   const [state, action] = useActionState(updateNowEntry.bind(null, entry.id), initial)
   const [publishedAt, setPublishedAt] = useState('')
+  const [draft, setDraft] = useState(entry.draft)
   const [locale, setLocale] = useState<EditorLocale>('nb')
 
   useEffect(() => {
@@ -65,6 +67,14 @@ export function EditNowForm({ entry, translation = null }: Props) {
           />
           <input type="hidden" name="published_at_iso" value={datetimeLocalToIso(publishedAt)} />
         </FormField>
+
+        <Checkbox
+          name="draft"
+          label="Utkast (skjult for public)"
+          checked={draft}
+          onChange={(e) => setDraft(e.target.checked)}
+          className="mb-3"
+        />
 
         <div className="flex items-center gap-4 pt-4 border-t border-rule">
           <SubmitButton pendingLabel="Lagrer …">

@@ -11,6 +11,7 @@ import { cleanEmDashes } from '@/lib/text'
 const nowSchema = z.object({
   content: z.string().min(1, 'Innhold er påkrevd'),
   published_at: z.string().optional().default(''),
+  draft: z.boolean(),
 })
 
 export type NowFormState = {
@@ -23,6 +24,7 @@ function parseForm(formData: FormData) {
   return nowSchema.safeParse({
     content: formData.get('content'),
     published_at: (typeof publishedAtIso === 'string' && publishedAtIso) || formData.get('published_at') || '',
+    draft: formData.get('draft') === 'on',
   })
 }
 
@@ -35,6 +37,7 @@ function toDbValues(data: z.infer<typeof nowSchema>) {
   return cleanEmDashes({
     content: data.content,
     published_at,
+    draft: data.draft,
   })
 }
 
@@ -81,6 +84,15 @@ export async function updateNowEntry(
   revalidateTag(TAGS.now)
   revalidatePath('/admin/na')
   return { success: true }
+}
+
+export async function toggleNowPublish(id: string, currentDraft: boolean) {
+  await requireAdmin()
+  const admin = createAdminClient()
+  const { error } = await admin.from('now_entries').update({ draft: !currentDraft }).eq('id', id)
+  if (error) throw new Error('Kunne ikke endre status: ' + error.message)
+  revalidateTag(TAGS.now)
+  revalidatePath('/admin/na')
 }
 
 export async function deleteNowEntry(id: string) {

@@ -10,6 +10,7 @@ export const getNowEntries = unstable_cache(
     const { data, error } = await supabase
       .from('now_entries')
       .select('*')
+      .eq('draft', false)
       .order('published_at', { ascending: false })
     if (error) throw error
     return (data ?? []) as NowEntry[]

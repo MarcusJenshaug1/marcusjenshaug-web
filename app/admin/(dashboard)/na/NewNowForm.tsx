@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useEffect } from 'react'
 import { FiArrowRight } from 'react-icons/fi'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { FormField } from '@/components/ui/FormField'
 import { FormStatus } from '@/components/ui/FormStatus'
 import { SubmitButton } from '@/components/ui/SubmitButton'
@@ -30,11 +31,12 @@ export function NewNowForm() {
           placeholder="Hva jobber du med akkurat nå? Markdown/MDX støttet."
         />
       </FormField>
+      <Checkbox name="draft" label="Utkast (skjult for public)" defaultChecked className="mb-3" />
       <div className="flex items-center gap-4">
-        <SubmitButton pendingLabel="Publiserer …">
-          Publiser <FiArrowRight aria-hidden />
+        <SubmitButton pendingLabel="Lagrer …">
+          Lagre <FiArrowRight aria-hidden />
         </SubmitButton>
-        <FormStatus success={state.success ? 'Publisert' : undefined} error={state.error} />
+        <FormStatus success={state.success ? 'Lagret' : undefined} error={state.error} />
       </div>
     </form>
   )
