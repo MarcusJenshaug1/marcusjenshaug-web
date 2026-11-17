@@ -65,11 +65,10 @@ export default async function AboutPage({ params }: Props) {
     jobTitle: s.headline,
     email: s.email ? `mailto:${s.email}` : undefined,
     nationality: 'Norwegian',
-    worksFor: {
-      '@type': 'Organization',
-      name: 'Redi AS',
-      url: 'https://redi.as',
-    },
+    // worksFor er bevisst tomt fra november 2026. Den sto hardkodet til Redi AS
+    // og ville sagt til søkemotorer og språkmodeller at jeg er ansatt der, mens
+    // resten av siden sier at jeg er ledig. Ansettelseshistorikken står i
+    // biografien. Sett den inn igjen når det finnes en ny arbeidsgiver.
     knowsAbout: STACK_NAMES,
     sameAs: s.social_links.map((l) => l.url).filter((url) => !/(^|\/\/|\.)redi\.as(\/|$)/i.test(url)),
   }
